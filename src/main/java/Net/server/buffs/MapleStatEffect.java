@@ -3318,6 +3318,7 @@ public class MapleStatEffect implements Serializable {
             return false;
         }
         final EnumMap<MonsterStatus, MonsterEffectHolder> statups = new EnumMap<>(MonsterStatus.class);
+
         if (prop == 0 || Randomizer.isSuccess(prop)) {
             for (Entry<MonsterStatus, Integer> entry : localstatups.entrySet()) {
                 final MonsterStatus status = entry.getKey();
@@ -3522,6 +3523,7 @@ public class MapleStatEffect implements Serializable {
                 chr.dropDebugMessage(1, "[MobBuff] Register Effect:" + this + " Duration:" + duration);
             }
         }
+
         if (!statups.isEmpty()) {
             monster.registerEffect(statups);
             Map<MonsterStatus, Integer> writeStatups = new LinkedHashMap<>();

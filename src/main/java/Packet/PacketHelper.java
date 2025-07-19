@@ -3433,8 +3433,8 @@ public class PacketHelper {
             mplew.writeInt(item.getPointPrice()); // 點數價格
             mplew.writeInt(item.getBuyLimitWorldAccount()); // 帳戶購買限制
             mplew.writeInt(item.getMinLevel()); // 最低等級
+            mplew.writeShort(0);
             mplew.writeShort((short) item.getMinLevel()); // 4.5
-            mplew.writeShort((short) item.getMaxLevel()); // 最高等級
             mplew.writeInt(0); // v264+未知
             mplew.write(0);
             mplew.write(0);

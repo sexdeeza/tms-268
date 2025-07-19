@@ -357,7 +357,7 @@
     </logger>
 
     <!-- 所有数据包日志 -->
-    <logger name="AllPackets" level="ERROR" additivity="false">
+    <logger name="AllPackets" level="ERROR" additivity="true">
         <appender-ref ref="所有數據包"/>
     </logger>
 
@@ -372,7 +372,7 @@
     </logger>
 
     <!-- DebugWindows -->
-    <logger name="DebugWindows" level="ALL" additivity="true">
+    <logger name="DebugWindows" level="ALL" additivity="false">
         <appender-ref ref="調試視窗"/>
     </logger>
 
@@ -381,8 +381,6 @@
     <root level="INFO">
         <appender-ref ref="控制面板"/>
         <appender-ref ref="伺服端日誌"/>
-        <appender-ref ref="數據包處理異常日誌"/>
-        <appender-ref ref="調試視窗"/>
-        <appender-ref ref="數據包日誌"/>
     </root>
+
 </configuration>

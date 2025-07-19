@@ -1301,9 +1301,11 @@ public class MobPacket {
                 break;
             }
         }
-        mplew.write(0); // delay 延遲多少毫秒之後顯示頭上debuff
-        mplew.write(0);
-        mplew.write(8);
+        mplew.writeShort(0);
+        mplew.writeShort(0);
+        mplew.write((int)0);
+        mplew.write((int)2);
+        mplew.write((int)1);
         return mplew.getPacket();
     }
 
@@ -1332,7 +1334,7 @@ public class MobPacket {
         }
     }
 
-    public static void writeMonsterStatusEffectData(MaplePacketLittleEndianWriter mplew, MapleMonster
+    public static void writeMonsterStatusEffectData_267(MaplePacketLittleEndianWriter mplew, MapleMonster
             monster, Map<MonsterStatus, MonsterEffectHolder> holderMap) {
         writeMonsterMask(mplew, holderMap.keySet());
         for (Entry<MonsterStatus, MonsterEffectHolder> entry : holderMap.entrySet()) {
@@ -1647,6 +1649,350 @@ public class MobPacket {
 //        }
     }
 
+    public static void writeMonsterStatusEffectData(MaplePacketLittleEndianWriter mplew, MapleMonster monster, Map<MonsterStatus, MonsterEffectHolder> holderMap) {
+        writeMonsterMask(mplew, holderMap.keySet());
+        Iterator var3 = holderMap.entrySet().iterator();
+
+        while(true) {
+            while(var3.hasNext()) {
+                Entry<MonsterStatus, MonsterEffectHolder> entry = (Entry)var3.next();
+                if (((MonsterStatus)entry.getKey()).ordinal() < MonsterStatus.PAD.ordinal()) {
+                    encodeIndieMonsterStatus(mplew, monster, (MonsterStatus)entry.getKey());
+                } else if (((MonsterStatus)entry.getKey()).ordinal() < MonsterStatus.Burned.ordinal()) {
+                    int level = 0;
+                    if (((MonsterEffectHolder)entry.getValue()).effect instanceof MobSkill) {
+                        level = ((MonsterEffectHolder)entry.getValue()).effect.getLevel();
+                    }
+
+                    int sourceID;
+                    if (((MonsterEffectHolder)entry.getValue()).effect != null && ((MonsterEffectHolder)entry.getValue()).effect.getSourceId() == ((MonsterEffectHolder)entry.getValue()).sourceID) {
+                        sourceID = ((MonsterEffectHolder)entry.getValue()).effect.getSourceId();
+                    } else {
+                        sourceID = ((MonsterEffectHolder)entry.getValue()).sourceID;
+                    }
+
+                    int nValue = ((MonsterEffectHolder)entry.getValue()).value;
+                    mplew.writeInt(nValue);
+                    if (level > 0) {
+                        mplew.writeShort(sourceID);
+                        mplew.writeShort(level);
+                    } else {
+                        mplew.writeInt(sourceID);
+                    }
+
+                    if (entry.getKey() != MonsterStatus.WindBreakerPinpointPierce && entry.getKey() != MonsterStatus.Stun) {
+                        mplew.writeShort(40);
+                    }
+                }
+            }
+
+            if (holderMap.containsKey(MonsterStatus.PImmune)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.MImmune)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.PDR)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Stun)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.Stun)).localDuration / 1000);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.MDR)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Speed)) {
+                mplew.write(((MonsterEffectHolder)holderMap.get(MonsterStatus.Speed)).z);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Freeze)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BeforeFreeze)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.PCounter)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.MCounter)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.PCounter) || holderMap.containsKey(MonsterStatus.MCounter)) {
+                mplew.writeInt(500);
+                mplew.write((int)1);
+                mplew.writeInt(500);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.ReduceFinalDamage)) {
+                mplew.write((int)0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.TotalDamParty)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Fatality)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.Fatality)).fromChrID);
+                mplew.writeInt(0);
+                mplew.writeInt(2 * (((MonsterEffectHolder)holderMap.get(MonsterStatus.Fatality)).value / 3));
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.GhostDisposition)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.CurseTransition)) {
+                mplew.writeInt(1);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.ElementDarkness)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.DeadlyCharge)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Incizing)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.Incizing)).fromChrID);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BMageDebuff)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BattlePvP_Helena_Mark)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.MultiPMDR)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.ElementResetBySummon)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BahamutLightElemAddDam)) {
+                mplew.writeInt(0);
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.BahamutLightElemAddDam)).fromChrID);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.MultiDamSkill)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.MultiDamSkill)).value);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.LefDebuff)) {
+                mplew.writeInt(4);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BuffControl)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BattlePvP_Ryude_Frozen)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Poison)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.Poison)).fromChrID);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Ambush)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.WindBreakerPinpointPierce)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.WindBreakerPinpointPierce)).z);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.MobLock)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.MobLock)).fromChrID);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.LWGathering)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Panic)) {
+                mplew.writeInt(-30);
+                mplew.writeInt(-20);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Explosion)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Burned)) {
+                List<MonsterEffectHolder> holders = monster.getIndieEffectHolder(MonsterStatus.Burned);
+                mplew.write(holders.size());
+                Iterator var10 = holders.iterator();
+
+                while(var10.hasNext()) {
+                    MonsterEffectHolder holder = (MonsterEffectHolder)var10.next();
+                    mplew.writeInt(holder.fromChrID);
+                    mplew.writeInt(holder.sourceID);
+                    mplew.writeLong(holder.dotDamage);
+                    mplew.writeInt(holder.dotInterval);
+                    mplew.writeInt(holder.getCancelTime());
+                    mplew.writeInt(holder.getLeftTime() << 1);
+                    mplew.writeInt(holder.getLeftTime() / (long)holder.dotInterval);
+                    mplew.writeInt(holder.dotSuperpos);
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+                    mplew.writeInt(300);
+                    mplew.writeInt(holder.level);
+                    mplew.writeInt(holder.dotDamage);
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+                }
+            }
+
+            if (holderMap.containsKey(MonsterStatus.BalogDisable)) {
+                mplew.write((int)0);
+                mplew.write((int)0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.ExchangeAttack)) {
+                mplew.write((int)0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.AddBuffStat)) {
+                mplew.write((int)0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.LinkTeam)) {
+                mplew.writeMapleAsciiString("");
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK96)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK97)) {
+                mplew.writeLong(0L);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK98)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK99)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK101)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK102)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK100)) {
+                mplew.writeShort(0);
+            }
+
+            MonsterEffectHolder holder;
+            if (holderMap.containsKey(MonsterStatus.SeperateSoulP)) {
+                holder = (MonsterEffectHolder)holderMap.get(MonsterStatus.SeperateSoulP);
+                mplew.writeInt(holder != null ? holder.value : 0);
+                mplew.writeInt(holder != null ? holder.moboid : 0);
+                mplew.writeShort(0);
+                mplew.writeInt(holder != null ? holder.value : 0);
+                mplew.writeInt(holder != null ? holder.sourceID : 0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.SeperateSoulC)) {
+                holder = (MonsterEffectHolder)holderMap.get(MonsterStatus.SeperateSoulC);
+                mplew.writeInt(holder != null ? holder.value : 0);
+                mplew.writeInt(holder != null ? holder.moboid : 0);
+                mplew.writeShort(0);
+                mplew.writeInt(holder != null ? holder.value : 0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.TrueSight)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.TrueSight)).value);
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.TrueSight)).sourceID);
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.TrueSight)).sourceID > 0 ? (int)System.currentTimeMillis() : 0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Ember)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.StatResetSkill)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Laser)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.Unk_163_Add_107)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK133)) {
+                mplew.writeLong(0L);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.ChangeMobAction)) {
+                mplew.writeInt(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.NEWUNK132)) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeShort(0);
+            }
+
+            if (holderMap.containsKey(MonsterStatus.IndieAddFinalDamSkill)) {
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.IndieAddFinalDamSkill)).fromChrID);
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.IndieAddFinalDamSkill)).z);
+                mplew.writeInt(((MonsterEffectHolder)holderMap.get(MonsterStatus.IndieAddFinalDamSkill)).fromChrID != 0 ? 30 : 0);
+            }
+
+            return;
+        }
+    }
     public static byte[] MobDamaged(MapleMonster monster, int n, long hpHeal, boolean damage) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeOpcode(OutHeader.LP_MobDamaged);

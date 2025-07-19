@@ -23,7 +23,7 @@ public class UnknownHandler {
             if (packetId == 1048) {
 
                 MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-                mplew.writeShort(1048);
+                mplew.writeShort(OutHeader.CLIENT_ALIVE.getValue());
                 byte[] packet = mplew.getPacket();
 
                 client.announce(packet);
