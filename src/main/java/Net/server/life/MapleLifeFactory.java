@@ -22,6 +22,7 @@ import java.awt.*;
 import java.io.*;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class MapleLifeFactory {
 
@@ -35,7 +36,8 @@ public class MapleLifeFactory {
     private static final MapleData npcStringData = stringDataWZ.getData("Npc.img");
     private static final MapleData npclocData = etcDataWZ.getData("NpcLocation.img");
     private static final Map<Integer, String> npcNames = new HashMap<>();
-    protected static final Map<Integer, String> npcScriptNames = new HashMap<>();
+//    protected static final Map<Integer, String> npcScriptNames = new HashMap<>();
+    protected static final Map<Integer, String> npcScriptNames = new ConcurrentHashMap<>();
     protected static final List<Integer> npcShops = new LinkedList<>();
     @Getter
     protected static final List<Integer> npcTrunks = new LinkedList<>();
@@ -249,14 +251,16 @@ public class MapleLifeFactory {
             }
             return null;
         });
-        for (MapleDataEntry entry : npcData.getRoot().getFiles()) {
+        List<MapleDataFileEntry> files = npcData.getRoot().getFiles();
+        files.parallelStream().forEach(entry -> {
+//        for (MapleDataEntry entry : npcData.getRoot().getFiles()) {
             if (!entry.getName().toLowerCase().replace(".img", "").matches("^\\d+$")) {
-                continue;
+                return;
             }
             MapleData data = npcData.getData(entry.getName());
             if (data == null) {
                 System.err.println("讀取NPC資料出錯, img檔案" + entry.getName());
-                continue;
+                return;
             }
             int nid = Integer.parseInt(entry.getName().toLowerCase().replace(".img", ""));
             MapleData info = data.getChildByPath("info");
@@ -281,7 +285,7 @@ public class MapleLifeFactory {
                     npcTrunks.add(nid);
                 }
             }
-        }
+        });
     }
 
     public static void initEliteMonster() {

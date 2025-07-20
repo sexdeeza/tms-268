@@ -50,11 +50,12 @@ var  text = "";
 for(var  i=0; i<itemList.length; i++) {
     text+="#L"+i+"##v"+itemList[i]+"##z"+itemList[i]+"##l\r\n";
 }
-let selection = npc.askMenu(""+pic.GM+"#d [ 100等級獎勵-黑色武器自由選擇 ]：\r\n"+color.櫻花紅紫+""+text);
+let selection = npc.askMenu(""+pic.高級標誌+"#d [ 100等級獎勵-黑色武器自由選擇 ]：\r\n"+color.綠+""+text);
 
 itemId = itemList[selection];
 
-let count = npc.minNum(1).maxNum(1).askNumber("#r請輸入道具數量為 : 1");
+// let count = npc.minNum(1).maxNum(1).askNumber("#r請輸入道具數量為 : 1");
+let count = npc.askNumber("#r請輸入道具數量為:", 1, 1, 1);
 
 if( !player.getPlayer().haveItem(武器箱子,count) ){
     npc.say("#r所需道具不足！");

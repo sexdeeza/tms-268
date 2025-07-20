@@ -1,0 +1,132 @@
+2025-07-20 12:27:07.659 [nioEventLoopGroup-13-9] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 01 F6 F6 23 2E 53 C4 BD 00 00 12 ED 00 00 00 00 00 00 F4 FF 4B 00 00 00 A2 FD 06 00 00 F4 FF EF FF 00 00 FA FF 00 00 00 00 00 00 FF FF 07 2C 01 00 00 F4 FF F0 FF 00 00 36 00 00 00 00 00 00 00 FF FF 07 1E 00 00 1F AC 4D 6E 0A 07 00 00 00 0C 01 02 12 FD 42 FE 07 00 00 00 00 6D FF C0 FF 12 FD AA FF 00 00 00 00 00 00 FF FF 07 B4 00 00 11 00 00 00 00 00 00 00 00 00
+現在: 00 F4 FF EF FF 00 00 FA FF 00 00 00 00 00 00 FF FF 07 2C 01 00 00 F4 FF F0 FF 00 00 36 00 00 00 00 00 00 00 FF FF 07 1E 00 00 1F AC 4D 6E 0A 07 00 00 00 0C 01 02 12 FD 42 FE 07 00 00 00 00 6D FF C0 FF 12 FD AA FF 00 00 00 00 00 00 FF FF 07 B4 00 00 11 00 00 00 00 00 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: Index 123 out of bounds for length 123
+	at tools.data.ByteArrayByteStream.readByte(ByteArrayByteStream.java:65)
+	at tools.data.MaplePacketReader.readShort(MaplePacketReader.java:134)
+	at Server.channel.handler.MovementParse.parseMovement(MovementParse.java:54)
+	at Server.channel.handler.PlayerHandler.MovePlayer(PlayerHandler.java:1305)
+	at Server.PacketProcessor.getProcessor(PacketProcessor.java:257)
+	at Server.MapleServerHandler.handlePacket(MapleServerHandler.java:219)
+	at Server.MapleServerHandler.channelRead(MapleServerHandler.java:201)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.timeout.IdleStateHandler.channelRead(IdleStateHandler.java:289)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-07-20 12:28:01.725 [nioEventLoopGroup-13-9] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 01 F6 F6 23 2E 7F 97 BE 00 00 3E C0 01 00 00 00 00 00 B9 FF 8B 01 D5 00 00 00 08 00 00 B9 FF 8A 01 D5 00 00 00 21 00 00 00 00 00 FF FF 02 00 00 00 00 B9 FF 8A 01 D5 00 00 00 00 00 00 00 00 00 FF FF 06 00 00 00 01 D4 00 66 FD 06 00 00 00 00 F2 FF 1F 01 D4 00 82 FF 00 00 00 00 00 00 FF FF 06 0E 01 00 1F AC 4D 6E 0A 06 00 00 00 0C 01 02 EE 02 0C FE 06 00 00 00 00 A6 00 E1 00 EE 02 EC FF 00 00 00 00 00 00 FF FF 06 F0 00 00 11 44 44 44 44 04 00 00 00 00
+現在: 00 B9 FF 8A 01 D5 00 00 00 21 00 00 00 00 00 FF FF 02 00 00 00 00 B9 FF 8A 01 D5 00 00 00 00 00 00 00 00 00 FF FF 06 00 00 00 01 D4 00 66 FD 06 00 00 00 00 F2 FF 1F 01 D4 00 82 FF 00 00 00 00 00 00 FF FF 06 0E 01 00 1F AC 4D 6E 0A 06 00 00 00 0C 01 02 EE 02 0C FE 06 00 00 00 00 A6 00 E1 00 EE 02 EC FF 00 00 00 00 00 00 FF FF 06 F0 00 00 11 44 44 44 44 04 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: null
+2025-07-20 15:38:19.586 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 01 B9 2C F4 92 D0 9A 6C 01 00 2C D2 01 00 00 00 00 00 44 09 69 FE 38 FF 71 FF 06 00 00 38 09 64 FE 39 FF E9 FF 00 00 00 00 00 00 FF FF 07 3C 00 00 00 2C 09 66 FE 39 FF 61 00 00 00 00 00 00 00 FF FF 07 3C 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 39 FF 15 FC 07 00 00 00 00 DE 08 77 FD 39 FF 21 FF 00 00 00 00 00 00 FF FF 07 86 01 00 11 22 22 00 00 00 00 00 00 00
+現在: 00 38 09 64 FE 39 FF E9 FF 00 00 00 00 00 00 FF FF 07 3C 00 00 00 2C 09 66 FE 39 FF 61 00 00 00 00 00 00 00 FF FF 07 3C 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 39 FF 15 FC 07 00 00 00 00 DE 08 77 FD 39 FF 21 FF 00 00 00 00 00 00 FF FF 07 86 01 00 11 22 22 00 00 00 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: Index 123 out of bounds for length 123
+	at tools.data.ByteArrayByteStream.readByte(ByteArrayByteStream.java:65)
+	at tools.data.MaplePacketReader.readShort(MaplePacketReader.java:134)
+	at Server.channel.handler.MovementParse.parseMovement(MovementParse.java:54)
+	at Server.channel.handler.PlayerHandler.MovePlayer(PlayerHandler.java:1305)
+	at Server.PacketProcessor.getProcessor(PacketProcessor.java:257)
+	at Server.MapleServerHandler.handlePacket(MapleServerHandler.java:219)
+	at Server.MapleServerHandler.channelRead(MapleServerHandler.java:201)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.timeout.IdleStateHandler.channelRead(IdleStateHandler.java:289)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-07-20 15:38:21.612 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 01 B9 2C F4 92 C8 A2 6C 01 00 24 DA 01 00 00 00 00 00 87 08 88 FE C8 00 81 FE 05 00 00 99 08 6E FE C8 00 35 FF 00 00 00 00 00 00 FF FF 06 5A 00 00 2B D2 A0 41 00 06 00 00 00 0C 01 02 C8 00 B4 FB 06 00 00 00 00 ED 08 50 FD C8 00 FC FE 00 00 00 00 00 00 FF FF 06 A4 01 00 11 66 06 00 00 00 00 00 00 00
+現在: 00 99 08 6E FE C8 00 35 FF 00 00 00 00 00 00 FF FF 06 5A 00 00 2B D2 A0 41 00 06 00 00 00 0C 01 02 C8 00 B4 FB 06 00 00 00 00 ED 08 50 FD C8 00 FC FE 00 00 00 00 00 00 FF FF 06 A4 01 00 11 66 06 00 00 00 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: Index 102 out of bounds for length 102
+	at tools.data.ByteArrayByteStream.readByte(ByteArrayByteStream.java:65)
+	at tools.data.MaplePacketReader.readShort(MaplePacketReader.java:134)
+	at Server.channel.handler.MovementParse.parseMovement(MovementParse.java:54)
+	at Server.channel.handler.PlayerHandler.MovePlayer(PlayerHandler.java:1305)
+	at Server.PacketProcessor.getProcessor(PacketProcessor.java:257)
+	at Server.MapleServerHandler.handlePacket(MapleServerHandler.java:219)
+	at Server.MapleServerHandler.channelRead(MapleServerHandler.java:201)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.codec.ByteToMessageDecoder.fireChannelRead(ByteToMessageDecoder.java:346)
+	at io.netty.handler.codec.ByteToMessageDecoder.channelRead(ByteToMessageDecoder.java:318)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:444)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.handler.timeout.IdleStateHandler.channelRead(IdleStateHandler.java:289)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:442)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.AbstractChannelHandlerContext.fireChannelRead(AbstractChannelHandlerContext.java:412)
+	at io.netty.channel.DefaultChannelPipeline$HeadContext.channelRead(DefaultChannelPipeline.java:1410)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:440)
+	at io.netty.channel.AbstractChannelHandlerContext.invokeChannelRead(AbstractChannelHandlerContext.java:420)
+	at io.netty.channel.DefaultChannelPipeline.fireChannelRead(DefaultChannelPipeline.java:919)
+	at io.netty.channel.nio.AbstractNioByteChannel$NioByteUnsafe.read(AbstractNioByteChannel.java:166)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKey(NioEventLoop.java:788)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeysOptimized(NioEventLoop.java:724)
+	at io.netty.channel.nio.NioEventLoop.processSelectedKeys(NioEventLoop.java:650)
+	at io.netty.channel.nio.NioEventLoop.run(NioEventLoop.java:562)
+	at io.netty.util.concurrent.SingleThreadEventExecutor$4.run(SingleThreadEventExecutor.java:997)
+	at io.netty.util.internal.ThreadExecutorMap$2.run(ThreadExecutorMap.java:74)
+	at io.netty.util.concurrent.FastThreadLocalRunnable.run(FastThreadLocalRunnable.java:30)
+	at java.base/java.lang.Thread.run(Thread.java:1583)
+2025-07-20 15:38:23.146 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 01 B9 2C F4 92 C2 A8 6C 01 00 1E E0 01 00 00 00 00 00 8C 09 B6 FD A8 00 81 FE 05 00 00 A5 09 93 FD A8 00 AD FF 00 00 00 00 00 00 FF FF 06 96 00 00 2B D2 A0 41 00 06 00 00 00 0C 01 02 A8 00 B4 FB 06 00 00 00 00 E2 09 89 FC A8 00 84 FE 00 00 00 00 00 00 FF FF 06 68 01 00 11 66 66 06 00 00 00 00 00 00
+現在: 00 A5 09 93 FD A8 00 AD FF 00 00 00 00 00 00 FF FF 06 96 00 00 2B D2 A0 41 00 06 00 00 00 0C 01 02 A8 00 B4 FB 06 00 00 00 00 E2 09 89 FC A8 00 84 FE 00 00 00 00 00 00 FF FF 06 68 01 00 11 66 66 06 00 00 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: null
+2025-07-20 15:38:24.680 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 01 B9 2C F4 92 BC AE 6C 01 00 18 E6 01 00 00 00 00 00 7E 0A 07 FE 24 00 00 00 0A 00 00 7F 0A 07 FE 0C 00 00 00 1F 00 00 00 00 00 FF FF 04 1E 00 00 00 7F 0A 07 FE 00 00 00 00 1F 00 00 00 00 00 FF FF 04 78 00 00 00 7E 0A 06 FE D6 FF 00 00 1F 00 00 00 00 00 FF FF 03 1E 00 00 00 7E 0A 06 FE D6 FF 00 00 00 00 00 00 00 00 FF FF 07 00 00 00 01 38 FF 56 FD 07 00 00 00 00 4E 0A 9C FD 39 FF 36 FF 00 00 00 00 00 00 FF FF 07 F0 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 39 FF B4 FB 07 00 00 00 00 3C 0A 41 FD 39 FF 68 FC 00 00 00 00 00 00 FF FF 07 5A 00 00 11 00 00 80 A8 22 22 22 00 00
+現在: 00 7F 0A 07 FE 0C 00 00 00 1F 00 00 00 00 00 FF FF 04 1E 00 00 00 7F 0A 07 FE 00 00 00 00 1F 00 00 00 00 00 FF FF 04 78 00 00 00 7E 0A 06 FE D6 FF 00 00 1F 00 00 00 00 00 FF FF 03 1E 00 00 00 7E 0A 06 FE D6 FF 00 00 00 00 00 00 00 00 FF FF 07 00 00 00 01 38 FF 56 FD 07 00 00 00 00 4E 0A 9C FD 39 FF 36 FF 00 00 00 00 00 00 FF FF 07 F0 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 39 FF B4 FB 07 00 00 00 00 3C 0A 41 FD 39 FF 68 FC 00 00 00 00 00 00 FF FF 07 5A 00 00 11 00 00 80 A8 22 22 22 00 00
+java.lang.ArrayIndexOutOfBoundsException: null
+2025-07-20 15:38:32.829 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 02 D9 95 96 B1 AE CB 6C 01 00 F6 09 00 00 00 00 00 00 4E 03 91 01 38 FF 09 FE 05 00 00 36 03 63 01 39 FF F9 FE 00 00 00 00 00 00 FF FF 07 78 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 39 FF B4 FB 07 00 00 00 00 E8 02 4E 00 39 FF C0 FE 00 00 00 00 00 00 FF FF 07 86 01 00 11 22 22 00 00 00 00 00 00 00
+現在: 00 36 03 63 01 39 FF F9 FE 00 00 00 00 00 00 FF FF 07 78 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 39 FF B4 FB 07 00 00 00 00 E8 02 4E 00 39 FF C0 FE 00 00 00 00 00 00 FF FF 07 86 01 00 11 22 22 00 00 00 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: null
+2025-07-20 15:38:34.362 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 02 D9 95 96 B1 A8 D1 6C 01 00 F0 0F 00 00 00 00 00 00 43 02 92 00 38 FF 45 FE 05 00 00 2B 02 6B 00 38 FF 35 FF 00 00 00 00 00 00 FF FF 07 78 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 38 FF B4 FB 07 00 00 00 00 DD 01 56 FF 38 FF C0 FE 00 00 00 00 00 00 FF FF 07 86 01 00 11 AA AA 00 00 00 00 00 00 00
+現在: 00 2B 02 6B 00 38 FF 35 FF 00 00 00 00 00 00 FF FF 07 78 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 38 FF B4 FB 07 00 00 00 00 DD 01 56 FF 38 FF C0 FE 00 00 00 00 00 00 FF FF 07 86 01 00 11 AA AA 00 00 00 00 00 00 00
+java.lang.ArrayIndexOutOfBoundsException: null
+2025-07-20 15:38:35.384 [nioEventLoopGroup-13-4] ERROR Movement.parseMovement - 玩家封包解析出錯：
+所有: F8 00 02 D9 95 96 B1 A4 D5 6C 01 00 EC 13 00 00 00 00 00 00 77 01 B6 FF 38 FF 9E 02 0B 00 00 6B 01 DE FF 38 FF 9E 02 00 00 00 00 00 00 FF FF 07 3C 00 00 00 68 01 E7 FF 9C FF 00 00 00 00 00 00 00 00 FF FF 07 0D 00 00 00 68 01 E7 FF 9C FF 00 00 2B 00 00 00 00 00 FF FF 03 00 00 00 00 4E 01 E6 FF 38 FF 00 00 26 00 00 00 00 00 FF FF 03 A7 00 00 00 4E 01 E6 FF 38 FF 00 00 00 00 00 00 00 00 FF FF 07 00 00 00 01 38 FF 56 FD 07 00 00 00 00 1E 01 7C FF 38 FF 36 FF 00 00 00 00 00 00 FF FF 07 F0 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 38 FF B4 FB 07 00 00 00 00 18 01 5C FF 38 FF F0 FB 00 00 00 00 00 00 FF FF 07 1E 00 00 11 88 88 AA AA AA AA AA AA 00
+現在: 00 6B 01 DE FF 38 FF 9E 02 00 00 00 00 00 00 FF FF 07 3C 00 00 00 68 01 E7 FF 9C FF 00 00 00 00 00 00 00 00 FF FF 07 0D 00 00 00 68 01 E7 FF 9C FF 00 00 2B 00 00 00 00 00 FF FF 03 00 00 00 00 4E 01 E6 FF 38 FF 00 00 26 00 00 00 00 00 FF FF 03 A7 00 00 00 4E 01 E6 FF 38 FF 00 00 00 00 00 00 00 00 FF FF 07 00 00 00 01 38 FF 56 FD 07 00 00 00 00 1E 01 7C FF 38 FF 36 FF 00 00 00 00 00 00 FF FF 07 F0 00 00 2B D2 A0 41 00 07 00 00 00 0C 01 02 38 FF B4 FB 07 00 00 00 00 18 01 5C FF 38 FF F0 FB 00 00 00 00 00 00 FF FF 07 1E 00 00 11 88 88 AA AA AA AA AA AA 00
+java.lang.ArrayIndexOutOfBoundsException: null

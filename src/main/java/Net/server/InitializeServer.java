@@ -449,11 +449,14 @@ public class InitializeServer {
 
         total.set(futures.size());
         CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
+        long start = System.currentTimeMillis();
+
         allFutures.whenComplete((result, error) -> {
             if (error != null) {
                 log.error("One or more tasks completed exceptionally: ", error);
             } else {
-                log.info("All 23 tasks completed successfully.");
+                long sec = (System.currentTimeMillis() - start)/ 1000;
+                log.info("All {} tasks completed successfully. cost: {}s", futures.size(), sec);
             }
             executor.shutdown();
         });

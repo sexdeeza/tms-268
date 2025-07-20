@@ -1119,6 +1119,7 @@ public enum InHeader implements WritableIntValueHolder {
     UserSetCustomizeEffect,
     USE_CONTENT_MAP_MINI,
     USE_CONTENT_MAP,
+    GUID_MOVE,
     CombingRoomActionReq,
     UserNonTargetForceAtomAttack,
     UserRunScript,

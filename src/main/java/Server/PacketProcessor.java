@@ -3,6 +3,7 @@ package Server;
 import Client.MapleClient;
 import Handler.OverseasHandler;
 import Handler.warpToGameHandler;
+import Net.server.maps.MapleMap;
 import Opcode.Headler.InHeader;
 import Opcode.Headler.OutHeader;
 import Packet.*;
@@ -13,6 +14,7 @@ import Server.auction.AuctionHandler;
 import Server.cashshop.handler.BuyCashItemHandler;
 import Server.cashshop.handler.CashShopOperation;
 import Server.cashshop.handler.CouponCodeHandler;
+import Server.channel.ChannelServer;
 import Server.channel.MonsterCollectionHandler;
 import Server.channel.handler.*;
 import Server.login.handler.*;
@@ -910,7 +912,8 @@ public final class PacketProcessor {
                 PetHandler.AllowPetLoot(slea, c, c.getPlayer());
                 break;
             case CTX_OPEN_CORE:
-                slea.skip(4);
+//                slea.skip(4);
+                int readInt = slea.readInt();
                 int use = slea.readInt();
                 for (int i = 0; i < use; i++) {
                     c.getPlayer().gainRandVSkill(Randomizer.isSuccess(20) ? 0 : 1, true, true);
@@ -1369,6 +1372,14 @@ public final class PacketProcessor {
                 break;
             case CombingRoomActionReq:
                 PlayerHandler.CombingRoomActionReq(slea, c, c.getPlayer());
+                break;
+            case GUID_MOVE:
+                byte b = slea.readByte();
+                if (b == 0) {
+                    int mapId = slea.readInt();
+                    MapleMap to = ChannelServer.getInstance(c.getChannel()).getMapFactory().getMap(mapId);
+                    c.getPlayer().changeMap(to, to.getPortal(0));
+                }
                 break;
             case JENO_ENERGY_STORAGE_SYSTEM:
                 PlayerHandler.JENO_ENERGY_STORAGE_SYSTEM(slea, c.getPlayer());

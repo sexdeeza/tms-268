@@ -212,7 +212,7 @@ public final class MapleServerHandler extends ChannelInboundHandlerAdapter {
         InHeader opcode = lookupRecv(packetId);
 //        if (opcode == null) {
         if (opcode == InHeader.UNKNOWN) {
-            System.err.printf("[In] %d(0x%s) InHeader.UNKNOW%n", packetId, Integer.toHexString(packetId));
+            System.err.printf("[In] %d(0x%s) InHeader.UNKNOW  slea%s  %n", packetId, Integer.toHexString(packetId), slea);
             UnknownHandler.handle(packetId, slea, client);
         } else {
 //            System.out.printf("[In] %d(0x%s)   opcode %s  %n", packetId, Integer.toHexString(packetId), opcode);

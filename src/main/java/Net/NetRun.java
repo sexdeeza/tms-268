@@ -95,7 +95,7 @@ public class NetRun {
     }
     public static void main(String[] args) throws Exception {
 
-        System.setProperty("debug", "dev");
+//        System.setProperty("debug", "dev");
 
         Config.load();
         log.info("啟動遊戲版本:TMS-268..");

@@ -362,6 +362,7 @@ public class ScriptManager {
         } catch (IOException ex) {
             messageColor = UserChatMessageType.粉;
             result = "";
+            System.err.println("cannot find script " + scriptPath + "\n");
         }catch (Exception e) {
             String firstLine = e.getMessage().split("\n")[0];
             if (!firstLine.contains(INTENDED_NPE_MSG)) {

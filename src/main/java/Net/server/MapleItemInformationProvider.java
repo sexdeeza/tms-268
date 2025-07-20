@@ -747,7 +747,9 @@ public class MapleItemInformationProvider {
                         addItemDataToRedis(dataProvider.getData(topData.getName()), false);
                     }
                 }
-                for (MapleDataDirectoryEntry topDir : dataProvider.getRoot().getSubdirectories()) {
+//                for (MapleDataDirectoryEntry topDir : dataProvider.getRoot().getSubdirectories()) {
+                List<MapleDataDirectoryEntry> subdirectories = dataProvider.getRoot().getSubdirectories();
+                subdirectories.parallelStream().forEach(topDir -> {
                     boolean isSpecial = topDir.getName().equals("Special");
                     if (!topDir.getName().equalsIgnoreCase("Afterimage")) {
                         for (MapleDataFileEntry ifile : topDir.getFiles()) {
@@ -763,7 +765,7 @@ public class MapleItemInformationProvider {
                             }
                         }
                     }
-                }
+                });
             }
             DatabaseConnection.domain(con -> {
                 InitializeServer.WzSqlName.wz_itemdata.drop(con);
