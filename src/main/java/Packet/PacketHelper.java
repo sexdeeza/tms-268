@@ -52,15 +52,8 @@ import Net.server.shops.MapleMiniGame;
 import Packet.VCorePacket;
 import connection.OutPacket;
 import java.awt.Point;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+
 import tools.DateUtil;
 import tools.Pair;
 import tools.Randomizer;
@@ -243,63 +236,72 @@ public class PacketHelper {
      * WARNING - void declaration
      */
     public static void addCharacterInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr, long flag) {
-        int var25_116 = 0;
-        long date;
-        int itemId;
-        MapleInventoryType eiv;
-        ArrayList<Item> items;
-        int i;
-        for (i = 0; i < 100; ++i) {
+
+        for(int i = 0; i < 100; ++i) {
             mplew.write(1);
         }
+
         mplew.write(0);
-        for (i = 0; i < 3; ++i) {
-            mplew.writeInt(JobConstants.is皇家騎士團(chr.getJob()) || JobConstants.is米哈逸(chr.getJob()) ? -6 : -1);
+
+        for(int i = 0; i < 3; ++i) {
+            mplew.writeInt(!JobConstants.is皇家騎士團(chr.getJob()) && !JobConstants.is米哈逸(chr.getJob()) ? -1 : -6);
         }
+
         mplew.write(0);
         mplew.writeInt(0);
         mplew.write(0);
         if ((flag & 1L) != 0L) {
-            MapleQuestStatus ultExplorer;
             chr.getCharacterStat().encode(mplew);
             mplew.write(chr.getBuddylist().getCapacity());
             mplew.write(chr.getBlessOfFairyOrigin() != null);
             if (chr.getBlessOfFairyOrigin() != null) {
                 mplew.writeMapleAsciiString(chr.getBlessOfFairyOrigin());
             }
+
             mplew.write(chr.getBlessOfEmpressOrigin() != null);
             if (chr.getBlessOfEmpressOrigin() != null) {
                 mplew.writeMapleAsciiString(chr.getBlessOfEmpressOrigin());
             }
-            mplew.write((ultExplorer = chr.getQuestNoAdd(MapleQuest.getInstance(111111))) != null && ultExplorer.getCustomData() != null);
+
+            MapleQuestStatus ultExplorer = chr.getQuestNoAdd(MapleQuest.getInstance(111111));
+            mplew.write(ultExplorer != null && ultExplorer.getCustomData() != null);
             if (ultExplorer != null && ultExplorer.getCustomData() != null) {
                 mplew.writeMapleAsciiString(ultExplorer.getCustomData());
             }
+
             mplew.writeLong(133709900400000000L);
             mplew.writeHexString("00 40 E0 FD 3B 37 4F 01");
             int v7 = 2;
-            block2: do {
+
+            do {
                 mplew.writeInt(0);
-                while (true) {
+
+                while(true) {
                     int res = -1;
                     mplew.write(res);
-                    if (res == -1) continue block2;
+                    if (res == -1) {
+                        v7 += 36;
+                        break;
+                    }
+
                     mplew.writeInt(0);
                 }
-            } while ((v7 += 36) < 74);
+            } while(v7 < 74);
         }
+
         mplew.writeShort(0);
-        mplew.writeLong(PacketHelper.getTime(-2L));
+        mplew.writeLong(getTime(-2L));
         String questInfo = chr.getOneInfo(56829, "count");
         mplew.writeInt(questInfo == null ? ServerConfig.defaultDamageSkinSlot : Integer.valueOf(questInfo));
-        PacketHelper.addDamageSkinInfo(mplew, chr);
+        addDamageSkinInfo(mplew, chr);
         if ((flag & 2L) != 0L) {
             mplew.writeLong(chr.getMeso());
             mplew.writeInt(chr.getId());
             mplew.writeInt(chr.getBeans());
             mplew.writeInt(chr.getCSPoints(2));
         }
-        if ((flag & 0x40L) != 0L) {
+
+        if ((flag & 64L) != 0L) {
             mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIPPED).getSlotLimit());
             mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIP).getSlotLimit());
             mplew.writeInt(chr.getInventory(MapleInventoryType.USE).getSlotLimit());
@@ -308,847 +310,998 @@ public class PacketHelper {
             mplew.writeInt(chr.getInventory(MapleInventoryType.CASH).getSlotLimit());
             mplew.writeInt(chr.getInventory(MapleInventoryType.DECORATION).getSlotLimit());
         }
+
         MapleInventory iv = chr.getInventory(MapleInventoryType.EQUIPPED);
         List<Item> equippedList = iv.newList();
         Collections.sort(equippedList);
-        ArrayList<Item> equipped = new ArrayList<Item>();
-        ArrayList<Item> equippedCash = new ArrayList<Item>();
-        ArrayList<Item> equippedDragon = new ArrayList<Item>();
-        ArrayList<Item> equippedMechanic = new ArrayList<Item>();
-        ArrayList<Item> equippedAndroid = new ArrayList<Item>();
-        ArrayList<Item> equippedLolitaCash = new ArrayList<Item>();
-        ArrayList<Item> equippedBit = new ArrayList<Item>();
-        ArrayList<Item> equippedZeroBetaCash = new ArrayList<Item>();
-        ArrayList<Item> equippedArcane = new ArrayList<Item>();
-        ArrayList<Item> equippedAuthenticSymbol = new ArrayList<Item>();
-        ArrayList<Item> equippedTotem = new ArrayList<Item>();
-        ArrayList equippedMonsterEqp = new ArrayList();
-        ArrayList<Item> equippedHakuFan = new ArrayList<Item>();
-        ArrayList<Item> equippedUnknown = new ArrayList<Item>();
-        ArrayList<Item> equippedCashPreset = new ArrayList<Item>();
-        for (Item item2 : equippedList) {
-            if (item2.getPosition() < 0 && item2.getPosition() > -100) {
-                equipped.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1000 && item2.getPosition() > -1100) {
-                equippedDragon.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1100 && item2.getPosition() > -1200) {
-                equippedMechanic.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1400 && item2.getPosition() > -1500) {
-                equippedBit.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -5000 && item2.getPosition() >= -5002) {
-                equippedTotem.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1600 && item2.getPosition() > -1700) {
-                equippedArcane.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1700 && item2.getPosition() > -1800) {
-                equippedAuthenticSymbol.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1200 && item2.getPosition() > -1300) {
-                equippedAndroid.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1300 && item2.getPosition() > -1400) {
-                equippedLolitaCash.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -1500 && item2.getPosition() > -1600) {
-                equippedZeroBetaCash.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= -100 && item2.getPosition() > -1000) {
-                equippedCash.add(item2);
-                continue;
-            }
-            if (item2.getPosition() <= 10000 || item2.getPosition() >= 10200) continue;
-            chr.getSkillSkin().put(MapleItemInformationProvider.getInstance().getSkillSkinFormSkillId(item2.getItemId()), item2.getItemId());
-            equippedUnknown.add(item2);
-        }
-        if ((flag & 0x80L) != 0L) {
-            mplew.writeBool(false);
-            iv = chr.getInventory(MapleInventoryType.EQUIP);
-            LinkedList<MapleAndroid> androids = new LinkedList<MapleAndroid>();
-            ArrayList<Item> items20000 = new ArrayList();
-            ArrayList<Item> arrayList = new ArrayList<Item>();
-            ArrayList<Item> arrayList2 = new ArrayList<Item>();
-            for (Item item2 : iv.list()) {
-                if (((Equip)item2).getAndroid() != null) {
-                    androids.add(((Equip)item2).getAndroid());
+        List<Item> equipped = new ArrayList();
+        List<Item> equippedCash = new ArrayList();
+        List<Item> equippedDragon = new ArrayList();
+        List<Item> equippedMechanic = new ArrayList();
+        List<Item> equippedAndroid = new ArrayList();
+        List<Item> equippedLolitaCash = new ArrayList();
+        List<Item> equippedBit = new ArrayList();
+        List<Item> equippedZeroBetaCash = new ArrayList();
+        List<Item> equippedArcane = new ArrayList();
+        List<Item> equippedAuthenticSymbol = new ArrayList();
+        List<Item> equippedTotem = new ArrayList();
+        List<Item> equippedMonsterEqp = new ArrayList<>(); // 獸魔裝備
+        List<Item> equippedHakuFan = new ArrayList();
+        List<Item> equippedUnknown = new ArrayList();
+        List<Item> equippedCashPreset = new ArrayList();
+        Iterator equppedIterator = equippedList.iterator();
+
+        while(true) {
+            while(equppedIterator.hasNext()) {
+                Item item = (Item)equppedIterator.next();
+                if (item.getPosition() < 0 && item.getPosition() > -100) {
+                    equipped.add(item);
+                } else if (item.getPosition() <= -1000 && item.getPosition() > -1100) {
+                    equippedDragon.add(item);
+                } else if (item.getPosition() <= -1100 && item.getPosition() > -1200) {
+                    equippedMechanic.add(item);
+                } else if (item.getPosition() <= -1400 && item.getPosition() > -1500) {
+                    equippedBit.add(item);
+                } else if (item.getPosition() <= -5000 && item.getPosition() >= -5002) {
+                    equippedTotem.add(item);
+                } else if (item.getPosition() <= -1600 && item.getPosition() > -1700) {
+                    equippedArcane.add(item);
+                } else if (item.getPosition() <= -1700 && item.getPosition() > -1800) {
+                    equippedAuthenticSymbol.add(item);
+                } else if (item.getPosition() <= -1200 && item.getPosition() > -1300) {
+                    equippedAndroid.add(item);
+                } else if (item.getPosition() <= -1300 && item.getPosition() > -1400) {
+                    equippedLolitaCash.add(item);
+                } else if (item.getPosition() <= -1500 && item.getPosition() > -1600) {
+                    equippedZeroBetaCash.add(item);
+                } else if (item.getPosition() <= -100 && item.getPosition() > -1000) {
+                    equippedCash.add(item);
+                } else if (item.getPosition() > 10000 && item.getPosition() < 10200) {
+                    chr.getSkillSkin().put(MapleItemInformationProvider.getInstance().getSkillSkinFormSkillId(item.getItemId()), item.getItemId());
+                    equippedUnknown.add(item);
                 }
-                if (item2.getPosition() >= 21000) {
-                    arrayList.add(item2);
-                    continue;
-                }
-                if (item2.getPosition() >= 20000) {
-                    items20000.add(item2);
-                    continue;
-                }
-                arrayList2.add(item2);
             }
-            mplew.writeShort(0);
-            PacketHelper.encodeInventory(mplew, equipped, chr);
-            PacketHelper.encodeInventory(mplew, arrayList2, chr);
-            PacketHelper.encodeInventory(mplew, equippedDragon, chr);
-            PacketHelper.encodeInventory(mplew, equippedMechanic, chr);
-            PacketHelper.encodeInventory(mplew, equippedBit, chr);
-            PacketHelper.encodeInventory(mplew, equippedTotem, chr);
-            PacketHelper.encodeInventory(mplew, equippedArcane, chr);
-            PacketHelper.encodeInventory(mplew, equippedAuthenticSymbol, chr);
-            PacketHelper.encodeInventory(mplew, equippedHakuFan, chr);
-            mplew.writeShort(0);
-            mplew.writeShort(0);
-            mplew.writeShort(0);
-            mplew.writeShort(0);
-            mplew.writeShort(0);
-            PacketHelper.encodeInventory(mplew, equippedTotem, chr);
-            PacketHelper.encodeInventory(mplew, equippedUnknown, chr);
-            PacketHelper.encodeInventory(mplew, items20000, chr);
-            PacketHelper.encodeInventory(mplew, arrayList, chr);
-        }
-        if ((flag & 0x10L) != 0L) {
-            PacketHelper.encodeInventory(mplew, Collections.emptyList(), chr);
-            PacketHelper.encodeInventory(mplew, Collections.emptyList(), chr);
-        }
-        if ((flag & 0x2000L) != 0L) {
-            mplew.writeBool(false);
-            PacketHelper.encodeInventory(mplew, equippedCash, chr);
-            iv = chr.getInventory(MapleInventoryType.DECORATION);
-            ArrayList<Item> decoration = new ArrayList<Item>();
-            for (Item item3 : iv.list()) {
-                if (item3.getPosition() >= 129) continue;
-                decoration.add(item3);
-            }
-            PacketHelper.encodeInventory(mplew, decoration, chr);
-            PacketHelper.encodeInventory(mplew, equippedAndroid, chr);
-            PacketHelper.encodeInventory(mplew, equippedLolitaCash, chr);
-            PacketHelper.encodeInventory(mplew, equippedZeroBetaCash, chr);
-            PacketHelper.encodeInventory(mplew, equippedCashPreset, chr);
-            mplew.writeShort(0);
-            mplew.writeShort(0);
-        }
-        if ((flag & 8L) != 0L) {
-            iv = chr.getInventory(MapleInventoryType.USE);
-            items = new ArrayList<Item>();
-            for (Item item4 : iv.list()) {
-                if (item4.getPosition() >= 129) continue;
-                items.add(item4);
-            }
-            PacketHelper.encodeInventory(mplew, items, chr);
-        }
-        if ((flag & 0x10L) != 0L) {
-            iv = chr.getInventory(MapleInventoryType.SETUP);
-            items = new ArrayList();
-            for (Item item5 : iv.list()) {
-                if (item5.getPosition() >= 129) continue;
-                items.add(item5);
-            }
-            PacketHelper.encodeInventory(mplew, items, chr);
-        }
-        if ((flag & 0x80L) != 0L) {
-            iv = chr.getInventory(MapleInventoryType.ETC);
-            items = new ArrayList();
-            for (Item item6 : iv.list()) {
-                if (item6.getPosition() >= 129) continue;
-                items.add(item6);
-            }
-            PacketHelper.encodeInventory(mplew, items, chr);
-        }
-        ArrayList<MaplePet> pets = new ArrayList<MaplePet>();
-        if ((flag & 0x40L) != 0L) {
-            iv = chr.getInventory(MapleInventoryType.CASH);
-            ArrayList<Item> items2 = new ArrayList<Item>();
-            for (Item item7 : iv.list()) {
-                items2.add(item7);
-                if (item7.getPet() == null) continue;
-                pets.add(item7.getPet());
-            }
-            PacketHelper.encodeInventory(mplew, items2, chr);
-        }
-        if ((flag & 0x20L) != 0L) {
-            eiv = MapleInventoryType.USE;
-            List<Item> list = chr.getExtendedSlots(eiv.getType());
-            mplew.writeInt(list.size());
-            for (Item item8 : list) {
-                mplew.writeInt(item8.getExtendSlot());
-                mplew.writeInt(item8.getItemId());
-                chr.getInventory(eiv).list().stream().filter(item -> item.getPosition() > item8.getExtendSlot() * 100 + 10100 && item.getPosition() < item8.getExtendSlot() * 100 + 10200).forEach(item -> {
-                    PacketHelper.addItemPosition(mplew, item, false, true);
-                    PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
-                });
-                mplew.writeInt(-1);
-            }
-        }
-        if ((flag & 0x30L) != 0L) {
-            eiv = MapleInventoryType.SETUP;
-            List<Item> list = chr.getExtendedSlots(eiv.getType());
-            mplew.writeInt(list.size());
-            for (Item item9 : list) {
-                mplew.writeInt(item9.getExtendSlot());
-                mplew.writeInt(item9.getItemId());
-                chr.getInventory(eiv).list().stream().filter(item -> item.getPosition() > item9.getExtendSlot() * 100 + 10100 && item.getPosition() < item9.getExtendSlot() * 100 + 10200).forEach(item -> {
-                    PacketHelper.addItemPosition(mplew, item, false, true);
-                    PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
-                });
-                mplew.writeInt(-1);
-            }
-        }
-        if ((flag & 0x40L) != 0L) {
-            eiv = MapleInventoryType.ETC;
-            List<Item> list = chr.getExtendedSlots(eiv.getType());
-            mplew.writeInt(list.size());
-            for (Item item10 : list) {
-                mplew.writeInt(item10.getExtendSlot());
-                mplew.writeInt(item10.getItemId());
-                chr.getInventory(eiv).list().stream().filter(item -> item.getPosition() > item10.getExtendSlot() * 100 + 10100 && item.getPosition() < item10.getExtendSlot() * 100 + 10200).forEach(item -> {
-                    PacketHelper.addItemPosition(mplew, item, false, true);
-                    PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
-                });
-                mplew.writeInt(-1);
-            }
-        }
-        if ((flag & 0x1000000L) != 0L) {
-            mplew.writeInt(0);
-        }
-        if ((flag & 0x40000000L) != 0L) {
-            mplew.writeInt(0);
-        }
-        if ((flag & 0x800000L) != 0L) {
-            mplew.write(0);
-        }
-        if ((flag & 0x100L) != 0L) {
-            int var27_192 = 0;
-            Map<Integer, SkillEntry> map = chr.getSkills(true);
-            mplew.write(1);
-            mplew.writeShort(map.size());
-            for (Map.Entry<Integer, SkillEntry> entry : map.entrySet()) {
-                Skill skill = SkillFactory.getSkill(entry.getKey());
-                mplew.writeInt(skill.getId());
-                if (skill.isLinkSkills()) {
-                    mplew.writeInt(entry.getValue().teachId);
-                } else if (skill.isTeachSkills()) {
-                    mplew.writeInt(entry.getValue().teachId > 0 ? entry.getValue().teachId : chr.getId());
-                } else {
-                    mplew.writeInt(entry.getValue().skillevel);
-                }
-                PacketHelper.addExpirationTime(mplew, entry.getValue().expiration);
-                if (skill.isFourthJob()) {
-                    mplew.writeInt(entry.getValue().masterlevel);
-                }
-                if (skill.getId() != 40020002 && skill.getId() != 80000004) continue;
-                mplew.writeInt(entry.getValue().masterlevel);
-            }
-            Map<Integer, SkillEntry> map2 = chr.getLinkSkills();
-            mplew.writeShort(map2.size());
-            for (Map.Entry<Integer, SkillEntry> entry : map2.entrySet()) {
-                mplew.writeInt(entry.getKey());
-                mplew.writeShort(entry.getValue().skillevel - 1);
-            }
-            Map<Integer, Pair<Integer, SkillEntry>> map3 = chr.getSonOfLinkedSkills();
-            mplew.writeInt(map3.size());
-            for (Map.Entry<Integer, Pair<Integer, SkillEntry>> entry : map3.entrySet()) {
-                PacketHelper.writeSonOfLinkedSkill(mplew, entry.getKey(), entry.getValue());
-            }
-            mplew.write((int)chr.getInfoQuestValueWithKey(2498, "hyperstats"));
-            boolean bl = false;
-            while (var27_192 <= 2) {
-                mplew.writeInt(chr.loadHyperStats((int)var27_192).size());
-                for (MapleHyperStats mapleHyperStats : chr.loadHyperStats((int)var27_192)) {
-                    mplew.writeInt(mapleHyperStats.getPosition());
-                    mplew.writeInt(mapleHyperStats.getSkillid());
-                    mplew.writeInt(mapleHyperStats.getSkillLevel());
-                }
-                ++var27_192;
-            }
-        }
-        if ((flag & 0x8000L) != 0L) {
-            List<MapleCoolDownValueHolder> list = chr.getCooldowns();
-            mplew.writeShort(list.size());
-            for (MapleCoolDownValueHolder mapleCoolDownValueHolder : list) {
-                mplew.writeInt(mapleCoolDownValueHolder.skillId);
-                int n = (int)((long)mapleCoolDownValueHolder.length + mapleCoolDownValueHolder.startTime - System.currentTimeMillis());
-                mplew.writeInt(n / 1000);
-            }
-        }
-        if ((flag & 1L) != 0L) {
-            int var24_51 = 0;
-            int var24_49 = 0;
-            boolean bl = false;
-            while (var24_49 < 6) {
-                mplew.writeInt(0);
-                ++var24_49;
-            }
-            boolean bl2 = false;
-            while (var24_51 < 6) {
-                mplew.write(0);
-                ++var24_51;
-            }
-        }
-        if ((flag & 0x200L) != 0L) {
-            List<MapleQuestStatus> list = chr.getStartedQuests();
-            boolean bl = true;
-            mplew.write(bl);
-            mplew.writeShort(list.size());
-            for (MapleQuestStatus mapleQuestStatus : list) {
-                mplew.writeInt(mapleQuestStatus.getQuest().getId());
-                if (mapleQuestStatus.hasMobKills()) {
-                    StringBuilder stringBuilder = new StringBuilder();
-                    for (int n : mapleQuestStatus.getMobKills().values()) {
-                        stringBuilder.append(StringUtil.getLeftPaddedStr(String.valueOf(n), '0', 3));
+
+//            Iterator var26;
+//            ArrayList items;
+            if ((flag & 128L) != 0L) {
+                mplew.writeBool(false);
+                iv = chr.getInventory(MapleInventoryType.EQUIP);
+                List<MapleAndroid> androids = new LinkedList<>();
+                List<Item> items = new ArrayList();
+
+                List<Item> items20000 = new ArrayList<>();
+                List<Item> items21000 = new ArrayList<>();
+                List<Item> equip = new ArrayList<>();
+                for (Item item : iv.list()) {
+                    if (((Equip) item).getAndroid() != null) {
+                        androids.add(((Equip) item).getAndroid());
                     }
-                    mplew.writeMapleAsciiString(stringBuilder.toString());
-                    continue;
-                }
-                mplew.writeMapleAsciiString(mapleQuestStatus.getCustomData() == null ? "" : mapleQuestStatus.getCustomData());
-            }
-            if (!bl) {
-                mplew.writeShort(0);
-            }
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x4000L) != 0L) {
-            boolean bl = true;
-            mplew.write(bl);
-            List<MapleQuestStatus> list = chr.getCompletedQuests();
-            if (ServerConfig.HideBulbQuest) {
-                int[] nArray;
-                LinkedList<MapleQuest> linkedList = new LinkedList<MapleQuest>();
-                for (MapleQuestStatus mapleQuestStatus : list) {
-                    linkedList.add(mapleQuestStatus.getQuest());
-                }
-                List<Integer> list2 = Arrays.asList(5741, 5742, 5743, 5744, 5745);
-                for (MapleQuest mapleQuest : MapleQuest.GetBulbQuest()) {
-                    if (linkedList.contains(mapleQuest) || list2.contains(mapleQuest.getId())) continue;
-                    list.add(new MapleQuestStatus(mapleQuest, 2));
-                    linkedList.add(mapleQuest);
-                }
-                for (int nQ : nArray = new int[]{32510}) {
-                    MapleQuest q = MapleQuest.getInstance(nQ);
-                    if (linkedList.contains(q)) continue;
-                    list.add(new MapleQuestStatus(q, 2));
-                    linkedList.add(q);
-                }
-            }
-            mplew.writeShort(list.size());
-            for (MapleQuestStatus mapleQuestStatus : list) {
-                mplew.writeInt(mapleQuestStatus.getQuest().getId());
-                mplew.writeLong(PacketHelper.getTime(mapleQuestStatus.getCompletionTime()));
-            }
-            if (!bl) {
-                mplew.writeShort(0);
-            }
-        }
-        if ((flag & 0x400L) != 0L) {
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x800L) != 0L) {
-            Triple<List<MapleRing>, List<MapleRing>, List<MapleRing>> triple = chr.getRings(true);
-            List<MapleRing> list = triple.getLeft();
-            mplew.writeShort(list.size());
-            for (MapleRing mapleRing : list) {
-                mplew.writeInt(mapleRing.getPartnerChrId());
-                mplew.writeAsciiString(mapleRing.getPartnerName(), 15);
-                mplew.writeLong(mapleRing.getRingId());
-                mplew.writeLong(mapleRing.getPartnerRingId());
-            }
-            List<MapleRing> list3 = triple.getMid();
-            mplew.writeShort(list3.size());
-            for (MapleRing mapleRing : list3) {
-                mplew.writeInt(mapleRing.getPartnerChrId());
-                mplew.writeAsciiString(mapleRing.getPartnerName(), 15);
-                mplew.writeLong(mapleRing.getRingId());
-                mplew.writeLong(mapleRing.getPartnerRingId());
-                mplew.writeInt(mapleRing.getItemId());
-            }
-            List<MapleRing> list4 = triple.getRight();
-            mplew.writeShort(list4.size());
-            for (MapleRing mapleRing : list4) {
-                mplew.writeInt(chr.getMarriageId());
-                mplew.writeInt(chr.getId());
-                mplew.writeInt(mapleRing.getPartnerChrId());
-                mplew.writeShort(3);
-                mplew.writeInt(mapleRing.getItemId());
-                mplew.writeInt(mapleRing.getItemId());
-                mplew.writeAsciiString(chr.getName(), 15);
-                mplew.writeAsciiString(mapleRing.getPartnerName(), 15);
-            }
-        }
-        if ((flag & 0x1000L) != 0L) {
-            int var27_202 = 0;
-            int var26_148 = 0;
-            int var25_88 = 0;
-            int[] nArray = chr.getRegRocks();
-            boolean bl = false;
-            while (var25_88 < 5) {
-                mplew.writeInt(nArray[var25_88]);
-                ++var25_88;
-            }
-            int[] nArray2 = chr.getRocks();
-            boolean bl3 = false;
-            while (var26_148 < 10) {
-                mplew.writeInt(nArray2[var26_148]);
-                ++var26_148;
-            }
-            int[] nArray3 = chr.getHyperRocks();
-            boolean bl4 = false;
-            while (var27_202 < 13) {
-                mplew.writeInt(nArray3[var27_202]);
-                ++var27_202;
-            }
-        }
-        if ((flag & 0x40000L) != 0L) {
-            LinkedHashMap<Integer, String> linkedHashMap = new LinkedHashMap<Integer, String>();
-            for (Map.Entry<Integer, String> entry : chr.getInfoQuest_Map().entrySet()) {
-                linkedHashMap.put(entry.getKey(), entry.getValue());
-            }
-            for (Map.Entry<Integer, String> entry : chr.getWorldShareInfo().entrySet()) {
-                if (GameConstants.isWorldShareQuest(entry.getKey())) continue;
-                linkedHashMap.put(entry.getKey(), entry.getValue());
-            }
-            mplew.writeShort(linkedHashMap.size());
-            for (Map.Entry entry : linkedHashMap.entrySet()) {
-                mplew.writeInt((Integer)entry.getKey());
-                mplew.writeMapleAsciiString(entry.getValue() == null ? "" : (String)entry.getValue());
-            }
-        }
-        if ((flag & 0x80000L) != 0L) {
-            int var25_94 = 0;
-            int n = 0;
-            mplew.writeShort(n);
-            boolean bl = false;
-            while (var25_94 < n) {
-                mplew.writeInt(0);
-                mplew.writeShort(0);
-                ++var25_94;
-            }
-        }
-        mplew.writeBool(true);
-        if ((flag & 0x8000000000L) != 0L) {
-            int var25_96 = 0;
-            int n = 0;
-            mplew.writeInt(n);
-            boolean bl = false;
-            while (var25_96 < n) {
-                mplew.writeInt(26);
-                mplew.writeMapleAsciiString("Present=7");
-                ++var25_96;
-            }
-        }
-        if ((flag & 0x100000000000L) != 0L) {
-            int var25_98 = 0;
-            int n = 1;
-            mplew.writeInt(n);
-            boolean bl = false;
-            while (var25_98 < n) {
-                mplew.writeInt(4475);
-                mplew.writeInt(-1);
-                ++var25_98;
-            }
-        }
-        if ((flag & 0x200000L) != 0L) {
-            PacketHelper.addJaguarInfo(mplew, chr);
-        }
-        if ((flag & 0x800L) != 0L && JobConstants.is神之子(chr.getJob())) {
-            chr.getStat().zeroData(mplew, chr, 65535, chr.isBeta());
-        }
-        if ((flag & 0x4000000L) != 0L) {
-            mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-            for (Map.Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
-                int n = entry.getKey();
-                NpcShopBuyLimit npcShopBuyLimit = entry.getValue();
-                MapleShop mapleShop = MapleShopFactory.getInstance().getShop(n);
-                mplew.writeInt(n);
-                mplew.writeShort(mapleShop != null ? npcShopBuyLimit.getData().size() : 0);
-                if (mapleShop == null) continue;
-                for (Map.Entry entry2 : npcShopBuyLimit.getData().entrySet()) {
-                    itemId = (Integer)entry2.getKey();
-                    BuyLimitData data = (BuyLimitData)entry2.getValue();
-                    int count = data.getCount();
-                    date = data.getDate();
-                    mplew.writeInt(n);
-                    mplew.writeShort(mapleShop.getBuyLimitItemIndex((Integer)entry2.getKey()));
-                    mplew.writeInt(itemId);
-                    mplew.writeShort(count);
-                    PacketHelper.addExpirationTime(mplew, date);
-                    mplew.writeMapleAsciiString("");
-                    mplew.writeInt(0);
-                }
-            }
-        }
-        if ((flag & 0x4000000L) != 0L) {
-            mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-            for (Map.Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
-                int n = entry.getKey();
-                NpcShopBuyLimit npcShopBuyLimit = entry.getValue();
-                MapleShop mapleShop = MapleShopFactory.getInstance().getShop(n);
-                mplew.writeInt(n);
-                mplew.writeShort(mapleShop != null ? npcShopBuyLimit.getData().size() : 0);
-                if (mapleShop == null) continue;
-                for (Map.Entry entry3 : npcShopBuyLimit.getData().entrySet()) {
-                    itemId = (Integer)entry3.getKey();
-                    BuyLimitData data = (BuyLimitData)entry3.getValue();
-                    int count = data.getCount();
-                    date = data.getDate();
-                    mplew.writeInt(n);
-                    mplew.writeShort(mapleShop.getBuyLimitItemIndex((Integer)entry3.getKey()));
-                    mplew.writeInt(itemId);
-                    mplew.writeShort(count);
-                    PacketHelper.addExpirationTime(mplew, date);
-                    mplew.writeMapleAsciiString("");
-                    mplew.writeInt(0);
-                }
-            }
-        }
-        if ((flag & 0x4000000L) != 0L) {
-            mplew.writeShort(0);
-        }
-        mplew.writeInt(0);
-        if ((flag & 0x20000000L) != 0L) {
-            int var24_63 = 0;
-            boolean bl = false;
-            while (var24_63 < 16) {
-                mplew.writeInt(chr.getStealMemorySkill((int)var24_63));
-                ++var24_63;
-            }
-        }
-        if ((flag & 0x10000000L) != 0L) {
-            int var27_206 = 0;
-            int[] nArray;
-            int[] nArray4 = nArray = new int[]{24001001, 24101001, 24111001, 24121001, 24121054};
-            int n = nArray4.length;
-            boolean bl = false;
-            while (var27_206 < n) {
-                int n2 = nArray4[var27_206];
-                mplew.writeInt(chr.getEquippedStealSkill(n2));
-                ++var27_206;
-            }
-        }
-        if ((flag & 0x80000000L) != 0L) {
-            int var24_66 = 0;
-            boolean bl = false;
-            while (var24_66 < 3) {
-                int var25_103 = 0;
-                mplew.writeShort(chr.getInnerSkillSize());
-                boolean bl5 = false;
-                while (var25_103 < chr.getInnerSkillSize()) {
-                    InnerSkillEntry innerSkillEntry = chr.getInnerSkills()[var25_103];
-                    if (innerSkillEntry != null) {
-                        mplew.write(innerSkillEntry.getPosition());
-                        mplew.writeInt(innerSkillEntry.getSkillId());
-                        mplew.write(innerSkillEntry.getSkillLevel());
-                        mplew.write(innerSkillEntry.getRank());
+                    if (item.getPosition() >= 21000) {
+                        items21000.add(item);
+                    } else if (item.getPosition() >= 20000) {
+                        items20000.add(item);
                     } else {
-                        mplew.writeZeroBytes(7);
+                        equip.add(item);
                     }
-                    ++var25_103;
                 }
-                ++var24_66;
+
+                mplew.writeShort(0);
+                encodeInventory(mplew, equipped, chr);
+                encodeInventory(mplew, equip, chr);
+                encodeInventory(mplew, equippedDragon, chr);
+                encodeInventory(mplew, equippedMechanic, chr);
+                encodeInventory(mplew, equippedBit, chr);
+                encodeInventory(mplew, equippedTotem, chr);
+                encodeInventory(mplew, equippedArcane, chr);
+                encodeInventory(mplew, equippedAuthenticSymbol, chr);
+                encodeInventory(mplew, equippedHakuFan, chr);
+                mplew.writeShort(0);
+                mplew.writeShort(0);
+                mplew.writeShort(0);
+                mplew.writeShort(0);
+                mplew.writeShort(0);
+                encodeInventory(mplew, equippedTotem, chr);
+                encodeInventory(mplew, equippedUnknown, chr);
+                encodeInventory(mplew, items, chr);
+                encodeInventory(mplew, items21000, chr);
             }
-        }
-        if ((flag & 0x40000000000000L) != 0L) {
-            mplew.writeShort(chr.getSoulCollection().size());
-            for (Map.Entry<Integer, Integer> entry : chr.getSoulCollection().entrySet()) {
-                mplew.writeInt(entry.getKey());
-                mplew.writeInt(entry.getValue());
+
+            if ((flag & 16L) != 0L) {
+                encodeInventory(mplew, Collections.emptyList(), chr);
+                encodeInventory(mplew, Collections.emptyList(), chr);
             }
-        }
-        if ((flag & 0x100000000L) != 0L) {
-            mplew.writeInt(1);
-            mplew.writeInt(chr.getHonor());
-        }
-        if ((flag & 0x800000000000L) != 0L) {
-            int var25_106 = 0;
-            int n = 0;
-            mplew.writeShort(n);
-            boolean bl = false;
-            while (var25_106 < n) {
-                mplew.writeZeroBytes(20);
-                ++var25_106;
+
+            Item item;
+            if ((flag & 8192L) != 0L) {
+                mplew.writeBool(false);
+                encodeInventory(mplew, equippedCash, chr);
+                iv = chr.getInventory(MapleInventoryType.DECORATION);
+                List pets = new ArrayList();
+                Iterator decorationIterator = iv.list().iterator();
+
+                while(decorationIterator.hasNext()) {
+                    item = (Item)decorationIterator.next();
+                    if (item.getPosition() < 129) {
+                        pets.add(item);
+                    }
+                }
+
+                encodeInventory(mplew, pets, chr);
+                encodeInventory(mplew, equippedAndroid, chr);
+                encodeInventory(mplew, equippedLolitaCash, chr);
+                encodeInventory(mplew, equippedZeroBetaCash, chr);
+                encodeInventory(mplew, equippedCashPreset, chr);
+                mplew.writeShort(0);
+                mplew.writeShort(0);
             }
-        }
-        if ((flag & 0x1000000000000L) != 0L) {
-            PacketHelper.addRedLeafInfo(mplew, chr);
-        }
-        if ((flag & 0x2000000000000L) != 0L) {
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x200000000L) != 0L) {
-            mplew.write(1);
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x400000000L) != 0L) {
-            mplew.write(0);
-        }
-        if ((flag & 0x800000000L) != 0L) {
-            PacketHelper.writeDressUpInfo(mplew, chr);
-        }
-        if ((flag & 0x20000000000000L) != 0L) {
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeLong(PacketHelper.getTime(-2L));
-        }
-        if ((flag & 0x20000000000L) != 0L) {
-            mplew.write(0);
-        }
-        if ((flag & 0x4000000000000000L) != 0L) {
-            mplew.writeInt(-1);
-            mplew.writeInt(-1157267456);
-            mplew.writeLong(0L);
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x40000000000L) != 0L) {
-            mplew.writeInt(chr.getLove());
-            mplew.writeLong(PacketHelper.getTime(-2L));
-            mplew.writeInt(0);
-        }
-        if ((flag & 0x80000000000000L) != 0L) {
-            mplew.writeInt(chr.getId());
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeLong(PacketHelper.getTime(-2L));
-            mplew.writeInt(10);
-        }
-        if ((flag & 0x200000000000000L) != 0L) {
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeLong(0L);
-            mplew.write(0);
-            mplew.write(0);
-        }
-        LinkedHashMap<Integer, String> linkedHashMap = new LinkedHashMap<Integer, String>();
-        for (Map.Entry<Integer, String> entry : chr.getWorldShareInfo().entrySet()) {
-            if (!GameConstants.isWorldShareQuest(entry.getKey())) continue;
-            linkedHashMap.put(entry.getKey(), entry.getValue());
-        }
-        mplew.writeShort(linkedHashMap.size());
-        for (Map.Entry entry : linkedHashMap.entrySet()) {
-            mplew.writeInt((Integer)entry.getKey());
-            mplew.writeMapleAsciiString(entry.getValue() == null ? "" : (String)entry.getValue());
-        }
-        if ((flag & 0x100000000000000L) != 0L) {
-            mplew.writeShort(chr.getMobCollection().size());
-            for (Map.Entry<Integer, String> entry : chr.getMobCollection().entrySet()) {
-                mplew.writeInt(entry.getKey());
-                mplew.writeMapleAsciiString(entry.getValue());
+
+            if ((flag & 8L) != 0L) {
+                iv = chr.getInventory(MapleInventoryType.USE);
+                List pets = new ArrayList();
+                Iterator useIterator = iv.list().iterator();
+
+                while(useIterator.hasNext()) {
+                    item = (Item)useIterator.next();
+                    if (item.getPosition() < 129) {
+                        pets.add(item);
+                    }
+                }
+
+                encodeInventory(mplew, pets, chr);
             }
-        }
-        mplew.writeInt(0);
-        if ((flag & 0x400000000000000L) != 0L) {
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x400000000000000L) != 0L) {
-            mplew.writeShort(0);
-        }
-        if ((flag & 0x800000000000000L) != 0L) {
-            VCorePacket.writeVCoreSkillData(mplew, chr);
-        }
-        chr.loadHexSkills();
-        PacketHelper.encodeHexaSkills(mplew, chr);
-        chr.loadHexStats();
-        PacketHelper.encodeSixStats(mplew, chr);
-        if ((flag & 0x1000000000000000L) != 0L) {
-            int var26_165 = 0;
-            int n = 0;
-            mplew.writeInt(n);
-            boolean bl = false;
-            while (var26_165 < n) {
-                int var27_208 = 0;
+
+            if ((flag & 16L) != 0L) {
+                iv = chr.getInventory(MapleInventoryType.SETUP);
+                List pets = new ArrayList();
+                Iterator setUpIterator = iv.list().iterator();
+
+                while(setUpIterator.hasNext()) {
+                    item = (Item)setUpIterator.next();
+                    if (item.getPosition() < 129) {
+                        pets.add(item);
+                    }
+                }
+
+                encodeInventory(mplew, pets, chr);
+            }
+
+            if ((flag & 128L) != 0L) {
+                iv = chr.getInventory(MapleInventoryType.ETC);
+                List etcList = new ArrayList();
+                Iterator etcIterator = iv.list().iterator();
+
+                while(etcIterator.hasNext()) {
+                    item = (Item)etcIterator.next();
+                    if (item.getPosition() < 129) {
+                        etcList.add(item);
+                    }
+                }
+
+                encodeInventory(mplew, etcList, chr);
+            }
+
+
+            List<MaplePet>pets = new ArrayList();
+            Iterator var47;
+            if ((flag & 64L) != 0L) {
+                iv = chr.getInventory(MapleInventoryType.CASH);
+                List<Item>items = new ArrayList();
+                var47 = iv.list().iterator();
+
+                while(var47.hasNext()) {
+                    Item cashItem = (Item)var47.next();
+                    items.add(cashItem);
+                    if (cashItem.getPet() != null) {
+                        pets.add(cashItem.getPet());
+                    }
+                }
+
+                encodeInventory(mplew, items, chr);
+            }
+
+            // 加载扩展背包
+            MapleInventoryType eiv;
+            if ((flag & 32L) != 0L) {
+                eiv = MapleInventoryType.USE;
+                List<Item> started = chr.getExtendedSlots(eiv.getType());
+                mplew.writeInt(started.size());
+                Iterator itemIterator = started.iterator();
+
+                while(itemIterator.hasNext()) {
+                    Item useItem = (Item)itemIterator.next();
+                    mplew.writeInt(useItem.getExtendSlot());
+                    mplew.writeInt(useItem.getItemId());
+                    chr.getInventory(eiv).list().stream().filter((itemx) -> {
+                        return itemx.getPosition() > useItem.getExtendSlot() * 100 + 10100 && itemx.getPosition() < useItem.getExtendSlot() * 100 + 10200;
+                    }).forEach((itemx) -> {
+                        addItemPosition(mplew, itemx, false, true);
+                        GW_ItemSlotBase_Encode(mplew, itemx);
+                    });
+                    mplew.writeInt(-1);
+                }
+            }
+
+            if ((flag & 48L) != 0L) {
+                eiv = MapleInventoryType.SETUP;
+                List<Item> started = chr.getExtendedSlots(eiv.getType());
+                mplew.writeInt(started.size());
+                Iterator setupIterator = started.iterator();
+
+                while(setupIterator.hasNext()) {
+                    Item setupItem = (Item)setupIterator.next();
+                    mplew.writeInt(setupItem.getExtendSlot());
+                    mplew.writeInt(setupItem.getItemId());
+                    chr.getInventory(eiv).list().stream().filter((itemx) -> {
+                        return itemx.getPosition() > setupItem.getExtendSlot() * 100 + 10100 && itemx.getPosition() < setupItem.getExtendSlot() * 100 + 10200;
+                    }).forEach((itemx) -> {
+                        addItemPosition(mplew, itemx, false, true);
+                        GW_ItemSlotBase_Encode(mplew, itemx);
+                    });
+                    mplew.writeInt(-1);
+                }
+            }
+
+            if ((flag & 64L) != 0L) {
+                eiv = MapleInventoryType.ETC;
+                List<Item> started = chr.getExtendedSlots(eiv.getType());
+                mplew.writeInt(started.size());
+                Iterator etcIterator = started.iterator();
+
+                while(etcIterator.hasNext()) {
+                    Item etcItem = (Item)etcIterator.next();
+                    mplew.writeInt(etcItem.getExtendSlot());
+                    mplew.writeInt(etcItem.getItemId());
+                    chr.getInventory(eiv).list().stream().filter((itemx) -> {
+                        return itemx.getPosition() > etcItem.getExtendSlot() * 100 + 10100 && itemx.getPosition() < etcItem.getExtendSlot() * 100 + 10200;
+                    }).forEach((itemx) -> {
+                        addItemPosition(mplew, itemx, false, true);
+                        GW_ItemSlotBase_Encode(mplew, itemx);
+                    });
+                    mplew.writeInt(-1);
+                }
+            }
+
+            if ((flag & 16777216L) != 0L) {
                 mplew.writeInt(0);
+            }
+
+            if ((flag & 1073741824L) != 0L) {
                 mplew.writeInt(0);
-                mplew.writeInt(0);
-                boolean bl6 = false;
-                while (var27_208 < 3) {
+            }
+
+            if ((flag & 8388608L) != 0L) {
+                mplew.write(0);
+            }
+
+            Map.Entry entry;
+            if ((flag & 256L) != 0L) {
+                Map<Integer, SkillEntry> skills = chr.getSkills(true);
+                mplew.write(1);
+                mplew.writeShort(skills.size());
+                Iterator<Map.Entry<Integer, SkillEntry>> skillIterator = skills.entrySet().iterator();
+
+                label955:
+                while(true) {
+                    Skill skill;
+                    do {
+                        if (!skillIterator.hasNext()) {
+                            Map<Integer, SkillEntry> teachList = chr.getLinkSkills();
+                            mplew.writeShort(teachList.size());
+                            Iterator<Map.Entry<Integer, SkillEntry>> teachIterator = teachList.entrySet().iterator();
+
+                            while(teachIterator.hasNext()) {
+                                Map.Entry<Integer, SkillEntry> skillEntry = (Map.Entry)teachIterator.next();
+                                mplew.writeInt((Integer)skillEntry.getKey());
+                                mplew.writeShort(((SkillEntry)skillEntry.getValue()).skillevel - 1);
+                            }
+
+                            Map<Integer, Pair<Integer, SkillEntry>> sonOfLinkedSkills = chr.getSonOfLinkedSkills();
+                            mplew.writeInt(sonOfLinkedSkills.size());
+                            Iterator<Map.Entry<Integer, Pair<Integer, SkillEntry>>> linkSkilliterator = sonOfLinkedSkills.entrySet().iterator();
+
+                            while(linkSkilliterator.hasNext()) {
+                                Map.Entry<Integer, Pair<Integer, SkillEntry>> linkEntry = (Map.Entry)linkSkilliterator.next();
+                                writeSonOfLinkedSkill(mplew, (Integer)linkEntry.getKey(), (Pair)linkEntry.getValue());
+                            }
+
+                            mplew.write((int)chr.getInfoQuestValueWithKey(2498, "hyperstats"));
+
+                            for(int buffId = 0; buffId <= 2; ++buffId) {
+                                mplew.writeInt(chr.loadHyperStats(buffId).size());
+                                for (MapleHyperStats mhsz : chr.loadHyperStats(buffId)) {
+                                    mplew.writeInt(mhsz.getPosition());
+                                    mplew.writeInt(mhsz.getSkillid());
+                                    mplew.writeInt(mhsz.getSkillLevel());
+                                }
+                            }
+                            break label955;
+                        }
+
+                        entry = skillIterator.next();
+                        skill = SkillFactory.getSkill((Integer)entry.getKey());
+                        mplew.writeInt(skill.getId());
+                        if (skill.isLinkSkills()) {
+                            mplew.writeInt(((SkillEntry)entry.getValue()).teachId);
+                        } else if (skill.isTeachSkills()) {
+                            mplew.writeInt(((SkillEntry)entry.getValue()).teachId > 0 ? ((SkillEntry)entry.getValue()).teachId : chr.getId());
+                        } else {
+                            mplew.writeInt(((SkillEntry)entry.getValue()).skillevel);
+                        }
+
+                        addExpirationTime(mplew, ((SkillEntry)entry.getValue()).expiration);
+                        if (skill.isFourthJob()) {
+                            mplew.writeInt(((SkillEntry)entry.getValue()).masterlevel);
+                        }
+                    } while(skill.getId() != 40020002 && skill.getId() != 80000004);
+
+                    mplew.writeInt(((SkillEntry)entry.getValue()).masterlevel);
+                }
+            }
+
+            if ((flag & 32768L) != 0L) {
+                List<MapleCoolDownValueHolder> cooldowns = chr.getCooldowns();
+                mplew.writeShort(cooldowns.size());
+                for (MapleCoolDownValueHolder cooling : cooldowns) {
+                    mplew.writeInt(cooling.skillId);
+                    int timeLeft = (int)((long)cooling.length + cooling.startTime - System.currentTimeMillis());
+                    mplew.writeInt(timeLeft / 1000);
+                }
+            }
+
+            int j;
+            if ((flag & 1L) != 0L) {
+                for(j = 0; j < 6; ++j) {
                     mplew.writeInt(0);
-                    ++var27_208;
                 }
-                mplew.writeLong(0L);
-                ++var26_165;
+
+                for(j = 0; j < 6; ++j) {
+                    mplew.write(0);
+                }
             }
-        }
-        if ((flag & 0x1000000000000000L) != 0L) {
-            int var26_167 = 0;
-            int n = 0;
-            mplew.writeInt(n);
-            boolean bl = false;
-            while (var26_167 < n) {
-                mplew.writeInt(0);
-                ++var26_167;
+
+            int kills;
+            MapleQuestStatus q;
+            Iterator var70;
+            if ((flag & 512L) != 0L) {
+                List<MapleQuestStatus> started = chr.getStartedQuests();
+                boolean bUnk = true;
+                mplew.write(bUnk);
+                mplew.writeShort(started.size());
+                Iterator<MapleQuestStatus> questIterator = started.iterator();
+
+                while(true) {
+                    while(questIterator.hasNext()) {
+                        q = (MapleQuestStatus)questIterator.next();
+                        mplew.writeInt(q.getQuest().getId());
+                        if (q.hasMobKills()) {
+                            StringBuilder sb = new StringBuilder();
+                            var70 = q.getMobKills().values().iterator();
+
+                            while(var70.hasNext()) {
+                                kills = (Integer)var70.next();
+                                sb.append(StringUtil.getLeftPaddedStr(String.valueOf(kills), '0', 3));
+                            }
+
+                            mplew.writeMapleAsciiString(sb.toString());
+                        } else {
+                            mplew.writeMapleAsciiString(q.getCustomData() == null ? "" : q.getCustomData());
+                        }
+                    }
+
+                    if (!bUnk) {
+                        mplew.writeShort(0);
+                    }
+
+                    mplew.writeShort(0);
+                    break;
+                }
             }
-        }
-        if ((flag & 0x1000000000000000L) != 0L) {
-            int var27_211 = 0;
-            int var26_169 = 0;
-            mplew.writeInt(chr.getClient().getAccID());
-            mplew.writeInt(chr.getId());
+
+//            int itemId;
+//            int nQ;
+//            List completed;
+//            List mRing;
+            if ((flag & 16384L) != 0L) {
+                boolean bUnk = true;
+                mplew.write(bUnk);
+                List<MapleQuestStatus> completed = chr.getCompletedQuests();
+                if (ServerConfig.HideBulbQuest) {
+                    List<MapleQuest> questList = new LinkedList();
+                    for (MapleQuestStatus mapleQuestStatus : completed) {
+                        questList.add(mapleQuestStatus.getQuest());
+                    }
+
+                    List<Integer>ignoreQuest = Arrays.asList(5741, 5742, 5743, 5744, 5745);
+                    List<MapleQuest> mapleQuests = MapleQuest.GetBulbQuest();
+                    for (MapleQuest quest : mapleQuests) {
+                        if (!questList.contains(quest) && !ignoreQuest.contains(quest.getId())) {
+                            completed.add(new MapleQuestStatus(quest, 2));
+                            questList.add(quest);
+                        }
+                    }
+
+                    int[] extraQuests = new int[]{32510};
+                    for (int nQ : extraQuests) {
+                        MapleQuest quest = MapleQuest.getInstance(nQ);
+                        if (!questList.contains(quest)) {
+                            completed.add(new MapleQuestStatus(quest, 2));
+                            questList.add(quest);
+                        }
+                    }
+                }
+
+                mplew.writeShort(completed.size());
+                for (MapleQuestStatus mapleQuestStatus : completed) {
+                    mplew.writeInt(mapleQuestStatus.getQuest().getId());
+                    mplew.writeLong(getTime(mapleQuestStatus.getCompletionTime()));
+                }
+
+                if (!bUnk) {
+                    mplew.writeShort(0);
+                }
+            }
+
+            if ((flag & 1024L) != 0L) {
+                mplew.writeShort(0);
+            }
+            // ring INFO
+
+            if ((flag & 2048L) != 0L) {
+                Triple<List<MapleRing>, List<MapleRing>, List<MapleRing>> aRing = chr.getRings(true);
+                List<MapleRing> cRing = aRing.getLeft();
+                mplew.writeShort(cRing.size());
+
+                for (MapleRing ring : cRing) {
+                    mplew.writeInt(ring.getPartnerChrId());
+                    mplew.writeAsciiString(ring.getPartnerName(), 15);
+                    mplew.writeLong((long)ring.getRingId());
+                    mplew.writeLong((long)ring.getPartnerRingId());
+                }
+
+                List<MapleRing> fRing = (List)aRing.getMid();
+                mplew.writeShort(fRing.size());
+                for (MapleRing ring : fRing) {
+                    mplew.writeInt(ring.getPartnerChrId());
+                    mplew.writeAsciiString(ring.getPartnerName(), 15);
+                    mplew.writeLong((long)ring.getRingId());
+                    mplew.writeLong((long)ring.getPartnerRingId());
+                    mplew.writeInt(ring.getItemId());
+                }
+
+                List<MapleRing> mRing = (List)aRing.getRight();
+                mplew.writeShort(mRing.size());
+                for (MapleRing ring : mRing) {
+                    mplew.writeInt(chr.getMarriageId());
+                    mplew.writeInt(chr.getId());
+                    mplew.writeInt(ring.getPartnerChrId());
+                    mplew.writeShort(3);
+                    mplew.writeInt(ring.getItemId());
+                    mplew.writeInt(ring.getItemId());
+                    mplew.writeAsciiString(chr.getName(), 15);
+                    mplew.writeAsciiString(ring.getPartnerName(), 15);
+                }
+            }
+
+            // rocksInfo
+
+            if ((flag & 0x1000L) != 0x0L) {
+                int[] mapz = chr.getRegRocks();
+                for (int i = 0; i < 5; i++) { // VIP teleport map
+                    mplew.writeInt(mapz[i]);
+                }
+                int[] map = chr.getRocks();
+                for (int i = 0; i < 10; i++) { // VIP teleport map
+                    mplew.writeInt(map[i]);
+                }
+                int[] maps = chr.getHyperRocks();
+                for (int i = 0; i < 13; i++) { // VIP teleport map
+                    mplew.writeInt(maps[i]);
+                }
+            }
+
+            // 268
+
+            if ((flag & 262144L) != 0L) {
+                LinkedHashMap wsInfos = new LinkedHashMap();
+                Iterator<Map.Entry<Integer, String>> infoQuestIterator = chr.getInfoQuest_Map().entrySet().iterator();
+
+                while(infoQuestIterator.hasNext()) {
+                    entry = (Map.Entry)infoQuestIterator.next();
+                    wsInfos.put((Integer)entry.getKey(), (String)entry.getValue());
+                }
+
+                Iterator<Map.Entry<Integer, String>> worldShareIterator = chr.getWorldShareInfo().entrySet().iterator();
+
+                while(worldShareIterator.hasNext()) {
+                    entry = (Map.Entry)worldShareIterator.next();
+                    if (!GameConstants.isWorldShareQuest((Integer)entry.getKey())) {
+                        wsInfos.put((Integer)entry.getKey(), (String)entry.getValue());
+                    }
+                }
+
+                mplew.writeShort(wsInfos.size());
+                Iterator wsIterator = wsInfos.entrySet().iterator();
+
+                while(wsIterator.hasNext()) {
+                    entry = (Map.Entry)wsIterator.next();
+                    mplew.writeInt((Integer)entry.getKey());
+                    mplew.writeMapleAsciiString(entry.getValue() == null ? "" : (String)entry.getValue());
+                }
+            }
+
+            byte nCount;
+            if ((flag & 524288L) != 0L) {
+                nCount = 0;
+                mplew.writeShort(nCount);
+
+                for(int num = 0; num < nCount; ++num) {
+                    mplew.writeInt(0);
+                    mplew.writeShort(0);
+                }
+            }
+
+            mplew.writeBool(true);
+            if ((flag & 549755813888L) != 0L) {
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(int num = 0; num < nCount; ++num) {
+                    mplew.writeInt(26);
+                    mplew.writeMapleAsciiString("Present=7");
+                }
+            }
+
+            if ((flag & 17592186044416L) != 0L) {
+                nCount = 1;
+                mplew.writeInt(nCount);
+
+                for(int  num = 0; num < nCount; ++num) {
+                    mplew.writeInt(4475);
+                    mplew.writeInt(-1);
+                }
+            }
+
+            if ((flag & 2097152L) != 0L) {
+                addJaguarInfo(mplew, chr);
+            }
+
+            if ((flag & 2048L) != 0L && JobConstants.is神之子(chr.getJob())) {
+                chr.getStat().zeroData(mplew, chr, 65535, chr.isBeta());
+            }
+
+            long date;
+            MapleShop shop;
+            Map.Entry o2;
+            NpcShopBuyLimit buyLimit;
+            BuyLimitData data;
+            int i;
+            if ((flag & 67108864L) != 0L) {
+                mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
+                var47 = chr.getBuyLimit().entrySet().iterator();
+
+                label769:
+                while(true) {
+                    do {
+                        if (!var47.hasNext()) {
+                            break label769;
+                        }
+
+                        entry = (Map.Entry)var47.next();
+                        i = (Integer)entry.getKey();
+                        buyLimit = (NpcShopBuyLimit)entry.getValue();
+                        shop = MapleShopFactory.getInstance().getShop(i);
+                        mplew.writeInt(i);
+                        mplew.writeShort(shop != null ? buyLimit.getData().size() : 0);
+                    } while(shop == null);
+
+                    var70 = buyLimit.getData().entrySet().iterator();
+
+                    while(var70.hasNext()) {
+                        o2 = (Map.Entry)var70.next();
+                        int itemId = (Integer)o2.getKey();
+                        data = (BuyLimitData)o2.getValue();
+                        i = data.getCount();
+                        date = data.getDate();
+                        mplew.writeInt(i);
+                        mplew.writeShort(shop.getBuyLimitItemIndex((Integer)o2.getKey()));
+                        mplew.writeInt(itemId);
+                        mplew.writeShort(i);
+                        addExpirationTime(mplew, date);
+                        mplew.writeMapleAsciiString("");
+                        mplew.writeInt(0);
+                    }
+                }
+            }
+
+            if ((flag & 67108864L) != 0L) {
+                mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
+                var47 = chr.getBuyLimit().entrySet().iterator();
+
+                label752:
+                while(true) {
+                    do {
+                        if (!var47.hasNext()) {
+                            break label752;
+                        }
+
+                        entry = (Map.Entry)var47.next();
+                        i = (Integer)entry.getKey();
+                        buyLimit = (NpcShopBuyLimit)entry.getValue();
+                        shop = MapleShopFactory.getInstance().getShop(i);
+                        mplew.writeInt(i);
+                        mplew.writeShort(shop != null ? buyLimit.getData().size() : 0);
+                    } while(shop == null);
+
+                    var70 = buyLimit.getData().entrySet().iterator();
+
+                    while(var70.hasNext()) {
+                        o2 = (Map.Entry)var70.next();
+                        int itemId = (Integer)o2.getKey();
+                        data = (BuyLimitData)o2.getValue();
+                        i = data.getCount();
+                        date = data.getDate();
+                        mplew.writeInt(i);
+                        mplew.writeShort(shop.getBuyLimitItemIndex((Integer)o2.getKey()));
+                        mplew.writeInt(itemId);
+                        mplew.writeShort(i);
+                        addExpirationTime(mplew, date);
+                        mplew.writeMapleAsciiString("");
+                        mplew.writeInt(0);
+                    }
+                }
+            }
+
+            if ((flag & 67108864L) != 0L) {
+                mplew.writeShort(0);
+            }
+
             mplew.writeInt(0);
-            mplew.writeInt(-1);
-            mplew.writeInt(Integer.MAX_VALUE);
-            mplew.writeLong(PacketHelper.getTime(-2L));
-            int n = 0;
-            mplew.writeInt(n);
-            boolean bl = false;
-            while (var26_169 < n) {
+            if ((flag & 536870912L) != 0L) {
+                for(j = 0; j < 16; ++j) {
+                    mplew.writeInt(chr.getStealMemorySkill(j));
+                }
+            }
+
+            if ((flag & 268435456L) != 0L) {
+                int[] p_skills = new int[]{24001001, 24101001, 24111001, 24121001, 24121054};
+                for (int pSkill : p_skills) {
+                    mplew.writeInt(chr.getEquippedStealSkill(pSkill));
+                }
+            }
+
+            if ((flag & 2147483648L) != 0L) {
+                for(j = 0; j < 3; ++j) {
+                    mplew.writeShort(chr.getInnerSkillSize());
+
+                    for(int num = 0; num < chr.getInnerSkillSize(); ++num) {
+                        InnerSkillEntry innerSkill = chr.getInnerSkills()[num];
+                        if (innerSkill != null) {
+                            mplew.write(innerSkill.getPosition());
+                            mplew.writeInt(innerSkill.getSkillId());
+                            mplew.write(innerSkill.getSkillLevel());
+                            mplew.write(innerSkill.getRank());
+                        } else {
+                            mplew.writeZeroBytes(7);
+                        }
+                    }
+                }
+            }
+
+            if ((flag & 18014398509481984L) != 0L) {
+                mplew.writeShort(chr.getSoulCollection().size());
+                var47 = chr.getSoulCollection().entrySet().iterator();
+
+                while(var47.hasNext()) {
+                    entry = (Map.Entry)var47.next();
+                    mplew.writeInt((Integer)entry.getKey());
+                    mplew.writeInt((Integer)entry.getValue());
+                }
+            }
+
+            if ((flag & 4294967296L) != 0L) {
+                mplew.writeInt(1);
+                mplew.writeInt(chr.getHonor());
+            }
+
+            if ((flag & 140737488355328L) != 0L) {
+                nCount = 0;
+                mplew.writeShort(nCount);
+
+                for(int num = 0; num < nCount; ++num) {
+                    mplew.writeZeroBytes(20);
+                }
+            }
+
+            if ((flag & 281474976710656L) != 0L) {
+                addRedLeafInfo(mplew, chr);
+            }
+
+            if ((flag & 562949953421312L) != 0L) {
+                mplew.writeShort(0);
+            }
+
+            if ((flag & 8589934592L) != 0L) {
+                mplew.write(1);
+                mplew.writeShort(0);
+            }
+
+            if ((flag & 17179869184L) != 0L) {
+                mplew.write(0);
+            }
+
+            if ((flag & 34359738368L) != 0L) {
+                writeDressUpInfo(mplew, chr);
+            }
+
+            if ((flag & 9007199254740992L) != 0L) {
                 mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeLong(getTime(-2L));
+            }
+
+            if ((flag & 2199023255552L) != 0L) {
+                mplew.write(0);
+            }
+
+            if ((flag & 4611686018427387904L) != 0L) {
+                mplew.writeInt(-1);
+                mplew.writeInt(-1157267456);
+                mplew.writeLong(0L);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeShort(0);
+            }
+
+            if ((flag & 4398046511104L) != 0L) {
+                mplew.writeInt(chr.getLove());
+                mplew.writeLong(getTime(-2L));
+                mplew.writeInt(0);
+            }
+
+            if ((flag & 36028797018963968L) != 0L) {
+                mplew.writeInt(chr.getId());
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeLong(getTime(-2L));
+                mplew.writeInt(10);
+            }
+
+            if ((flag & 144115188075855872L) != 0L) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeLong(0L);
                 mplew.write(0);
                 mplew.write(0);
-                mplew.writeLong(DateUtil.getFileTimestamp(System.currentTimeMillis()));
-                int n3 = 41;
-                mplew.writeInt(n3);
-                if (n3 == 42) {
-                    mplew.writeMapleAsciiString("");
-                } else {
+            }
+
+            // 共享任务数据
+            Map<Integer, String>wsInfos = new LinkedHashMap();
+            Iterator<Map.Entry<Integer, String>> worldShareIterator = chr.getWorldShareInfo().entrySet().iterator();
+
+            while(worldShareIterator.hasNext()) {
+                entry = (Map.Entry)worldShareIterator.next();
+                if (GameConstants.isWorldShareQuest((Integer)entry.getKey())) {
+                    wsInfos.put((Integer)entry.getKey(), (String)entry.getValue());
+                }
+            }
+
+            mplew.writeShort(wsInfos.size());
+            Set<Map.Entry<Integer, String>> wsinfoSet = wsInfos.entrySet();
+            for (Map.Entry<Integer, String> wsEntry : wsinfoSet) {
+                mplew.writeInt((Integer)wsEntry.getKey());
+                mplew.writeMapleAsciiString(wsEntry.getValue() == null ? "" : (String)wsEntry.getValue());
+            }
+
+            if ((flag & 72057594037927936L) != 0L) {
+                mplew.writeShort(chr.getMobCollection().size());
+                Set<Map.Entry<Integer, String>> mobCollectionSet = chr.getMobCollection().entrySet();
+                for (Map.Entry<Integer, String> mobColEntry : mobCollectionSet) {
+
+                    mplew.writeInt((Integer)mobColEntry.getKey());
+                    mplew.writeMapleAsciiString((String)mobColEntry.getValue());
+                }
+            }
+
+            mplew.writeInt(0);
+            if ((flag & 288230376151711744L) != 0L) {
+                mplew.writeShort(0);
+            }
+
+            if ((flag & 288230376151711744L) != 0L) {
+                mplew.writeShort(0);
+            }
+
+            if ((flag & 576460752303423488L) != 0L) {
+                VCorePacket.writeVCoreSkillData(mplew, chr);
+            }
+
+            chr.loadHexSkills();
+            encodeHexaSkills(mplew, chr);
+            chr.loadHexStats();
+            encodeSixStats(mplew, chr);
+
+            if ((flag & 1152921504606846976L) != 0L) {
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+
+                    for(int buffId = 0; buffId < 3; ++buffId) {
+                        mplew.writeInt(0);
+                    }
+
                     mplew.writeLong(0L);
                 }
-                ++var26_169;
             }
-            int n4 = 0;
-            mplew.writeInt(n4);
-            boolean bl7 = false;
-            while (var27_211 < n4) {
-                mplew.writeInt(0);
-                mplew.write(0);
-                mplew.writeLong(0L);
-                ++var27_211;
-            }
-        }
-        if ((flag & 0x20L) != 0L) {
-            int var26_172 = 0;
-            int n = 0;
-            mplew.writeInt(n);
-            boolean bl = false;
-            while (var26_172 < n) {
-                mplew.writeLong(0L);
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeLong(0L);
-                mplew.writeLong(0L);
-                mplew.writeLong(0L);
-                ++var26_172;
-            }
-        }
-        int n = 3;
-        while (var25_116 > 0) {
-            if ((flag & (var25_116 <= 2 ? Long.MIN_VALUE : 0x10000000L)) != 0L) {
-                PacketHelper.encodeCombingRoomInventory(mplew, chr.getSalon().getOrDefault((int)var25_116, new LinkedList()));
-            }
-            --var25_116;
-        }
-        if ((flag & 0x8000000L) != 0L) {
-            int var26_180 = 0;
-            int var26_178 = 0;
-            int var26_176 = 0;
-            int var26_174 = 0;
-            int n5 = 0;
-            mplew.writeInt(n5);
-            boolean bl = false;
-            while (var26_174 < n5) {
-                mplew.writeInt(0);
-                mplew.writeZeroBytes(14);
-                ++var26_174;
-            }
-            int n6 = 0;
-            mplew.writeInt(n6);
-            boolean bl8 = false;
-            while (var26_176 < n6) {
-                mplew.writeShort(0);
-                mplew.writeInt(0);
-                ++var26_176;
-            }
-            mplew.writeShort(8);
-            int n7 = 0;
-            mplew.writeInt(n7);
-            boolean bl9 = false;
-            while (var26_178 < n7) {
-                mplew.writeShort(0);
-                mplew.writeZeroBytes(25);
-                ++var26_178;
-            }
-            int n8 = 0;
-            mplew.writeInt(n8);
-            boolean bl10 = false;
-            while (var26_180 < n8) {
-                mplew.writeMapleAsciiString("");
-                mplew.writeZeroBytes(25);
-                ++var26_180;
-            }
-        }
-        if ((flag & 0x2000000000000000L) != 0L) {
-            mplew.writeInt(pets.size());
-            for (MaplePet maplePet : pets) {
-                int var28_236 = 0;
-                mplew.writeLong(maplePet.getUniqueId());
-                int n9 = 0;
-                mplew.writeInt(n9);
-                boolean bl = false;
-                while (var28_236 < n9) {
+
+            if ((flag & 1152921504606846976L) != 0L) {
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
                     mplew.writeInt(0);
-                    ++var28_236;
                 }
             }
-        }
-        if ((flag & 0x4000000000000L) != 0L) {
-            mplew.write(1);
-            String string = chr.getOneInfo(17008, "T");
-            String string2 = chr.getOneInfo(17008, "L");
-            String string3 = chr.getOneInfo(17008, "E");
-            mplew.write(string == null ? 0 : Integer.valueOf(string));
-            mplew.writeInt(string2 == null ? 1 : Integer.valueOf(string2));
-            mplew.writeInt(string3 == null ? 0 : Integer.valueOf(string3));
-            mplew.writeInt(100 - chr.getPQLog("航海能量"));
-            mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis()));
-            String string4 = chr.getInfoQuest(17018);
-            String[] stringArray = string4.split(";");
-            mplew.writeShort(!string4.isEmpty() ? stringArray.length : 0);
-            for (String questinfo1 : stringArray) {
-                if (questinfo1.isEmpty()) continue;
-                String[] split = questinfo1.split("=");
-                mplew.write(Integer.valueOf(split[0]));
-                mplew.writeInt(Integer.valueOf(split[1]));
+
+            byte a2;
+            if ((flag & 1152921504606846976L) != 0L) {
+                mplew.writeInt(chr.getClient().getAccID());
+                mplew.writeInt(chr.getId());
                 mplew.writeInt(0);
-            }
-            mplew.writeShort(ItemConstants.航海材料.length);
-            for (int i17 : ItemConstants.航海材料) {
-                mplew.writeInt(i17);
-                mplew.writeInt(chr.getPQLog(String.valueOf(i17)));
-                mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis()));
-            }
-        }
-        if ((flag & 0x8000000000000L) != 0L) {
-            LinkedList<Integer> linkedList = new LinkedList<Integer>();
-            if (chr.getKeyValue("InnerGlareBuffs") != null) {
-                int var28_239 = 0;
-                String[] stringArray = chr.getKeyValue("InnerGlareBuffs").split(",");
-                int n10 = stringArray.length;
-                boolean bl = false;
-                while (var28_239 < n10) {
-                    String string = stringArray[var28_239];
-                    if (!string.isEmpty()) {
-                        linkedList.add(Integer.parseInt(string));
+                mplew.writeInt(-1);
+                mplew.writeInt(Integer.MAX_VALUE);
+                mplew.writeLong(getTime(-2L));
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeInt(0);
+                    mplew.write(0);
+                    mplew.write(0);
+                    mplew.writeLong(DateUtil.getFileTimestamp(System.currentTimeMillis()));
+                    a2 = 41;
+                    mplew.writeInt(a2);
+                    if (a2 == 42) {
+                        mplew.writeMapleAsciiString("");
+                    } else {
+                        mplew.writeLong(0L);
                     }
-                    ++var28_239;
+                }
+
+                int v6 = 0;
+                mplew.writeInt(v6);
+
+                for(int buffId = 0; buffId < v6; ++buffId) {
+                    mplew.writeInt(0);
+                    mplew.write(0);
+                    mplew.writeLong(0L);
                 }
             }
-            mplew.writeReversedVarints(linkedList.size());
-            Iterator iterator = linkedList.iterator();
-            while (iterator.hasNext()) {
-                int n11 = (Integer)iterator.next();
-                mplew.writeInt(n11);
+
+            if ((flag & 32L) != 0L) {
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeLong(0L);
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
+                    mplew.writeLong(0L);
+                    mplew.writeLong(0L);
+                    mplew.writeLong(0L);
+                }
             }
+
+            for(int num = 3; num > 0; --num) {
+                if ((flag & (num <= 2 ? Long.MIN_VALUE : 268435456L)) != 0L) {
+                    encodeCombingRoomInventory(mplew, (List)chr.getSalon().getOrDefault(num, new LinkedList()));
+                }
+            }
+
+            if ((flag & 134217728L) != 0L) {
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeInt(0);
+                    mplew.writeZeroBytes(14);
+                }
+
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeShort(0);
+                    mplew.writeInt(0);
+                }
+
+                mplew.writeShort(8);
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeShort(0);
+                    mplew.writeZeroBytes(25);
+                }
+
+                nCount = 0;
+                mplew.writeInt(nCount);
+
+                for(i = 0; i < nCount; ++i) {
+                    mplew.writeMapleAsciiString("");
+                    mplew.writeZeroBytes(25);
+                }
+            }
+
+            if ((flag & 2305843009213693952L) != 0L) {
+                mplew.writeInt(pets.size());
+                for (MaplePet pet : pets) {
+                    mplew.writeLong((long)pet.getUniqueId());
+                    a2 = 0;
+                    mplew.writeInt(a2);
+
+                    for(j = 0; j < a2; ++j) {
+                        mplew.writeInt(0);
+                    }
+                }
+            }
+
+            if ((flag & 1125899906842624L) != 0L) {
+                mplew.write(1);
+                String string = chr.getOneInfo(17008, "T");
+                String string2 = chr.getOneInfo(17008, "L");
+                String string3 = chr.getOneInfo(17008, "E");
+                mplew.write(string == null ? 0 : Integer.valueOf(string));
+                mplew.writeInt(string2 == null ? 1 : Integer.valueOf(string2));
+                mplew.writeInt(string3 == null ? 0 : Integer.valueOf(string3));
+                mplew.writeInt(100 - chr.getPQLog("航海能量"));
+                mplew.writeLong(getTime(System.currentTimeMillis()));
+                String questinfo = chr.getInfoQuest(17018);
+                String[] questinfos = questinfo.split(";");
+                mplew.writeShort(!questinfo.isEmpty() ? questinfos.length : 0);
+                for (String questinfo1 : questinfos) {
+                    if (!questinfo1.isEmpty()) {
+                        String[] split = questinfo1.split("=");
+                        mplew.write(Integer.valueOf(split[0]));
+                        mplew.writeInt(Integer.valueOf(split[1]));
+                        mplew.writeInt(0);
+                    }
+                }
+
+                mplew.writeShort(ItemConstants.航海材料.length);
+                int[] hanghaiMa = ItemConstants.航海材料;
+                for (int cailiao : hanghaiMa) {
+                    mplew.writeInt(cailiao);
+                    mplew.writeInt(chr.getPQLog(String.valueOf(cailiao)));
+                    mplew.writeLong(getTime(System.currentTimeMillis()));
+                }
+            }
+
+            if ((flag & 2251799813685248L) != 0L) {
+                List<Integer> buffs = new LinkedList();
+                if (chr.getKeyValue("InnerGlareBuffs") != null) {
+                    String[] var109 = chr.getKeyValue("InnerGlareBuffs").split(",");
+                    for (String s : var109) {
+                        if (!s.isEmpty()) {
+                            buffs.add(Integer.parseInt(s));
+                        }
+                    }
+                }
+
+                mplew.writeReversedVarints(buffs.size());
+                for (Integer buff : buffs) {
+                    mplew.writeInt(buff);
+                }
+            }
+
+            mplew.write(new byte[37]);
+            return;
         }
-        mplew.write(new byte[37]);
     }
 
     public static void showCharacterInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr, long flag) {

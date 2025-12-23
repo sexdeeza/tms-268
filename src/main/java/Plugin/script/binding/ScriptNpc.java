@@ -60,6 +60,8 @@ import org.slf4j.LoggerFactory;
 import tools.SearchGenerator;
 import tools.data.MaplePacketLittleEndianWriter;
 
+import static Config.constants.enums.NpcMessageType.*;
+
 public class ScriptNpc
 extends PlayerScriptInteraction {
     @Generated
@@ -129,7 +131,7 @@ extends PlayerScriptInteraction {
             nsi.setNextPossible(hasNext);
             nsi.setPrevPossible(this.getPlayer().getScriptManager().getMemory().hasBack());
         }
-        return (int)((Long)this.sendScriptMessage(text, nmt)).longValue();
+        return (int) (long) sendScriptMessage(text, nmt);
     }
 
     private int sendGeneralSay(String message, NpcMessageType nmt) throws NullPointerException {
@@ -180,13 +182,13 @@ extends PlayerScriptInteraction {
         nsi.setDefaultNumber(def);
         nsi.setMin(min);
         nsi.setMax(max);
-        return (Long)this.sendScriptMessage(message, NpcMessageType.AskNumber);
+        return (long)this.sendScriptMessage(message, NpcMessageType.AskNumber);
     }
 
     public int askPet(String message, List<Item> list) {
         NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItems(list);
-        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskPet)).longValue();
+        return (int)(long) sendScriptMessage(message, AskPet);
     }
 
     public int askAvatar(String message, int itemId, int secondLookValue, int srcBeauty, int[] styles) {
@@ -195,7 +197,7 @@ extends PlayerScriptInteraction {
         nsi.setSecondLookValue(secondLookValue);
         nsi.setOptions(styles);
         nsi.setSrcBeauty(srcBeauty);
-        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatar)).longValue();
+        return (int) (long) sendScriptMessage(message, AskAvatar);
     }
 
     public int askAvatarZero(String message, int itemId, int srcBeauty, int srcBeauty2, int[] styles, int[] styles2) {
@@ -205,11 +207,11 @@ extends PlayerScriptInteraction {
         nsi.setOptions2(styles2);
         nsi.setSrcBeauty(srcBeauty);
         nsi.setSrcBeauty2(srcBeauty2);
-        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatarZero)).longValue();
+        return (int) (long) sendScriptMessage(message, AskAvatarZero);
     }
 
     public boolean askAngelicBuster() {
-        return (Long)this.sendScriptMessage("", NpcMessageType.AskAngelicBuster) != 0L;
+        return (long)this.sendScriptMessage("", NpcMessageType.AskAngelicBuster) != 0L;
     }
 
     public int askAvatarMixColor(int cardID, String msg, int secondLookValue, int srcBeauty) {
@@ -217,7 +219,7 @@ extends PlayerScriptInteraction {
         nsi.setItemID(cardID);
         nsi.setSecondLookValue(secondLookValue);
         nsi.setSrcBeauty(srcBeauty);
-        return (int)((Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarMixColor)).longValue();
+        return (int) (long) sendScriptMessage(msg, AskAvatarMixColor);
     }
 
     public boolean askAvatarRandomMixColor(String msg) {
@@ -232,7 +234,7 @@ extends PlayerScriptInteraction {
         if (secondLookValue != null) {
             nsi.setSecondLookValue(secondLookValue);
         }
-        return (Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarRandomMixColor) != 0L;
+        return (long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarRandomMixColor) != 0L;
     }
 
     public int sayAvatarMixColorChanged(String msg, int srcBeauty, int drtBeauty, int srcBeauty2, int drtBeauty2) {
@@ -248,7 +250,7 @@ extends PlayerScriptInteraction {
         nsi.setDrtBeauty(drtBeauty);
         nsi.setSrcBeauty2(srcBeauty2);
         nsi.setDrtBeauty2(drtBeauty2);
-        return (int)((Long)this.sendScriptMessage(msg, NpcMessageType.SayAvatarMixColorChanged)).longValue();
+        return (int) (long) sendScriptMessage(msg, SayAvatarMixColorChanged);
     }
 
     public boolean askConfirmAvatarChange(int srcBeauty, int srcBeauty2) {
@@ -265,7 +267,7 @@ extends PlayerScriptInteraction {
         }
         nsi.setSrcBeauty(srcBeauty);
         nsi.setSrcBeauty2(srcBeauty2);
-        return (Long)this.sendScriptMessage("", NpcMessageType.AskConfirmAvatarChange) != 0L;
+        return (long)this.sendScriptMessage("", NpcMessageType.AskConfirmAvatarChange) != 0L;
     }
 
     public int sendOkN(String text) {
@@ -303,7 +305,8 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
+
     }
 
     public int sendPlayerToNpc(String text) {
@@ -333,7 +336,8 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
+
     }
 
     public int sendNextN(String text) {
@@ -355,7 +359,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendPrevS(String text, byte type) {
@@ -377,7 +381,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(true);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendPrevN(String text) {
@@ -407,7 +411,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int PlayerToNpc(String text) {
@@ -433,7 +437,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendNextPrevN(String text) {
@@ -463,7 +467,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendAcceptDecline(String text) {
@@ -493,7 +497,8 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(4);
         nsi.setParam(0);
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAccept)).longValue();
+        return (int) (long) sendScriptMessage(text, AskAccept);
+
     }
 
     public int askAcceptDeclineNoESC(String text) {
@@ -507,7 +512,7 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(4);
         nsi.setParam(1);
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAccept)).longValue();
+        return (int) (long) sendScriptMessage(text, AskAccept);
     }
 
     public int askMapSelection(String sel) {
@@ -519,7 +524,8 @@ extends PlayerScriptInteraction {
         nsi.setDefaultText("");
         nsi.setCol((short)(this.npcId == 3000012 ? 5 : (this.npcId == 9010000 ? 3 : (this.npcId == 2083006 ? 1 : 0))));
         nsi.setLine((short)(this.npcId == 9010022 ? 1 : 0));
-        return (int)((Long)this.sendScriptMessage(sel, NpcMessageType.AskBoxtext)).longValue();
+        return (int) (long) sendScriptMessage(sel, AskBoxtext);
+
     }
 
     public int sendSimple(String text) {
@@ -541,7 +547,8 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(3);
         nsi.setParam(type);
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskMenu)).longValue();
+        return (int) (long) sendScriptMessage(text, AskMenu);
+
     }
 
     public int sendSimpleN(String text) {
@@ -552,7 +559,8 @@ extends PlayerScriptInteraction {
         NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setSpeakerType(1);
         nsi.setTemplateID(npcid);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.askZeroNext)).longValue();
+        return (int) (long) sendScriptMessage(text, askZeroNext);
+
     }
 
     public int sendSimpleN(String text, byte type, int idd) {
@@ -562,7 +570,8 @@ extends PlayerScriptInteraction {
         nsi.setColor(0);
         nsi.setParam(type);
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
+
     }
 
     public int askAvatar(String text, int[] styles, int card, boolean isSecond) {
@@ -576,7 +585,8 @@ extends PlayerScriptInteraction {
         nsi.setOptions(styles);
         nsi.setItemID(card);
         nsi.setSrcBeauty(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAvatar)).longValue();
+        return (int) (long) sendScriptMessage(text, AskAvatar);
+
     }
 
     public int sendZeroSpirt(String text, byte type, int idd) {
@@ -595,7 +605,8 @@ extends PlayerScriptInteraction {
         mplew.write(1);
         mplew.write(0);
         mplew.writeInt(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAvatarZero)).longValue();
+        return (int) (long) sendScriptMessage(text, AskAvatarZero);
+
     }
 
     public int sendStyle(String text, int[] styles, int card, boolean isSecond) {
@@ -608,7 +619,8 @@ extends PlayerScriptInteraction {
         nsi.setOptions(styles);
         nsi.setItemID(card);
         nsi.setSrcBeauty(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAndroid)).longValue();
+        return (int) (long) sendScriptMessage(text, AskAndroid);
+
     }
 
     public int sendAStyle(String text, int[] styles, int card) {
@@ -625,7 +637,8 @@ extends PlayerScriptInteraction {
         nsi.setDefaultNumber(def);
         nsi.setMin(min);
         nsi.setMax(max);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskNumber)).longValue();
+        return (int) (long) sendScriptMessage(text, AskNumber);
+
     }
 
     public String sendGetText(String text) {
@@ -656,7 +669,8 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
+
     }
 
     public int sendPlayerOk(String text, byte type, int npcId) {
@@ -670,7 +684,8 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
+
     }
 
     public int sendPlayerPrev(String text, byte type, int npcId) {
@@ -684,7 +699,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(true);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendPlayerNext(String text) {
@@ -698,7 +713,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendPlayerNext(String text, byte type, int npcId) {
@@ -712,7 +727,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendPlayerNextPrev(String text) {
@@ -726,7 +741,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendPlayerNextPrev(String text, byte type, int npcId) {
@@ -740,7 +755,7 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(text, Say);
     }
 
     public int sendRevivePet(String text) {
@@ -754,7 +769,8 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(3);
         nsi.setParam(ScriptParam.PlayerAsSpeakerFlip.getValue());
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAccept)).longValue();
+        return (int) (long) sendScriptMessage(text, AskAccept);
+
     }
 
     public int sendSlideMenu(int type, String sel) {
@@ -770,7 +786,8 @@ extends PlayerScriptInteraction {
         nsi.setDlgType(type);
         nsi.setDefaultSelect(Integer.valueOf(arrstring[arrstring.length - 2]));
         nsi.setText(sel);
-        return (int)((Long)this.sendScriptMessage(sel, NpcMessageType.AskSlideMenu)).longValue();
+        return (int) (long) sendScriptMessage(sel, AskSlideMenu);
+
     }
 
     public String getSlideMenuSelection(int type) {
@@ -1533,7 +1550,8 @@ extends PlayerScriptInteraction {
         nsi.setPrevPossible(bPrev);
         nsi.setNextPossible(bNext);
         nsi.setDelay(0);
-        return (int)((Long)this.sendScriptMessage(sText, NpcMessageType.Say)).longValue();
+        return (int) (long) sendScriptMessage(sText, Say);
+        
     }
 
     private int sendOk(String s, int n, ScriptParam j906, boolean bLeft) {
@@ -1591,7 +1609,8 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
         nsi.setText(s);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskYesNo)).longValue();
+        return (int) (long) sendScriptMessage(s, AskYesNo);
+
     }
 
     private int askYesNo(String s, int n, ScriptParam j906, boolean b) {
@@ -1617,7 +1636,7 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(3);
         nsi.setParam(type);
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskYesNo)).longValue();
+        return (int)(long)this.sendScriptMessage(text, NpcMessageType.AskYesNo);
     }
 
     public int sendYesNoN(String text) {
@@ -1631,7 +1650,7 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(4);
         nsi.setParam((short)(ScriptParam.OverrideSpeakerID.getValue() | ScriptParam.BoxChat.getValue()));
         nsi.setText(text);
-        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskYesNo)).longValue();
+        return (int)(long)this.sendScriptMessage(text, NpcMessageType.AskYesNo);
     }
 
     private int askYesNoS(String s, ScriptParam j906, boolean b) {
@@ -1649,7 +1668,7 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
         nsi.setText(s);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskMenu)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskMenu);
     }
 
     private int askMenu(String s, int n, ScriptParam j906, boolean b) {
@@ -1675,7 +1694,7 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
         nsi.setText(s);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAccept)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskAccept);
     }
 
     private int askAccept(String s, int diffnpc, ScriptParam j906, boolean b) {
@@ -1725,7 +1744,7 @@ extends PlayerScriptInteraction {
         nsi.setDefaultNumber(n4);
         nsi.setMin(n5);
         nsi.setMax(n6);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskNumber)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskNumber);
     }
 
     private int askNumber(String s, int n, int n2, int n3, int n4, boolean b) {
@@ -1773,7 +1792,7 @@ extends PlayerScriptInteraction {
         nsi.setDlgType(n2);
         nsi.setDefaultSelect(n3);
         nsi.setText(s);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskSlideMenu)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskSlideMenu);
     }
 
     private int askAvatar(byte b, int n, int n2, boolean b2, boolean b3, int[] array, String s) {
@@ -1787,7 +1806,7 @@ extends PlayerScriptInteraction {
         nsi.setOptions(array);
         nsi.setItemID(n2);
         nsi.setSrcBeauty(0);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAvatar)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskAvatar);
     }
 
     public void askAvatarZero(int cardID, int[] array, int[] array2, String s) {
@@ -1806,7 +1825,7 @@ extends PlayerScriptInteraction {
         nsi.setOptions2(array2);
         nsi.setSrcBeauty(0);
         nsi.setSrcBeauty2(0);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAvatarZero)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskAvatarZero);
     }
 
     public void askAndroid(int cardID, int[] array, String s) {
@@ -1823,7 +1842,7 @@ extends PlayerScriptInteraction {
         nsi.setOptions(array);
         nsi.setItemID(cardID);
         nsi.setSrcBeauty(0);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAndroid)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskAndroid);
     }
 
     private int askPet(byte b, int n, List<Item> list, String s) {
@@ -1834,7 +1853,7 @@ extends PlayerScriptInteraction {
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskPet)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskPet);
     }
 
     private int askSelectMenu(byte b, int n, int n2, String[] array) {
@@ -1847,7 +1866,7 @@ extends PlayerScriptInteraction {
         nsi.setDlgType(n2);
         nsi.setDefaultSelect(0);
         nsi.setSelectText(array);
-        return (int)((Long)this.sendScriptMessage("", NpcMessageType.AskSelectMenu)).longValue();
+        return (int)(long)this.sendScriptMessage("", NpcMessageType.AskSelectMenu);
     }
 
     private int askPetEvolution(byte b, int n, List<Item> list, String s) {
@@ -1858,7 +1877,7 @@ extends PlayerScriptInteraction {
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskActionPetEvolution)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskActionPetEvolution);
     }
 
     private int askPetAll(byte b, int n, List<Item> list, String s) {
@@ -1869,7 +1888,7 @@ extends PlayerScriptInteraction {
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskPetAll)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskPetAll);
     }
 
     private int sayImage(byte b, int n, int n2, short n3, String[] array) {
@@ -1879,7 +1898,7 @@ extends PlayerScriptInteraction {
         nsi.setSpeakerType(b);
         nsi.setParam(n2);
         nsi.setImages(array);
-        return (int)((Long)this.sendScriptMessage("", NpcMessageType.AskPetAll)).longValue();
+        return (int)(long)this.sendScriptMessage("", NpcMessageType.AskPetAll);
     }
 
     private int sendSayIllu(byte b, int n, int n2, int n3, boolean b2, boolean b3, String s, int n4, int n5, boolean b4) {
@@ -1894,7 +1913,7 @@ extends PlayerScriptInteraction {
         nsi.setDelay(n4);
         nsi.setUnk(n5);
         nsi.setBUnk(b4);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.SayIllustration)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.SayIllustration);
     }
 
     private int sendOkIllu(String s, int n, ScriptParam j906, boolean b, int n2, int n3, boolean b2) {
@@ -1979,7 +1998,7 @@ extends PlayerScriptInteraction {
         nsi.setParam(n3);
         nsi.setColor(0);
         nsi.setDefaultNumber(n4);
-        return (int)((Long)this.sendScriptMessage("", NpcMessageType.OnAskNumberUseKeyPad)).longValue();
+        return (int)(long)this.sendScriptMessage("", NpcMessageType.OnAskNumberUseKeyPad);
     }
 
     private int askUserSurvey(byte b, int n, int n2, int n3, int n4, String s) {
@@ -1990,7 +2009,7 @@ extends PlayerScriptInteraction {
         nsi.setColor(0);
         nsi.setDefaultNumber(n4);
         nsi.setText(s);
-        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskUserSurvey)).longValue();
+        return (int)(long)this.sendScriptMessage(s, NpcMessageType.AskUserSurvey);
     }
 
     public ScriptNpc id(int npcId) {
@@ -2202,79 +2221,79 @@ extends PlayerScriptInteraction {
     }
 
     public int askMenuX(String text) {
-        long result = (Long)this.sendScriptMessage(text, NpcMessageType.AskMenu);
+        long result = (long)this.sendScriptMessage(text, NpcMessageType.AskMenu);
         this.resetNpc();
         return (int)result;
     }
 
     public boolean askYesNoX(String text) {
-        boolean result = (Long)this.sendScriptMessage(text, NpcMessageType.AskYesNo) == 1L;
+        boolean result = (long)this.sendScriptMessage(text, NpcMessageType.AskYesNo) == 1L;
         this.resetNpc();
         return result;
     }
 
     public boolean askAcceptX(String text) {
-        boolean result = (Long)this.sendScriptMessage(text, NpcMessageType.AskAccept) == 1L;
+        boolean result = (long)this.sendScriptMessage(text, NpcMessageType.AskAccept) == 1L;
         this.resetNpc();
         return result;
     }
 
     public long askNumberX(String message) {
-        long result = (Long)this.sendScriptMessage(message, NpcMessageType.AskNumber);
+        long result = (long)this.sendScriptMessage(message, NpcMessageType.AskNumber);
         this.resetNpc();
         return result;
     }
 
     public boolean askAngelicBusterX() {
-        boolean result = (Long)this.sendScriptMessage("", NpcMessageType.AskAngelicBuster) != 0L;
+        boolean result = (long)this.sendScriptMessage("", NpcMessageType.AskAngelicBuster) != 0L;
         this.resetNpc();
         return result;
     }
 
     public int askAvatarX(String message) {
-        int result = (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatar)).longValue();
+        int result = (int)(long)this.sendScriptMessage(message, NpcMessageType.AskAvatar);
         this.resetNpc();
         return result;
     }
 
     public long askPetX(String message) {
-        long result = (Long)this.sendScriptMessage(message, NpcMessageType.AskPet);
+        long result = (long)this.sendScriptMessage(message, NpcMessageType.AskPet);
         this.resetNpc();
         return result;
     }
 
     public long askAndroidX(String message) {
-        long result = (Long)this.sendScriptMessage(message, NpcMessageType.AskAndroid);
+        long result = (long)this.sendScriptMessage(message, NpcMessageType.AskAndroid);
         this.resetNpc();
         return result;
     }
 
     public int askAvatarZeroX(String message) {
-        int result = (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatarZero)).longValue();
+        int result = (int)(long)this.sendScriptMessage(message, NpcMessageType.AskAvatarZero);
         this.resetNpc();
         return result;
     }
 
     public int askAvatarMixColorX(String msg) {
-        int result = (int)((Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarMixColor)).longValue();
+        int result = (int)(long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarMixColor);
         this.resetNpc();
         return result;
     }
 
     public boolean askAvatarRandomMixColorX(String msg) {
-        boolean result = (Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarRandomMixColor) != 0L;
+        boolean result = (long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarRandomMixColor) != 0L;
         this.resetNpc();
         return result;
     }
 
     public int sayAvatarMixColorChangedX(String msg) {
-        int result = (int)((Long)this.sendScriptMessage(msg, NpcMessageType.SayAvatarMixColorChanged)).longValue();
+        int result = (int)(long)this.sendScriptMessage(msg, NpcMessageType.SayAvatarMixColorChanged);
         this.resetNpc();
         return result;
     }
 
     public boolean askConfirmAvatarChangeX() {
-        boolean result = (Long)this.sendScriptMessage("", NpcMessageType.AskConfirmAvatarChange) != 0L;
+        boolean result = (long)this.sendScriptMessage("", NpcMessageType.AskConfirmAvatarChange) != 0L;
         this.resetNpc();
         return result;
     }
@@ -2409,7 +2428,7 @@ extends PlayerScriptInteraction {
         nsi.setParam(1);
         nsi.setColor(1);
         nsi.setTemplateID(npc);
-        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.askZeroNext)).longValue();
+        return (int)(long)this.sendScriptMessage(message, NpcMessageType.askZeroNext);
     }
 
     public void playScreen(String s) {

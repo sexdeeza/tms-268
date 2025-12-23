@@ -255,13 +255,17 @@ public class MaplePacketCreator {
         mplew.writeBool(load);
         int nNotifierCheck = 0;
         mplew.writeShort(nNotifierCheck);
+        int mapId;
         if (nNotifierCheck != 0) {
             mplew.writeMapleAsciiString("");
-            for (int i = 0; i < nNotifierCheck; ++i) {
+
+            for(mapId = 0; mapId < nNotifierCheck; ++mapId) {
                 mplew.writeMapleAsciiString("");
             }
         }
-        int mapId = to.getId();
+
+        mapId = to.getId();
+        boolean v88;
         if (load) {
             int WarpToMapCrc = Randomizer.nextInt();
             int WarpToMapCrc2 = Randomizer.nextInt();
@@ -270,14 +274,15 @@ public class MaplePacketCreator {
             mplew.writeInt(WarpToMapCrc2);
             mplew.writeInt(WarpToMapCrc3);
             PacketHelper.addCharacterInfo(mplew, player, -1L);
-            boolean bUnk = true;
-            mplew.writeBool(bUnk);
-            if (bUnk) {
-                bUnk = false;
-                mplew.writeBool(bUnk);
-                if (bUnk) {
+            v88 = true;
+            mplew.writeBool(v88);
+            if (v88) {
+                v88 = false;
+                mplew.writeBool(v88);
+                if (v88) {
                     mplew.writeInt(0);
                 }
+
                 mplew.writeLong(PacketHelper.getTime(-2L));
                 mplew.write(0);
                 mplew.writeLong(PacketHelper.getTime(-2L));
@@ -296,12 +301,14 @@ public class MaplePacketCreator {
                 mplew.writeInt(position.y);
             }
         }
+
         boolean bUnk = false;
         mplew.write(bUnk);
         if (bUnk) {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
+
         mplew.write(2);
         mplew.writeBool(to.getFieldType() >= 182 && to.getFieldType() <= 184);
         mplew.writeInt(100);
@@ -312,6 +319,7 @@ public class MaplePacketCreator {
             mplew.writeMapleAsciiString("");
             mplew.writeInt(0);
         }
+
         mplew.writeBool(false);
         int buffersize_familiar = 4;
         mplew.writeInt(buffersize_familiar);
@@ -319,18 +327,24 @@ public class MaplePacketCreator {
         mplew.writeBool(JobConstants.isSeparatedSpJob(player.getJob()));
         mplew.writeLong(0L);
         mplew.writeInt(-1);
-        boolean v88 = false;
+        v88 = false;
         mplew.writeBool(v88);
         if (v88) {
             mplew.writeInt(0);
         }
+
         if (mapId / 10 == 10520011 || mapId / 10 == 10520051 || mapId == 105200519) {
-            String[] aS = new String[]{};
+            String[] aS = new String[0];
             mplew.write(aS.length);
-            for (String s : aS) {
+            String[] var14 = aS;
+            int var15 = aS.length;
+
+            for(int i = 0; i < var15; ++i) {
+                String s = var14[i];
                 mplew.writeMapleAsciiString(s);
             }
         }
+
         mplew.writeInt(0);
         mplew.write(0);
         mplew.writeInt(0);
@@ -345,6 +359,7 @@ public class MaplePacketCreator {
             mplew.writeInt(999999999);
             mplew.writeMapleAsciiString("");
         }
+
         mplew.writeInt(0);
         mplew.writeMapleAsciiString("");
         mplew.writeMapleAsciiString("");
@@ -357,22 +372,27 @@ public class MaplePacketCreator {
             mplew.writeInt(60);
             mplew.writeInt(210);
         }
+
         mplew.writeInt(0);
         mplew.writeInt(0);
         mplew.write(1);
         mplew.writeInt(0);
         int unkSize = 0;
         mplew.writeInt(unkSize);
-        for (int i = 0; i < unkSize; ++i) {
+
+        for(int i = 0; i < unkSize; ++i) {
             mplew.writeMapleAsciiString("");
             mplew.writeInt(0);
         }
+
         mplew.write(0);
         int size = 0;
         mplew.writeInt(size);
-        for (int i = 0; i < size; ++i) {
+
+        for(int i = 0; i < size; ++i) {
             mplew.writeInt(0);
         }
+
         return mplew.getPacket();
     }
 

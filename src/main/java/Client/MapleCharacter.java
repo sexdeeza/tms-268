@@ -9042,7 +9042,8 @@ implements Serializable {
         } else if (type == -4) {
             this.client.announce(MaplePacketCreator.getChatText(this.getId(), message, this.getName(), this.isSuperGm(), 1, true, -1));
         } else if (type == -5) {
-            this.client.announce(MaplePacketCreator.spouseMessage(UserChatMessageType.getByType(-5), message));
+//            this.client.announce(MaplePacketCreator.spouseMessage(UserChatMessageType.getByType(-5), message));
+            this.client.announce(MaplePacketCreator.spouseMessage(UserChatMessageType.getByType(0), message));
         } else if (type == -6) {
             this.client.announce(MaplePacketCreator.spouseMessage(UserChatMessageType.getByType(9), message));
         } else if (type == -7) {

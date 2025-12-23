@@ -21,4 +21,14 @@
 2. System.setProperty("debug", "dev"); 會開啓打印日志。不需要可以關掉。
 3. MYSQL5.6 \ JDK 21
 4. 指令查看：scripts/commands/entry.js  !+對應指令使用
-> 例如刷道具 !item 2435719 999
+例如刷道具 !item 2435719 999
+
+
+
+![](asset/hexa.png)
+
+
+![](asset/hexa2.png)
+
+
+![](asset/hexa3.png)

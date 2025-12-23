@@ -378,7 +378,7 @@
 
 
     <!-- 日志级别配置 -->
-    <root level="debug">
+    <root level="INFO">
         <appender-ref ref="控制面板"/>
         <appender-ref ref="伺服端日誌"/>
     </root>

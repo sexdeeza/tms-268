@@ -64,7 +64,7 @@ public class NetRun {
     private static final LocalDateTime loadStartTime = LocalDateTime.now();
 
     public static void main(String[] args) throws Exception {
-        System.setProperty("debug", "dev");
+//        System.setProperty("debug", "dev");
         Config.load();
         log.info("SpiritMS_268");
         Timer.startAll();

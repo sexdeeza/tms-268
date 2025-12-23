@@ -552,7 +552,7 @@ public class ScriptManager {
                 if (!this.isActive(scriptType)) break;
                 switch (lastType.getResponseType()) {
                     case Response: {
-                        si.addResponse(response);
+                        si.addResponse((long) response);
                         break block0;
                     }
                     case Answer: {
