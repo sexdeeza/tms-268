@@ -9,7 +9,7 @@ import Config.constants.skills.阿戴爾;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.maps.ForceAtomObject;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.AdelePacket;
 import SwordieX.client.party.PartyMember;
 import tools.data.MaplePacketLittleEndianWriter;

@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Server.auction;
 
 import Client.inventory.Item;
@@ -19,3 +22,4 @@ public class AuctionItem {
     public int other_id;
     public String other = "";
 }
+

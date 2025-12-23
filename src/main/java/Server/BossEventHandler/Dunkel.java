@@ -1,9 +1,10 @@
 package Server.BossEventHandler;
 
+import Client.MapleCharacter;
 import Client.MapleClient;
 import Net.server.life.MapleLifeFactory;
 import Net.server.life.MapleMonster;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.Randomizer;
 
 import java.awt.*;
@@ -84,5 +85,8 @@ public class Dunkel {
             int x = Randomizer.rand(-740,740);
                 c.getPlayer().getMap().spawnMonsterOnGroundBelow(monster, new Point(x, 29));
         }
+    }
+
+    public static void start(MapleCharacter chr) {
     }
 }

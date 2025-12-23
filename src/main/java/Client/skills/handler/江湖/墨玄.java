@@ -1,6 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.江湖;
 
-import Client.*;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleJob;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Client.skills.Skill;
 import Client.skills.SkillEntry;
 import Client.skills.SkillFactory;
@@ -9,27 +16,19 @@ import Client.skills.handler.SkillClassApplier;
 import Client.status.MonsterStatus;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
-import tools.data.MaplePacketReader;
-
 import java.lang.reflect.Field;
 import java.util.Map;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.墨玄.*;
-public class 墨玄 extends AbstractSkillHandler {
-
+public class 墨玄
+extends AbstractSkillHandler {
     public 墨玄() {
-        jobs = new MapleJob[]{
-                MapleJob.墨玄,
-                MapleJob.墨玄1轉,
-                MapleJob.墨玄2轉,
-                MapleJob.墨玄3轉,
-                MapleJob.墨玄4轉
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.墨玄, MapleJob.墨玄1轉, MapleJob.墨玄2轉, MapleJob.墨玄3轉, MapleJob.墨玄4轉};
         for (Field field : Config.constants.skills.墨玄.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -37,26 +36,22 @@ public class 墨玄 extends AbstractSkillHandler {
 
     @Override
     public int baseSkills(MapleCharacter chr, SkillClassApplier applier) {
-        int level = chr.getLevel();
         Skill skil;
-        final int[] ss = {玄山氣勢, 玄山回歸, 獨門咒語};
-        for (int i : ss) {
-            if (i == 獨門咒語 && level < 200) {
-                continue;
-            }
-            int skillLevel = i == 玄山氣勢 ? Math.min(10, level / 20 + 1) : 1;
+        int[] ss;
+        int level = chr.getLevel();
+        for (int i : ss = new int[]{170000001, 170001000, 170001005}) {
+            if (i == 170001005 && level < 200) continue;
+            int skillLevel = i == 170000001 ? Math.min(10, level / 20 + 1) : 1;
             skil = SkillFactory.getSkill(i);
-            if (skil != null && chr.getSkillLevel(skil) < skillLevel) {
-                applier.skillMap.put(i, new SkillEntry(skillLevel, (byte) 1, -1));
-            }
+            if (skil == null || chr.getSkillLevel(skil) >= skillLevel) continue;
+            applier.skillMap.put(i, new SkillEntry(skillLevel, 1, -1L));
         }
         if (chr.getJob() >= MapleJob.墨玄1轉.getId()) {
-            int[] fixskills = {墨玄_二轉_神功_粉碎腳, 墨玄_一轉_覺醒};
-            for (int f : fixskills) {
+            int[] fixskills;
+            for (int f : fixskills = new int[]{175101004, 175000006}) {
                 skil = SkillFactory.getSkill(f);
-                if (skil != null && chr.getSkillLevel(skil) <= 0 && chr.getMasterLevel(skil) <= 0) {
-                    applier.skillMap.put(f, new SkillEntry((byte) 0, (byte) (skil.getMasterLevel() == 0 ? skil.getMaxLevel() : skil.getMasterLevel()), SkillFactory.getDefaultSExpiry(skil)));
-                }
+                if (skil == null || chr.getSkillLevel(skil) > 0 || chr.getMasterLevel(skil) > 0) continue;
+                applier.skillMap.put(f, new SkillEntry(0, (byte)(skil.getMasterLevel() == 0 ? skil.getMaxLevel() : skil.getMasterLevel()), SkillFactory.getDefaultSExpiry(skil)));
             }
         }
         return -1;
@@ -65,109 +60,117 @@ public class 墨玄 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 175000001: //玄山 - 第一式 天
-            case 175001002: //玄山 - 第一式 天
-                return 175001000; // 玄山 - 招式展開[天]
-            case 175121002:
+            case 175001002: 
+            case 175121001: {
+                return 175000001;
+            }
+            case 175101001: 
+            case 175121002: {
+                return 175100000;
+            }
+            case 175101003: {
                 return 175101001;
-            case 墨玄_二轉_玄山_招式展開_第一式_地_NEXT: {
-                return 墨玄_二轉_玄山_招式展開_第一式_地;
             }
-            case 墨玄_三轉_神功_鐵衫功: {
-                return 玄山_第3式;
+            case 175111001: {
+                return 175111002;
             }
-
-            case 175121004:
-            case 墨玄_四轉_神功_亂打連拳:
+            case 175121003: 
+            case 175121004: {
                 return 175121003;
-
-            case 墨玄_一轉_密技_玄山微步_NEXT: {
-                return 墨玄_一轉_密技_玄山微步;
             }
-            case 墨玄_二轉_神功_粉碎腳_1:
-            case 墨玄_二轉_神功_粉碎腳_2: {
-                return 墨玄_二轉_神功_粉碎腳;
+            case 175000005: {
+                return 175001004;
             }
-            case 墨玄_三轉_神功_旋風腳_NEXT: {
-                return 墨玄_三轉_神功_旋風腳;
+            case 175101005: 
+            case 175101006: {
+                return 175101004;
             }
-            case 神功_大地崩塌_1:
-            case 神功_大地崩塌_2: {
-                return 墨玄_四轉_密技_無影腳;
+            case 175111003: {
+                return 175111002;
             }
-            case 神功_移形換位_1:
-            case 神功_移形換位_2: {
-                return 神功_移形換位;
+            case 175121006: 
+            case 175121018: {
+                return 175121005;
             }
-            case 絕技_神玄武極_1: {
-                return 絕技_神玄武極;
+            case 175121008: 
+            case 175121017: {
+                return 175121007;
             }
-            case 絕技_無我之境_1: {
-                return 絕技_無我之境;
+            case 400051085: {
+                return 400051084;
             }
-            case 神功_破空拳_1:
-            case 神功_破空拳_2:
-            case 神功_破空拳神力的氣息: {
-                return 神功_破空拳;
+            case 400051087: {
+                return 400051086;
+            }
+            case 400051090: 
+            case 400051091: 
+            case 400051092: {
+                return 400051089;
             }
         }
         return -1;
     }
 
-
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 獨門咒語:
+            case 170001005: {
                 effect.setRangeBuff(true);
                 effect.getInfo().put(MapleStatInfo.time, effect.getDuration() * 1000);
                 statups.put(SecondaryStat.MaxLevelBuff, effect.getX());
                 return 1;
-            case 墨玄_二轉_密技_弓身彈影:
+            }
+            case 175101007: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.CannonShooter_BFCannonBall, 0);
                 return 1;
-            case 墨玄_二轉_密技_狂暴化:
-                statups.put(SecondaryStat.Booster, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 175100012: {
+                statups.put(SecondaryStat.Booster, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 墨玄_超技能_密技_命運的氣息:
+            }
+            case 175121042: {
                 effect.getInfo().put(MapleStatInfo.time, 60000);
                 statups.put(SecondaryStat.MukHyun_IM_GI_EUNG_BYEON, 1);
                 statups.put(SecondaryStat.IndieDamR, 10);
                 return 1;
-            case 墨玄_四轉_密技_護身強氣:
-                statups.put(SecondaryStat.MukHyun_HO_SIN_GANG_GI, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 175121009: {
+                statups.put(SecondaryStat.MukHyun_HO_SIN_GANG_GI, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 墨玄_二轉_神功_粉碎腳_1:
+            }
+            case 175101005: {
                 effect.getInfo().put(MapleStatInfo.time, 5000);
                 statups.put(SecondaryStat.MukHyunRepeat, 1);
                 return 1;
-            case 墨玄_三轉_密技_移形換位:
-                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get(MapleStatInfo.z));
+            }
+            case 175111004: {
+                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get((Object)MapleStatInfo.z));
                 statups.put(SecondaryStat.IndieNotDamaged, 1);
                 return 1;
-            case 神功_移形換位_1:
+            }
+            case 175121008: {
                 statups.put(SecondaryStat.IndiePeriodicalSkillActivation, 47);
                 statups.put(SecondaryStat.IndieCheckTimeByClient, 1);
                 return 1;
-            case 楓葉祝福:
-                effect.setPartyBuff(true);
-                statups.put(SecondaryStat.BasicStatUp, effect.getInfo().get(MapleStatInfo.x));
-                return 1;
-            case 墨玄_超技能_絕技_黑風腳:
-                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 175121040: {
+                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get((Object)MapleStatInfo.x));
                 statups.put(SecondaryStat.IndieNotDamaged, 1);
                 return 1;
-            case 絕技_無我之境:
+            }
+            case 400051086: {
                 statups.put(SecondaryStat.IndiePeriodicalSkillActivation, 20);
                 statups.put(SecondaryStat.IndieCheckTimeByClient, 1);
                 return 1;
-            case 絕技_暴技:
-                statups.put(SecondaryStat.IndieCr, effect.getInfo().get(MapleStatInfo.indieCr));
-                statups.put(SecondaryStat.IndieCD, effect.getInfo().get(MapleStatInfo.indieCD));
+            }
+            case 400051088: {
+                statups.put(SecondaryStat.IndieCr, effect.getInfo().get((Object)MapleStatInfo.indieCr));
+                statups.put(SecondaryStat.IndieCD, effect.getInfo().get((Object)MapleStatInfo.indieCD));
                 statups.put(SecondaryStat.IndieBuffIcon, 1);
                 statups.put(SecondaryStat.IndieCheckTimeByClient, 1);
                 return 1;
+            }
         }
         return -1;
     }
@@ -175,41 +178,31 @@ public class 墨玄 extends AbstractSkillHandler {
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 墨玄_一轉_玄山_招式展開_第一式_天_NEXT: {
-                c.ctx((short) 559, "3F 7D 24 B3 23 00 00 6E 00 00 00 B8 0B 00 00 01 00 00 00 01 23 07 00 00 00 A0");
-                return 1;
-            }
-            case 175121001: {
-                c.ctx((short) 559, "3F 7D 24 B3 23 00 00 00 00 00 00 88 FF FF FF 00 00 00 00 01 23 07 00 00 00 85");
-                return 1;
-            }
-            case 神功_移形換位: {
+            case 175121007: {
                 int godPower = 0;
                 int time = 30000;
-                if (chr.getSkillLevel(墨玄_三轉_入神) > 0) {
-                    godPower = (int) chr.getTempValues().getOrDefault("GodPower", 0);
-                    godPower = Math.min(5, ++godPower);
+                if (chr.getSkillLevel(175110010) > 0) {
+                    godPower = (Integer)chr.getTempValues().getOrDefault("GodPower", 0);
+                    ++godPower;
+                    godPower = Math.min(5, godPower);
                     chr.getTempValues().put("GodPower", godPower);
-                    if (chr.getSkillLevel(墨玄_超技能_神力_時間持續) > 0) {
+                    if (chr.getSkillLevel(175120039) > 0) {
                         time += 10000;
                     }
                 }
-                //c.write(OverseasPacket.extraSystemResult(ExtraSystemResult.mukhyunPower(0, 0, 3000, 1, 0)));
-                //c.write(OverseasPacket.extraSystemResult(ExtraSystemResult.mukhyunPower(1, godPower, time, 0, 0)));
                 return 1;
             }
-            case 墨玄_超技能_密技_神力渦流:
-            case 絕技_神玄武極: {
+            case 175121041: 
+            case 400051084: {
                 int godPower = 0;
                 int time = 30000;
-                if (chr.getSkillLevel(墨玄_三轉_入神) > 0) {
-                    godPower = applier.effect.getSourceId() == 墨玄_超技能_密技_神力渦流 ? 5 : 0;
+                if (chr.getSkillLevel(175110010) > 0) {
+                    godPower = applier.effect.getSourceId() == 175121041 ? 5 : 0;
                     chr.getTempValues().put("GodPower", godPower);
-                    if (chr.getSkillLevel(墨玄_超技能_神力_時間持續) > 0) {
+                    if (chr.getSkillLevel(175120039) > 0) {
                         time += 10000;
                     }
                 }
-                //c.write(OverseasPacket.extraSystemResult(ExtraSystemResult.mukhyunPower(1, godPower, time, 0, 0)));
                 return 1;
             }
         }
@@ -219,55 +212,52 @@ public class 墨玄 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 玄山回歸: {
+            case 170001000: {
                 applyto.changeMap(applier.effect.getX(), 0);
                 return 1;
             }
-            case 墨玄_二轉_密技_弓身彈影: {
-                final int value = applyto.getBuffedIntValue(SecondaryStat.CannonShooter_BFCannonBall) + (applier.passive ? 1 : -1);
-                final SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.CannonShooter_BFCannonBall);
-                if (!applier.primary || value < 0 || mbsvh != null && System.currentTimeMillis() < mbsvh.startTime + applier.effect.getT() * 1000L && applier.passive || value > applier.effect.getY()) {
+            case 175101007: {
+                int value = applyto.getBuffedIntValue(SecondaryStat.CannonShooter_BFCannonBall) + (applier.passive ? 1 : -1);
+                SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.CannonShooter_BFCannonBall);
+                if (!applier.primary || value < 0 || mbsvh != null && System.currentTimeMillis() < mbsvh.startTime + (long)applier.effect.getT() * 1000L && applier.passive || value > applier.effect.getY()) {
                     return 0;
                 }
                 applier.duration = 2100000000;
                 applier.localstatups.put(SecondaryStat.CannonShooter_BFCannonBall, value);
                 return 1;
             }
-            case 墨玄_二轉_神功_粉碎腳: {
-                final MapleStatEffect skillEffect = applyto.getSkillEffect(墨玄_二轉_神功_粉碎腳_1);
+            case 175101004: {
+                MapleStatEffect skillEffect = applyto.getSkillEffect(175101005);
                 if (skillEffect != null) {
                     skillEffect.applyBuffEffect(applyto, skillEffect.getBuffDuration(applyto), true);
                 }
                 return 1;
             }
-            case 墨玄_二轉_神功_粉碎腳_1: {
-                if (applyto.hasBuffSkill(墨玄_二轉_神功_粉碎腳_1)) {
-                    applyto.dispelEffect(墨玄_二轉_神功_粉碎腳_1);
+            case 175101005: {
+                if (applyto.hasBuffSkill(175101005)) {
+                    applyto.dispelEffect(175101005);
                     return 0;
                 }
                 return 1;
             }
-            case 墨玄_三轉_密技_移形換位: {
-                //applyto.write(OverseasPacket.extraSystemResult(ExtraSystemResult.mukhyunSkill_175111004(applier.effect.getSourceId(), 0)));
+            case 175111004: {
                 return 1;
             }
-            case 神功_移形換位: {
-                if (!applyto.hasBuffSkill(絕技_無我之境)) {
-                    final MapleStatEffect skillEffect = applyto.getSkillEffect(神功_移形換位_1);
-                    if (skillEffect != null) {
-                        skillEffect.applyBuffEffect(applyto, skillEffect.getBuffDuration(applyto), true);
-                    }
+            case 175121007: {
+                MapleStatEffect skillEffect;
+                if (!applyto.hasBuffSkill(400051086) && (skillEffect = applyto.getSkillEffect(175121008)) != null) {
+                    skillEffect.applyBuffEffect(applyto, skillEffect.getBuffDuration(applyto), true);
                 }
                 return 1;
             }
-            case 絕技_無我之境: {
-                if (applyto.hasBuffSkill(神功_移形換位_1)) {
-                    applyto.dispelEffect(神功_移形換位_1);
+            case 400051086: {
+                if (applyto.hasBuffSkill(175121008)) {
+                    applyto.dispelEffect(175121008);
                 }
                 return 1;
             }
-            case 絕技_暴技: {
-                applier.startChargeTime = 1;
+            case 400051088: {
+                applier.startChargeTime = 1L;
                 return 1;
             }
         }
@@ -276,14 +266,11 @@ public class 墨玄 extends AbstractSkillHandler {
 
     @Override
     public int onAfterCancelEffect(MapleCharacter player, SkillClassApplier applier) {
-        if (!applier.overwrite) {
-            if (applier.effect.getSourceId() == 絕技_無我之境) {
-                MapleStatEffect effect = player.getSkillEffect(神功_移形換位);
-                if (effect != null) {
-                    effect.applyTo(player, true);
-                }
-            }
+        MapleStatEffect effect;
+        if (!applier.overwrite && applier.effect.getSourceId() == 400051086 && (effect = player.getSkillEffect(175121007)) != null) {
+            effect.applyTo(player, true);
         }
         return -1;
     }
 }
+

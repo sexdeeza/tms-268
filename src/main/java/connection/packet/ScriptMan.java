@@ -1,21 +1,21 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package connection.packet;
 
 import Client.inventory.Item;
 import Config.constants.enums.NpcMessageType;
 import Config.constants.enums.ScriptParam;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Plugin.script.NpcScriptInfo;
 import connection.OutPacket;
 
 public final class ScriptMan {
-
     public static OutPacket scriptMessage(NpcScriptInfo nsi, NpcMessageType nmt) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_ScriptMessage);
-
         outPacket.encodeInt(nsi.getObjectID());
         outPacket.encodeByte(nsi.getSpeakerType());
         outPacket.encodeInt(nsi.getTemplateID());
-
         int overrideTemplate = nsi.getOverrideSpeakerTemplateID();
         boolean override = overrideTemplate > 0 || nsi.getInnerOverrideSpeakerTemplateID() > 0;
         outPacket.encodeByte(override);
@@ -25,9 +25,8 @@ public final class ScriptMan {
         outPacket.encodeByte(nmt.getVal());
         outPacket.encodeShort(nsi.getParam());
         outPacket.encodeByte(nsi.getColor());
-
         switch (nmt) {
-            case Say:  // Npc Say
+            case Say: {
                 outPacket.encodeInt(nsi.getIndex());
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
@@ -38,37 +37,42 @@ public final class ScriptMan {
                 outPacket.encodeInt(nsi.getDelay());
                 outPacket.encodeByte(0);
                 break;
-            case SayUnk:
+            }
+            case SayUnk: {
                 outPacket.encodeString("");
                 outPacket.encodeByte(0);
                 outPacket.encodeByte(0);
                 outPacket.encodeInt(0);
                 break;
-            case SayImage: // Talk - image photo
+            }
+            case SayImage: {
                 String[] images = nsi.getImages();
                 outPacket.encodeByte(images.length);
                 for (String image : images) {
                     outPacket.encodeString(image);
                 }
                 break;
-            case AskYesNo:
-            case AskAccept:
-            case AskMenu:
+            }
+            case AskYesNo: 
+            case AskAccept: 
+            case AskMenu: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
                 outPacket.encodeString(nsi.getText());
                 break;
-            case AskText:
+            }
+            case AskText: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeString(nsi.getDefaultText());
-                outPacket.encodeShort((short) nsi.getMin());
-                outPacket.encodeShort((short) nsi.getMax());
+                outPacket.encodeShort((short)nsi.getMin());
+                outPacket.encodeShort((short)nsi.getMax());
                 break;
-            case AskNumber:
+            }
+            case AskNumber: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
@@ -77,47 +81,48 @@ public final class ScriptMan {
                 outPacket.encodeLong(nsi.getMin());
                 outPacket.encodeLong(nsi.getMax());
                 break;
-            case InitialQuiz:
+            }
+            case InitialQuiz: {
                 outPacket.encodeByte(nsi.getType());
-                if (nsi.getType() != 1) {
-                    outPacket.encodeString(nsi.getTitle());
-                    outPacket.encodeString(nsi.getProblemText());
-                    outPacket.encodeString(nsi.getHintText());
-                    outPacket.encodeInt((int) nsi.getMin());
-                    outPacket.encodeInt((int) nsi.getMax());
-                    outPacket.encodeInt(nsi.getTime()); // in seconds
-                }
+                if (nsi.getType() == 1) break;
+                outPacket.encodeString(nsi.getTitle());
+                outPacket.encodeString(nsi.getProblemText());
+                outPacket.encodeString(nsi.getHintText());
+                outPacket.encodeInt((int)nsi.getMin());
+                outPacket.encodeInt((int)nsi.getMax());
+                outPacket.encodeInt(nsi.getTime());
                 break;
-            case InitialSpeedQuiz:
+            }
+            case InitialSpeedQuiz: {
                 outPacket.encodeByte(nsi.getType());
-                if (nsi.getType() != 1) {
-                    outPacket.encodeInt(nsi.getQuizType());
-                    outPacket.encodeInt(nsi.getAnswer());
-                    outPacket.encodeInt(nsi.getCorrectAnswers());
-                    outPacket.encodeInt(nsi.getRemaining());
-                    outPacket.encodeInt(nsi.getTime()); // in seconds
-                }
+                if (nsi.getType() == 1) break;
+                outPacket.encodeInt(nsi.getQuizType());
+                outPacket.encodeInt(nsi.getAnswer());
+                outPacket.encodeInt(nsi.getCorrectAnswers());
+                outPacket.encodeInt(nsi.getRemaining());
+                outPacket.encodeInt(nsi.getTime());
                 break;
-            case ICQuiz:
+            }
+            case ICQuiz: {
                 outPacket.encodeByte(nsi.getType());
-                if (nsi.getType() != 1) {
-                    outPacket.encodeString(nsi.getText());
-                    outPacket.encodeString(nsi.getHintText());
-                    outPacket.encodeInt(nsi.getTime()); // in seconds
-                }
+                if (nsi.getType() == 1) break;
+                outPacket.encodeString(nsi.getText());
+                outPacket.encodeString(nsi.getHintText());
+                outPacket.encodeInt(nsi.getTime());
                 break;
-            case AskAvatar:
+            }
+            case AskAvatar: {
                 outPacket.encodeInt(nsi.getItemID());
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeByte(nsi.getSecondLookValue());
-
                 outPacket.encodeByte(nsi.getOptions().length);
                 for (int option : nsi.getOptions()) {
                     outPacket.encodeInt(option);
                 }
                 outPacket.encodeInt(nsi.getSrcBeauty());
                 break;
-            case AskAndroid:
+            }
+            case AskAndroid: {
                 outPacket.encodeInt(nsi.getItemID());
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeByte(nsi.getOptions().length);
@@ -126,8 +131,9 @@ public final class ScriptMan {
                 }
                 outPacket.encodeInt(nsi.getSrcBeauty());
                 break;
-            case AskPet:
-            case AskActionPetEvolution:
+            }
+            case AskPet: 
+            case AskActionPetEvolution: {
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeByte(nsi.getItems().size());
                 for (Item item : nsi.getItems()) {
@@ -135,7 +141,8 @@ public final class ScriptMan {
                     outPacket.encodeByte(item.getPosition());
                 }
                 break;
-            case AskPetAll:
+            }
+            case AskPetAll: {
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeByte(nsi.getItems().size());
                 outPacket.encodeByte(true);
@@ -145,11 +152,13 @@ public final class ScriptMan {
                     outPacket.encodeByte(item.getPosition());
                 }
                 break;
-            case AskAcceptNoEsc:
+            }
+            case AskAcceptNoEsc: {
                 outPacket.encodeInt(0);
                 outPacket.encodeString(nsi.getText());
                 break;
-            case AskBoxtext:
+            }
+            case AskBoxtext: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
@@ -158,42 +167,46 @@ public final class ScriptMan {
                 outPacket.encodeShort(nsi.getCol());
                 outPacket.encodeShort(nsi.getLine());
                 break;
-            case AskSlideMenu:
+            }
+            case AskSlideMenu: {
                 outPacket.encodeInt(nsi.getDlgType());
-                outPacket.encodeInt((nsi.getDlgType() == 0) ? nsi.getDefaultSelect() : 0);
+                outPacket.encodeInt(nsi.getDlgType() == 0 ? nsi.getDefaultSelect() : 0);
                 outPacket.encodeString(nsi.getText());
                 break;
-            case AskOlympicQuiz:
+            }
+            case AskOlympicQuiz: {
                 outPacket.encodeByte(nsi.getType());
-                if (nsi.getType() != 1) {
-                    outPacket.encodeString("BeijingOlympic");
-                    outPacket.encodeInt(nsi.getQuizType());
-                    outPacket.encodeInt(nsi.getAnswer());
-                    outPacket.encodeInt(nsi.getCorrectAnswers());
-                    outPacket.encodeInt(nsi.getRemaining());
-                    outPacket.encodeInt(nsi.getTime()); // in seconds
-                }
+                if (nsi.getType() == 1) break;
+                outPacket.encodeString("BeijingOlympic");
+                outPacket.encodeInt(nsi.getQuizType());
+                outPacket.encodeInt(nsi.getAnswer());
+                outPacket.encodeInt(nsi.getCorrectAnswers());
+                outPacket.encodeInt(nsi.getRemaining());
+                outPacket.encodeInt(nsi.getTime());
                 break;
-            case AskYesNoUnk:
+            }
+            case AskYesNoUnk: {
                 outPacket.encodeString("");
                 outPacket.encodeInt(0);
                 break;
-            case AskSelectMenu:
+            }
+            case AskSelectMenu: {
                 outPacket.encodeInt(nsi.getDlgType());
-                if (nsi.getDlgType() <= 1) {
-                    outPacket.encodeInt(0);
-                    outPacket.encodeByte(0);
-                    outPacket.encodeInt(nsi.getDefaultSelect());
-                    outPacket.encodeInt(nsi.getSelectText().length);
-                    for (String selectText : nsi.getSelectText()) {
-                        outPacket.encodeString(selectText);
-                    }
+                if (nsi.getDlgType() > 1) break;
+                outPacket.encodeInt(0);
+                outPacket.encodeByte(0);
+                outPacket.encodeInt(nsi.getDefaultSelect());
+                outPacket.encodeInt(nsi.getSelectText().length);
+                for (String selectText : nsi.getSelectText()) {
+                    outPacket.encodeString(selectText);
                 }
                 break;
-            case AskAngelicBuster:
+            }
+            case AskAngelicBuster: {
                 break;
-            case SayIllustration:
-            case SayDualIllustration:
+            }
+            case SayIllustration: 
+            case SayDualIllustration: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
@@ -205,12 +218,15 @@ public final class ScriptMan {
                 if (nmt == NpcMessageType.SayDualIllustration) {
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
-                } else outPacket.encodeByte(nsi.isUnk());
+                    break;
+                }
+                outPacket.encodeByte(nsi.isUnk());
                 break;
-            case AskYesNoIllustration:
-            case AskAcceptIllustration:
-            case AskYesNoDualIllustration:
-            case AskAcceptDualIllustration:
+            }
+            case AskYesNoIllustration: 
+            case AskAcceptIllustration: 
+            case AskYesNoDualIllustration: 
+            case AskAcceptDualIllustration: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
@@ -220,19 +236,25 @@ public final class ScriptMan {
                 if (nmt == NpcMessageType.AskYesNoDualIllustration || nmt == NpcMessageType.AskAcceptDualIllustration) {
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
-                } else outPacket.encodeByte(nsi.isUnk());
+                    break;
+                }
+                outPacket.encodeByte(nsi.isUnk());
                 break;
-            case AskMenuIllustration:
-            case AskMenuDualIllustration:
+            }
+            case AskMenuIllustration: 
+            case askZeroNext: {
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeInt(nsi.getDelay());
                 outPacket.encodeInt(nsi.getUnk());
-                if (nmt == NpcMessageType.AskMenuDualIllustration) {
+                if (nmt == NpcMessageType.askZeroNext) {
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
-                } else outPacket.encodeByte(nsi.isUnk());
+                    break;
+                }
+                outPacket.encodeByte(nsi.isUnk());
                 break;
-            case AskAvatarZero:
+            }
+            case AskAvatarZero: {
                 outPacket.encodeInt(nsi.getItemID());
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeByte(nsi.getOptions().length);
@@ -246,7 +268,8 @@ public final class ScriptMan {
                 outPacket.encodeInt(nsi.getSrcBeauty());
                 outPacket.encodeInt(nsi.getSrcBeauty2());
                 break;
-            case AskBoxTextBgImg:
+            }
+            case AskBoxTextBgImg: {
                 outPacket.encodeShort(0);
                 outPacket.encodeString("");
                 outPacket.encodeString("");
@@ -255,100 +278,108 @@ public final class ScriptMan {
                 outPacket.encodeShort(0);
                 outPacket.encodeShort(0);
                 break;
-            case AskUserSurvey:
-                outPacket.encodeInt((int) nsi.getDefaultNumber());
+            }
+            case AskUserSurvey: {
+                outPacket.encodeInt((int)nsi.getDefaultNumber());
                 outPacket.encodeByte(1);
                 outPacket.encodeString(nsi.getText());
                 break;
-            case AskAvatarMixColor:
-            case AskAvatarMixColor2:
+            }
+            case AskAvatarMixColor: 
+            case AskAvatarMixColor2: {
                 outPacket.encodeInt(nsi.getItemID());
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeByte(nsi.getSecondLookValue());
                 outPacket.encodeInt(nsi.getSrcBeauty());
                 break;
-            case SayAvatarMixColorChanged:
+            }
+            case SayAvatarMixColorChanged: {
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeInt(nsi.getItemID());
-                if (nsi.getItemID() > 0) {
-                    outPacket.encodeByte(nsi.getSecondLookValue());
-                    outPacket.encodeInt(nsi.getSrcBeauty());
-                    outPacket.encodeInt(nsi.getDrtBeauty());
-                    outPacket.encodeInt(nsi.getSrcBeauty2());
-                    outPacket.encodeInt(nsi.getDrtBeauty2());
-                }
+                if (nsi.getItemID() <= 0) break;
+                outPacket.encodeByte(nsi.getSecondLookValue());
+                outPacket.encodeInt(nsi.getSrcBeauty());
+                outPacket.encodeInt(nsi.getDrtBeauty());
+                outPacket.encodeInt(nsi.getSrcBeauty2());
+                outPacket.encodeInt(nsi.getDrtBeauty2());
                 break;
-            case OnAskNumberUseKeyPad:
-                outPacket.encodeInt((int) nsi.getDefaultNumber());
+            }
+            case OnAskNumberUseKeyPad: {
+                outPacket.encodeInt((int)nsi.getDefaultNumber());
                 break;
-            case OnSpinOffGuitarRhythmGame:
+            }
+            case OnSpinOffGuitarRhythmGame: {
                 int value = 0;
                 outPacket.encodeInt(value);
                 if (value == 0) {
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
-                } else if (value == 1) {
-                    outPacket.encodeInt(0);
-                    outPacket.encodeString("");
+                    break;
                 }
+                if (value != 1) break;
+                outPacket.encodeInt(0);
+                outPacket.encodeString("");
                 break;
-            case OnGhostParkEnter:
+            }
+            case OnGhostParkEnter: 
             case Unk: {
                 int nCount = 0;
                 outPacket.encodeInt(nCount);
-                for (int i = 0; i < nCount; i++) {
+                for (int i = 0; i < nCount; ++i) {
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
                 }
                 break;
             }
-            case AskAvatarUnk:
+            case AskAvatarUnk: 
             case AskAvatarUnk2: {
                 outPacket.encodeInt(0);
                 outPacket.encodeString("");
                 int nCount = 0;
                 outPacket.encodeByte(nCount);
-                for (int i = 0; i < nCount; i++) {
+                for (int i = 0; i < nCount; ++i) {
                     outPacket.encodeByte(0);
                     outPacket.encodeByte(0);
                     int nCount2 = 0;
                     outPacket.encodeByte(nCount2);
-                    for (int j = 0; j < nCount2; j++) {
+                    for (int j = 0; j < nCount2; ++j) {
                         outPacket.encodeInt(0);
                     }
                 }
                 break;
             }
-            case AskConfirmAvatarChange:
+            case AskConfirmAvatarChange: {
                 outPacket.encodeInt(nsi.getItemID());
                 outPacket.encodeByte(nsi.getSecondLookValue());
                 outPacket.encodeByte(nsi.getSecondLookValue());
                 outPacket.encodeInt(nsi.getSrcBeauty());
-                if (nsi.getSecondLookValue() == 101)
-                    outPacket.encodeInt(nsi.getSrcBeauty2());
+                if (nsi.getSecondLookValue() != 101) break;
+                outPacket.encodeInt(nsi.getSrcBeauty2());
                 break;
-            case AskAvatarRandomMixColor:
+            }
+            case AskAvatarRandomMixColor: {
                 outPacket.encodeInt(nsi.getItemID());
                 outPacket.encodeByte(nsi.getSecondLookValue());
                 outPacket.encodeString(nsi.getText());
                 break;
-            case Unk1:
+            }
+            case Unk1: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
                 outPacket.encodeString(nsi.getText());
                 outPacket.encodeString(nsi.getDefaultText());
-                outPacket.encodeShort((short) nsi.getMin());
-                outPacket.encodeShort((short) nsi.getMax());
+                outPacket.encodeShort((short)nsi.getMin());
+                outPacket.encodeShort((short)nsi.getMax());
                 boolean unk = true;
                 outPacket.encodeByte(unk);
-                if (unk) {
-                    outPacket.encodeArr("B5 90 3E 43 0E 00 00 00 F6 BA BB 30 90 BA BB 30 F9 BA BB 30 09 09 01 00 00 00 00 DF CD 4E 33 04 00 00 00 06 28 87 40");
-                }
+                if (!unk) break;
+                outPacket.encodeArr("B5 90 3E 43 0E 00 00 00 F6 BA BB 30 90 BA BB 30 F9 BA BB 30 09 09 01 00 00 00 00 DF CD 4E 33 04 00 00 00 06 28 87 40");
                 break;
-            case SayUnk1:
-            case SayDualUnk1:
+            }
+            case SayUnk1: 
+            case SayDualUnk1: {
                 if (ScriptParam.OverrideSpeakerID.check(nsi.getParam())) {
                     outPacket.encodeInt(nsi.getInnerOverrideSpeakerTemplateID());
                 }
@@ -360,22 +391,26 @@ public final class ScriptMan {
                 if (nmt == NpcMessageType.SayDualUnk1) {
                     outPacket.encodeInt(0);
                     outPacket.encodeInt(0);
-                } else outPacket.encodeByte(nsi.isUnk());
+                    break;
+                }
+                outPacket.encodeByte(nsi.isUnk());
                 break;
-            case Unk9:
+            }
+            case Unk9: {
                 outPacket.encodeString("");
                 outPacket.encodeInt(0);
                 break;
-            case Unk10:
+            }
+            case Unk10: {
                 outPacket.encodeString("");
                 outPacket.encodeByte(0);
                 outPacket.encodeByte(0);
                 outPacket.encodeByte(0);
                 outPacket.encodeByte(0);
                 outPacket.encodeInt(0);
-                break;
+            }
         }
-
         return outPacket;
     }
 }
+

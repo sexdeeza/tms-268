@@ -1,26 +1,17 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Config.constants.skills;
 
-/**
- * @author PlayDK
- */
 public class 神之子 {
-
     public static final int 時之祝福 = 100000271;
     public static final int 時之祝福_傳授 = 80000110;
-
-    /*
-     * 新手技能
-     */
-    public static final int 神殿回歸 = 100001262;
+    public static final int 神殿回歸 = 0x5F5E5EE;
     public static final int 雙重打擊 = 100000282;
-    public static final int 聖靈之光 = 100001263;
+    public static final int 聖靈之光 = 0x5F5E5EF;
     public static final int 爆裂跳躍 = 100001265;
     public static final int 爆裂衝刺 = 100001266;
-    public static final int 爆裂閃現 = 100001269;
+    public static final int 爆裂閃現 = 0x5F5E5F5;
     public static final int 時之庇護 = 100001268;
     public static final int 雙重打擊_1 = 100001270;
     public static final int 集中時間 = 100001005;
@@ -34,10 +25,6 @@ public class 神之子 {
     public static final int 時間凝結_貝塔 = 100000277;
     public static final int 暗影之雨 = 100001283;
     public static final int 超越者的意志 = 100001284;
-
-    /*
-     * 1轉技能
-     */
     public static final int 昇龍斬 = 101001100;
     public static final int 威力震擊 = 101000100;
     public static final int 進階威力震擊 = 101000101;
@@ -48,9 +35,6 @@ public class 神之子 {
     public static final int 暗影降臨 = 101000201;
     public static final int 暗影降臨_劍氣 = 101000202;
     public static final int 璃之力 = 101000203;
-    /*
-     * 2轉技能
-     */
     public static final int 趨前砍擊 = 101101100;
     public static final int 武器投擲 = 101100100;
     public static final int 進階武器投擲 = 101100101;
@@ -58,11 +42,8 @@ public class 神之子 {
     public static final int 瞬斬閃擊 = 101101200;
     public static final int 迴旋之刃 = 101100200;
     public static final int 進階迴旋之刃 = 101100201;
-    public static final int 進階迴旋之刃_劍氣 = 101100202;
+    public static final int 進階迴旋之刃_劍氣 = 0x606AAAA;
     public static final int 肉體強化 = 101100203;
-    /*
-     * 3轉技能
-     */
     public static final int 迴旋突進 = 101111100;
     public static final int 旋風 = 101110101;
     public static final int 進階旋風 = 101110102;
@@ -75,9 +56,6 @@ public class 神之子 {
     public static final int 進階旋風落葉斬 = 101110203;
     public static final int 進階旋風落葉斬_劍氣 = 101110204;
     public static final int 戰鬥恢復 = 101110205;
-    /*
-     * 4轉技能
-     */
     public static final int 巨力重擊 = 101121100;
     public static final int 跳躍暴砍 = 101120100;
     public static final int 跳躍暴砍_衝擊波 = 101120101;
@@ -97,16 +75,11 @@ public class 神之子 {
     public static final int 進階暴風裂擊_漩渦 = 101120205;
     public static final int 進階暴風裂擊_電磁區域 = 101120206;
     public static final int 聖靈裂襲 = 101120207;
-    /*
-     * 5轉技能
-     */
     public static final int 超越者優伊娜的心願 = 400001045;
     public static final int 超越者優伊娜的心願_追加打擊 = 400001056;
-
     public static final int 終焉之時 = 400011015;
     public static final int 終焉之時_1 = 400011024;
     public static final int 終焉之時_2 = 400011025;
-
     public static final int 協力攻擊 = 400011039;
     public static final int 協力攻擊_1 = 400011040;
     public static final int 協力攻擊_2 = 400011041;
@@ -115,12 +88,11 @@ public class 神之子 {
     public static final int 協力攻擊_5 = 400011044;
     public static final int 協力攻擊_6 = 400011045;
     public static final int 協力攻擊_7 = 400011046;
-
     public static final int 暗影瞬閃 = 400011098;
     public static final int 暗影瞬閃_1 = 400011099;
     public static final int 暗影瞬閃_2 = 400011100;
     public static final int 暗影瞬閃_3 = 400011101;
-
     public static final int 自主武器 = 400011134;
     public static final int 自主武器_1 = 400011135;
 }
+

@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.collection;
 
 import Plugin.provider.loaders.StringData;
@@ -18,8 +21,8 @@ public class MonsterCollection {
         return this.collectionId + ":" + this.bP + ":" + this.groupId + ":" + this.g0;
     }
 
-    @Override
     public final String toString() {
         return this.eliteName + StringData.getMobStringById(this.mobId);
     }
 }
+

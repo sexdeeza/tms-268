@@ -1,13 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
+import Net.server.maps.MapleMapObject;
 
-/**
- * 該類表示楓之谷地圖上所有具體生命特徵的對象.例如玩家、怪物等.
- *
- * @author dongjak
- */
-public abstract class AnimatedMapleMapObject extends MapleMapObject {
-
+public abstract class AnimatedMapleMapObject
+extends MapleMapObject {
     private int stance;
     private int homeFH;
     private int currentFh;
@@ -17,8 +16,8 @@ public abstract class AnimatedMapleMapObject extends MapleMapObject {
         return this.lastMoveTime;
     }
 
-    public void setLastMoveTime(final int n) {
-        this.lastMoveTime = System.currentTimeMillis() + n;
+    public void setLastMoveTime(int n) {
+        this.lastMoveTime = System.currentTimeMillis() + (long)n;
     }
 
     public int getHomeFH() {
@@ -29,16 +28,16 @@ public abstract class AnimatedMapleMapObject extends MapleMapObject {
         return this.currentFh;
     }
 
-    public void setHomeFH(final int bua) {
+    public void setHomeFH(int bua) {
         this.homeFH = bua;
     }
 
-    public void setCurrentFh(final int bub) {
+    public void setCurrentFh(int bub) {
         this.currentFh = bub;
     }
 
     public int getStance() {
-        return stance;
+        return this.stance;
     }
 
     public void setStance(int stance) {
@@ -46,10 +45,11 @@ public abstract class AnimatedMapleMapObject extends MapleMapObject {
     }
 
     public boolean isFacingLeft() {
-        return getStance() % 2 != 0;
+        return this.getStance() % 2 != 0;
     }
 
     public int getFacingDirection() {
-        return Math.abs(getStance() % 2);
+        return Math.abs(this.getStance() % 2);
     }
 }
+

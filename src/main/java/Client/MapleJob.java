@@ -1,14 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client;
 
-/**
- * @author PlayDK
- */
 public enum MapleJob {
-
     初心者(0),
     初心者_影武(0, 1),
     初心者_重砲(0, 2),
@@ -52,11 +47,11 @@ public enum MapleJob {
     俠盜(420),
     神偷(421),
     暗影神偷(422),
-    下忍(430, 1),//20
-    中忍(431, 1),//30
-    上忍(432, 1),//45
-    隱忍(433, 1),//60
-    影武者(434, 1),//100
+    下忍(430, 1),
+    中忍(431, 1),
+    上忍(432, 1),
+    隱忍(433, 1),
+    影武者(434, 1),
     海盜(500),
     砲手(501, 2),
     打手(510),
@@ -240,22 +235,22 @@ public enum MapleJob {
     琳恩1轉(17200),
     琳恩2轉(17210),
     琳恩3轉(17211),
-    琳恩4轉(17212),
-    ;
+    琳恩4轉(17212);
 
-    private final int jobID, jobSub;
+    private final int jobID;
+    private final int jobSub;
 
-    MapleJob(int id) {
+    private MapleJob(int id) {
         this(id, 0);
     }
 
-    MapleJob(int id, int sub) {
+    private MapleJob(int id, int sub) {
         this.jobID = id;
         this.jobSub = sub;
     }
 
     public int getId() {
-        return jobID;
+        return this.jobID;
     }
 
     public static int getIdWithSub(int jobID, int jobSub) {
@@ -263,69 +258,76 @@ public enum MapleJob {
     }
 
     public int getIdWithSub() {
-        return getIdWithSub(jobID, jobSub);
+        return MapleJob.getIdWithSub(this.jobID, this.jobSub);
     }
 
     public static MapleJob getById(int id) {
-        for (MapleJob l : values()) {
-            if (l.getIdWithSub() == id) {
-                return l;
-            }
+        for (MapleJob l : MapleJob.values()) {
+            if (l.getIdWithSub() != id) continue;
+            return l;
         }
         return null;
     }
 
     public static String getTrueNameById(int id) {
-        MapleJob job = getById(id);
+        MapleJob job = MapleJob.getById(id);
         return job == null ? "" : job.getTrueName();
     }
 
     public static String getNameById(int id) {
-        MapleJob job = getById(id);
+        MapleJob job = MapleJob.getById(id);
         return job == null ? "" : job.getName();
     }
 
     public final int getSub() {
-        return jobSub;
+        return this.jobSub;
     }
 
     public final int getNumber() {
-        String jNumber = name().substring(name().length() - 2, name().length() - 1);
+        String jNumber = this.name().substring(this.name().length() - 2, this.name().length() - 1);
         if (jNumber.matches("^\\d+$")) {
             return Integer.parseInt(jNumber);
         }
-        int job = jobID % 1000;
+        int job = this.jobID % 1000;
         if (job < 10) {
-            return 0; //新手 beginner
-        } else if ((job / 10) % 10 == 0) {
-            return 1;
-        } else {
-            return 2 + (job % 10);
+            return 0;
         }
+        if (job / 10 % 10 == 0) {
+            return 1;
+        }
+        return 2 + job % 10;
     }
 
     public final String getTrueName() {
-        switch (this) {
-            case 火毒巫師:
+        switch (this.ordinal()) {
+            case 15: {
                 return "巫師（火，毒）";
-            case 火毒魔導士:
+            }
+            case 16: {
                 return "魔導士（火，毒）";
-            case 火毒大魔導士:
+            }
+            case 17: {
                 return "大魔導士（火，毒）";
-            case 冰雷巫師:
+            }
+            case 18: {
                 return "巫師（冰，雷）";
-            case 冰雷魔導士:
+            }
+            case 19: {
                 return "魔導士（冰，雷）";
-            case 冰雷大魔導士:
+            }
+            case 20: {
                 return "大魔導士（冰，雷）";
-            case 盜賊_影武:
+            }
+            case 36: {
                 return "盜賊";
-            case 初心者_影武:
-            case 初心者_重砲:
-            case 初心者_開拓:
+            }
+            case 1: 
+            case 2: 
+            case 3: {
                 return "初心者";
+            }
         }
-        String jName = name();
+        String jName = this.name();
         if (jName.endsWith("轉")) {
             jName = jName.substring(0, jName.length() - 2);
         }
@@ -333,26 +335,30 @@ public enum MapleJob {
     }
 
     public final String getName() {
-        String jTrueName = getTrueName();
-        String jName = name();
+        String jTrueName = this.getTrueName();
+        String jName = this.name();
         if (jName.split("_").length > 1) {
-            jTrueName += "(" + jName.split("_")[1] + ")";
+            jTrueName = (String)jTrueName + "(" + jName.split("_")[1] + ")";
         } else if (jName.endsWith("轉")) {
-            switch (getNumber()) {
-                case 1:
-                    jTrueName += "(一轉)";
+            switch (this.getNumber()) {
+                case 1: {
+                    jTrueName = (String)jTrueName + "(一轉)";
                     break;
-                case 2:
-                    jTrueName += "(二轉)";
+                }
+                case 2: {
+                    jTrueName = (String)jTrueName + "(二轉)";
                     break;
-                case 3:
-                    jTrueName += "(三轉)";
+                }
+                case 3: {
+                    jTrueName = (String)jTrueName + "(三轉)";
                     break;
-                case 4:
-                    jTrueName += "(四轉)";
-                    break;
+                }
+                case 4: {
+                    jTrueName = (String)jTrueName + "(四轉)";
+                }
             }
         }
         return jTrueName;
     }
 }
+

@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package SwordieX.enums;
 
 public enum LoginType {
@@ -93,16 +96,16 @@ public enum LoginType {
     NotHaveNaverID(90),
     UserTossAIPlayer(91),
     InactivateMember(92),
-    ProcFail(-1),
+    ProcFail(-1);
 
-    ;
     private final byte value;
 
-    LoginType(int value) {
-        this.value = (byte) value;
+    private LoginType(int value) {
+        this.value = (byte)value;
     }
 
     public byte getValue() {
-        return value;
+        return this.value;
     }
 }
+

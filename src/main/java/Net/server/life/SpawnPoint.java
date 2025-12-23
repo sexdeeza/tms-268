@@ -1,13 +1,18 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
+import Net.server.life.MapleMonster;
+import Net.server.life.MapleMonsterStats;
+import Net.server.life.Spawns;
 import Net.server.maps.MapleMap;
 import Packet.MaplePacketCreator;
-
-import java.awt.*;
+import java.awt.Point;
 import java.util.concurrent.atomic.AtomicInteger;
 
-public class SpawnPoint extends Spawns {
-
+public class SpawnPoint
+extends Spawns {
     private final MapleMonsterStats monster;
     private final Point pos;
     private final int mobTime;
@@ -27,7 +32,7 @@ public class SpawnPoint extends Spawns {
         this.id = monster.getId();
         this.fh = monster.getCurrentFH();
         this.f = monster.getF();
-        this.mobTime = (mobTime < 0 ? -1 : (mobTime * 1000));
+        this.mobTime = mobTime < 0 ? -1 : mobTime * 1000;
         this.carnivalTeam = carnivalTeam;
         this.msg = msg;
         this.nextPossibleSpawn = System.currentTimeMillis();
@@ -43,75 +48,73 @@ public class SpawnPoint extends Spawns {
 
     @Override
     public int getF() {
-        return f;
+        return this.f;
     }
 
     @Override
     public int getFh() {
-        return fh;
+        return this.fh;
     }
 
     @Override
     public Point getPosition() {
-        return pos;
+        return this.pos;
     }
 
     @Override
     public MapleMonsterStats getMonster() {
-        return monster;
+        return this.monster;
     }
 
     @Override
     public byte getCarnivalTeam() {
-        return carnivalTeam;
+        return this.carnivalTeam;
     }
 
     @Override
     public int getCarnivalId() {
-        return carnival;
+        return this.carnival;
     }
 
     @Override
     public boolean shouldSpawn(long time) {
-        if (mobTime < 0) {
+        if (this.mobTime < 0) {
             return false;
         }
-        // regular spawnpoints should spawn a maximum of 3 monsters; immobile spawnpoints or spawnpoints with mobtime a
-        // maximum of 1
-        return !(((mobTime != 0 || !monster.isMobile()) && spawnedMonsters.get() > 0) || spawnedMonsters.get() > 1) && nextPossibleSpawn <= time;
+        return (this.mobTime == 0 && this.monster.isMobile() || this.spawnedMonsters.get() <= 0) && this.spawnedMonsters.get() <= 1 && this.nextPossibleSpawn <= time;
     }
 
     @Override
     public MapleMonster spawnMonster(MapleMap map) {
-        MapleMonster mob = new MapleMonster(id, monster);
-        mob.setPosition(pos);
-        mob.setCy(pos.y);
-        mob.setRx0(pos.x - 50);
-        mob.setRx1(pos.x + 50); //these dont matter for mobs
-        mob.setCurrentFh(fh);
-        mob.setF(f);
-        mob.setCarnivalTeam(carnivalTeam);
-        if (level > -1) {
-            mob.setForcedMobStat(level);
+        MapleMonster mob = new MapleMonster(this.id, this.monster);
+        mob.setPosition(this.pos);
+        mob.setCy(this.pos.y);
+        mob.setRx0(this.pos.x - 50);
+        mob.setRx1(this.pos.x + 50);
+        mob.setCurrentFh(this.fh);
+        mob.setF(this.f);
+        mob.setCarnivalTeam(this.carnivalTeam);
+        if (this.level > -1) {
+            mob.setForcedMobStat(this.level);
         }
-        spawnedMonsters.incrementAndGet();
+        this.spawnedMonsters.incrementAndGet();
         mob.addListener(() -> {
-            nextPossibleSpawn = System.currentTimeMillis();
-
-            if (mobTime > 0) {
-                nextPossibleSpawn += mobTime;
+            this.nextPossibleSpawn = System.currentTimeMillis();
+            if (this.mobTime > 0) {
+                this.nextPossibleSpawn += (long)this.mobTime;
             }
-            spawnedMonsters.decrementAndGet();
+            this.spawnedMonsters.decrementAndGet();
         });
         map.spawnMonster(mob, -2);
-        if (msg != null) {
-            map.broadcastMessage(MaplePacketCreator.serverNotice(6, msg));
+        if (this.msg != null) {
+            map.broadcastMessage(MaplePacketCreator.serverNotice(6, this.msg));
         }
         return mob;
     }
 
     @Override
     public int getMobTime() {
-        return mobTime;
+        return this.mobTime;
     }
 }
+

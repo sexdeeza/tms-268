@@ -1,17 +1,18 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tools.Randomizer;
 
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.Randomizer;
 
 public class Timer {
-
     private static final AtomicInteger threadNumber = new AtomicInteger(1);
     protected String file;
     protected String name;
@@ -21,8 +22,8 @@ public class Timer {
         if (ses != null && !ses.isShutdown() && !ses.isTerminated()) {
             return;
         }
-        ses = new ScheduledThreadPoolExecutor(20, new RejectedThreadFactory());
-        ses.setKeepAliveTime(10, TimeUnit.MINUTES);
+        ses = new ScheduledThreadPoolExecutor(20, new RejectedThreadFactory(this));
+        ses.setKeepAliveTime(10L, TimeUnit.MINUTES);
         ses.allowCoreThreadTimeOut(true);
         ses.setMaximumPoolSize(50);
     }
@@ -36,6 +37,7 @@ public class Timer {
             ses.shutdown();
         }
     }
+
     public ScheduledFuture<?> schedule(Runnable r, long delay) {
         if (ses == null) {
             return null;
@@ -44,7 +46,7 @@ public class Timer {
     }
 
     public ScheduledFuture<?> scheduleAtTimestamp(Runnable command, long timestamp) {
-        return schedule(command, timestamp - System.currentTimeMillis());
+        return this.schedule(command, timestamp - System.currentTimeMillis());
     }
 
     public static void startAll() {
@@ -62,12 +64,65 @@ public class Timer {
         MobTimer.getInstance().start();
     }
 
-    public static final class WorldTimer extends Timer {
+    public ScheduledFuture<?> register(Runnable r, long repeatTime, long delay) {
+        if (ses == null) {
+            return null;
+        }
+        return ses.scheduleAtFixedRate(new LoggingSaveRunnable(r, this.file), delay, repeatTime, TimeUnit.MILLISECONDS);
+    }
 
+    public ScheduledFuture<?> register(Runnable r, long repeatTime) {
+        if (ses == null) {
+            return null;
+        }
+        return ses.scheduleAtFixedRate(new LoggingSaveRunnable(r, this.file), 0L, repeatTime, TimeUnit.MILLISECONDS);
+    }
+
+    private final class RejectedThreadFactory
+    implements ThreadFactory {
+        private final AtomicInteger threadNumber2 = new AtomicInteger(1);
+        private final String tname;
+
+        public RejectedThreadFactory(Timer timer) {
+            this.tname = timer.name + Randomizer.nextInt();
+        }
+
+        @Override
+        public Thread newThread(Runnable r) {
+            Thread t = new Thread(r);
+            t.setName(this.tname + "-W-" + threadNumber.getAndIncrement() + "-" + this.threadNumber2.getAndIncrement());
+            return t;
+        }
+    }
+
+    private static final class LoggingSaveRunnable
+    implements Runnable {
+        static final Logger log = LoggerFactory.getLogger(LoggingSaveRunnable.class);
+        final Runnable r;
+        String file;
+
+        public LoggingSaveRunnable(Runnable r, String file) {
+            this.r = r;
+            this.file = file;
+        }
+
+        @Override
+        public void run() {
+            try {
+                this.r.run();
+            }
+            catch (Throwable t) {
+                log.error("Error in scheduled task: {}", (Object)this.file, (Object)t);
+            }
+        }
+    }
+
+    public static final class WorldTimer
+    extends Timer {
         private static final WorldTimer instance = new WorldTimer();
 
         private WorldTimer() {
-            name = "Worldtimer";
+            this.name = "Worldtimer";
         }
 
         public static WorldTimer getInstance() {
@@ -75,12 +130,12 @@ public class Timer {
         }
     }
 
-    public static final class MapTimer extends Timer {
-
+    public static final class MapTimer
+    extends Timer {
         private static final MapTimer instance = new MapTimer();
 
         private MapTimer() {
-            name = "Maptimer";
+            this.name = "Maptimer";
         }
 
         public static MapTimer getInstance() {
@@ -88,12 +143,12 @@ public class Timer {
         }
     }
 
-    public static final class BuffTimer extends Timer {
-
+    public static final class BuffTimer
+    extends Timer {
         private static final BuffTimer instance = new BuffTimer();
 
         private BuffTimer() {
-            name = "Bufftimer";
+            this.name = "Bufftimer";
         }
 
         public static BuffTimer getInstance() {
@@ -101,12 +156,12 @@ public class Timer {
         }
     }
 
-    public static final class CoolDownTimer extends Timer {
-
+    public static final class CoolDownTimer
+    extends Timer {
         private static final CoolDownTimer instance = new CoolDownTimer();
 
         private CoolDownTimer() {
-            name = "CoolDownTimer";
+            this.name = "CoolDownTimer";
         }
 
         public static CoolDownTimer getInstance() {
@@ -114,12 +169,12 @@ public class Timer {
         }
     }
 
-    public static final class EventTimer extends Timer {
-
+    public static final class EventTimer
+    extends Timer {
         private static final EventTimer instance = new EventTimer();
 
         private EventTimer() {
-            name = "Eventtimer";
+            this.name = "Eventtimer";
         }
 
         public static EventTimer getInstance() {
@@ -127,12 +182,12 @@ public class Timer {
         }
     }
 
-    public static final class CloneTimer extends Timer {
-
+    public static final class CloneTimer
+    extends Timer {
         private static final CloneTimer instance = new CloneTimer();
 
         private CloneTimer() {
-            name = "Clonetimer";
+            this.name = "Clonetimer";
         }
 
         public static CloneTimer getInstance() {
@@ -140,12 +195,12 @@ public class Timer {
         }
     }
 
-    public static final class EtcTimer extends Timer {
-
+    public static final class EtcTimer
+    extends Timer {
         private static final EtcTimer instance = new EtcTimer();
 
         private EtcTimer() {
-            name = "Etctimer";
+            this.name = "Etctimer";
         }
 
         public static EtcTimer getInstance() {
@@ -153,12 +208,12 @@ public class Timer {
         }
     }
 
-    public static final class CheatTimer extends Timer {
-
+    public static final class CheatTimer
+    extends Timer {
         private static final CheatTimer instance = new CheatTimer();
 
         private CheatTimer() {
-            name = "Cheattimer";
+            this.name = "Cheattimer";
         }
 
         public static CheatTimer getInstance() {
@@ -166,12 +221,12 @@ public class Timer {
         }
     }
 
-    public static final class PingTimer extends Timer {
-
+    public static final class PingTimer
+    extends Timer {
         private static final PingTimer instance = new PingTimer();
 
         private PingTimer() {
-            name = "Pingtimer";
+            this.name = "Pingtimer";
         }
 
         public static PingTimer getInstance() {
@@ -192,12 +247,13 @@ public class Timer {
         }
     }
 
-    public static final class PlayerTimer extends Timer {
 
+    public static final class PlayerTimer
+    extends Timer {
         private static final PlayerTimer instance = new PlayerTimer();
 
         private PlayerTimer() {
-            name = "PlayerTimer";
+            this.name = "PlayerTimer";
         }
 
         public static PlayerTimer getInstance() {
@@ -205,12 +261,12 @@ public class Timer {
         }
     }
 
-    public static final class ExpiredTimer extends Timer {
-
+    public static final class ExpiredTimer
+    extends Timer {
         private static final PlayerTimer instance = new PlayerTimer();
 
         private ExpiredTimer() {
-            name = "ExpiredTimer";
+            this.name = "ExpiredTimer";
         }
 
         public static PlayerTimer getInstance() {
@@ -218,72 +274,19 @@ public class Timer {
         }
     }
 
-
-    private static final class LoggingSaveRunnable implements Runnable {
-        static final Logger log = LoggerFactory.getLogger(LoggingSaveRunnable.class);
-        final Runnable r;
-        String file;
-
-        public LoggingSaveRunnable(Runnable r, String file) {
-            this.r = r;
-            this.file = file;
-        }
-
-        @Override //檢驗異常添加條目
-        public void run() {
-            try {
-                this.r.run();
-            } catch (Throwable t) {
-                log.error("Error in scheduled task: {}", file, t);
-            }
-        }
-    }
-
-    private final class RejectedThreadFactory implements ThreadFactory {
-
-        private final AtomicInteger threadNumber2 = new AtomicInteger(1);
-        private final String tname;
-
-
-        public RejectedThreadFactory() {
-            tname = name + Randomizer.nextInt();
-        }
-
-        @Override
-        public Thread newThread(Runnable r) {
-            Thread t = new Thread(r);
-            t.setName(tname + "-W-" + threadNumber.getAndIncrement() + "-" + threadNumber2.getAndIncrement());
-            return t;
-        }
-    }
-
-
-    public ScheduledFuture<?> register(Runnable r, long repeatTime, long delay) {
-        if (ses == null) {
-            return null;
-        }
-        return ses.scheduleAtFixedRate(new LoggingSaveRunnable(r, this.file), delay, repeatTime, TimeUnit.MILLISECONDS);
-    }
-
-    public ScheduledFuture<?> register(Runnable r, long repeatTime) {
-        if (ses == null) {
-            return null;
-        }
-        return ses.scheduleAtFixedRate(new LoggingSaveRunnable(r, this.file), 0L, repeatTime, TimeUnit.MILLISECONDS);
-    }
-
-    public static class MobTimer extends Timer {
-
+    public static class MobTimer
+    extends Timer {
         private static final MobTimer instance = new MobTimer();
 
         private MobTimer() {
-            name = "MobTimer";
+            this.name = "MobTimer";
         }
 
         public static MobTimer getInstance() {
             return instance;
         }
 
+        @Override
         public ScheduledFuture<?> register(Runnable r, long repeatTime, long delay) {
             if (ses == null) {
                 return null;
@@ -291,6 +294,7 @@ public class Timer {
             return ses.scheduleAtFixedRate(new LoggingSaveRunnable(r, this.file), delay, repeatTime, TimeUnit.MILLISECONDS);
         }
 
+        @Override
         public ScheduledFuture<?> register(Runnable r, long repeatTime) {
             if (ses == null) {
                 return null;
@@ -298,6 +302,7 @@ public class Timer {
             return ses.scheduleAtFixedRate(new LoggingSaveRunnable(r, this.file), 0L, repeatTime, TimeUnit.MILLISECONDS);
         }
 
+        @Override
         public ScheduledFuture<?> schedule(Runnable r, long delay) {
             if (ses == null) {
                 return null;
@@ -305,8 +310,10 @@ public class Timer {
             return ses.schedule(new LoggingSaveRunnable(r, this.file), delay, TimeUnit.MILLISECONDS);
         }
 
+        @Override
         public ScheduledFuture<?> scheduleAtTimestamp(Runnable command, long timestamp) {
-            return schedule(command, timestamp - System.currentTimeMillis());
+            return this.schedule(command, timestamp - System.currentTimeMillis());
         }
     }
 }
+

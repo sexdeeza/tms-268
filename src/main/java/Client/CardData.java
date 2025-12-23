@@ -1,18 +1,12 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client;
 
 import java.io.Serializable;
 
-/**
- * 角色卡系統
- *
- * @author PlayDK
- */
-public class CardData implements Serializable {
-
+public class CardData
+implements Serializable {
     private static final long serialVersionUID = 2550550428979893978L;
     public final int chrId;
     public final short job;
@@ -24,8 +18,8 @@ public class CardData implements Serializable {
         this.job = job;
     }
 
-    @Override
     public String toString() {
-        return "角色ID: " + chrId + " 職業ID: " + job + " 等級: " + level;
+        return "角色ID: " + this.chrId + " 職業ID: " + this.job + " 等級: " + this.level;
     }
 }
+

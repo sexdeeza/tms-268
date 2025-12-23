@@ -10,7 +10,7 @@ import Client.inventory.MapleAndroid;
 import Client.inventory.MapleInventoryType;
 import Config.constants.ItemConstants;
 import Net.server.movement.LifeMovementFragment;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Opcode.Opcode.MessageOpcode;
 import tools.Pair;
 import tools.data.MaplePacketLittleEndianWriter;

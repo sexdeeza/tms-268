@@ -1,23 +1,19 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author PlayDK
- */
 public class StructAndroid {
-
-    public final List<Integer> skin = new ArrayList<>(); //皮膚
-    public final List<Integer> face = new ArrayList<>(); //臉型
-    public final List<Integer> hair = new ArrayList<>(); //髮型
-    public int type; //智能機器人的ID類型
-    public int gender; //性別
+    public final List<Integer> skin = new ArrayList<Integer>();
+    public final List<Integer> face = new ArrayList<Integer>();
+    public final List<Integer> hair = new ArrayList<Integer>();
+    public int type;
+    public int gender;
     public int chatBalloon;
     public int nameTag;
-    public boolean shopUsable; // 可使用商店
+    public boolean shopUsable;
 }
+

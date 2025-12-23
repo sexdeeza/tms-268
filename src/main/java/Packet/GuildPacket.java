@@ -6,7 +6,7 @@ package Packet;
 
 import Client.MapleCharacter;
 import Config.constants.GameConstants;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Opcode.Opcode.GuildOpcode;
 import Server.channel.MapleGuildRanking;
 import Server.world.WorldGuildService;

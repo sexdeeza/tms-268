@@ -1,17 +1,19 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
+import Client.MapleCharacter;
+import Client.SecondaryStat;
 import Config.configs.ServerConfig;
 import Net.server.MapleItemInformationProvider;
 import Net.server.buffs.MapleStatEffect;
-
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import static Client.SecondaryStat.*;
-
 public class Reborn {
-    private static final Map<Integer, Map<SecondaryStat, Integer>> LEVEL_DATA = new LinkedHashMap<>(40);
+    private static final Map<Integer, Map<SecondaryStat, Integer>> LEVEL_DATA = new LinkedHashMap<Integer, Map<SecondaryStat, Integer>>(40);
     public static final int REBORN_BUFF_ITEM = 2023519;
 
     private static void inc(Map<SecondaryStat, Integer> map, SecondaryStat stat, int val) {
@@ -19,130 +21,127 @@ public class Reborn {
     }
 
     public static EnumMap<SecondaryStat, Integer> getStatups(int level) {
-        EnumMap<SecondaryStat, Integer> map = new EnumMap<>(SecondaryStat.class);
+        EnumMap<SecondaryStat, Integer> map = new EnumMap<SecondaryStat, Integer>(SecondaryStat.class);
         if (level <= 0) {
             return map;
         }
-        inc(map, IndieSTR, 200 * level);
-        inc(map, IndieDEX, 200 * level);
-        inc(map, IndieINT, 200 * level);
-        inc(map, IndieLUK, 200 * level);
-        inc(map, IndieMHP, 1000 * level);
-        inc(map, IndieMMP, 1000 * level);
+        Reborn.inc(map, SecondaryStat.IndieSTR, 200 * level);
+        Reborn.inc(map, SecondaryStat.IndieDEX, 200 * level);
+        Reborn.inc(map, SecondaryStat.IndieINT, 200 * level);
+        Reborn.inc(map, SecondaryStat.IndieLUK, 200 * level);
+        Reborn.inc(map, SecondaryStat.IndieMHP, 1000 * level);
+        Reborn.inc(map, SecondaryStat.IndieMMP, 1000 * level);
         switch (level) {
-            default:
-            case 30:
-                inc(map, IndiePMdR, 20);
-                //fallthrough
-            case 29:
-                inc(map, IndieBooster, -1);
-                //fallthrough
-            case 28:
-                inc(map, IgnoreMobpdpR, 30);
-                //fallthrough
-            case 27:
-                inc(map, IndiePADR, 30);
-                inc(map, IndieMADR, 30);
-                //fallthrough
-            case 26:
-                inc(map, IndieBDR, 30);
-                //fallthrough
-            case 25:
-//                inc(map, IndieDamR, 1);
-                //fallthrough
-            case 24:
-                inc(map, IndieCr, 10);
-                //fallthrough
-            case 23:
-                inc(map, IndieDamR, 10);
-                //fallthrough
-            case 22:
-                inc(map, IndieCD, 10);
-                //fallthrough
-            case 21:
-                inc(map, IndieBooster, -1);
-                //fallthrough
-            case 20:
-                inc(map, IndieCD, 2);
-                //fallthrough
-            case 19:
-                inc(map, IndieCD, 2);
-                //fallthrough
-            case 18:
-                inc(map, IndieCD, 2);
-                //fallthrough
-            case 17:
-                inc(map, IndieCD, 2);
-                //fallthrough
-            case 16:
-                inc(map, IndieCD, 2);
-                //fallthrough
-            case 15:
-                inc(map, IndieBDR, 4);
-                //fallthrough
-            case 14:
-                inc(map, IndieBDR, 4);
-                //fallthrough
-            case 13:
-                inc(map, IndieBDR, 4);
-                //fallthrough
-            case 12:
-                inc(map, IndieBDR, 4);
-                //fallthrough
-            case 11:
-                inc(map, IndieBDR, 4);
-                //fallthrough
-            case 10:
-                inc(map, IndieIgnoreMobpdpR, 5);
-                //fallthrough
-            case 9:
-                inc(map, IndieIgnoreMobpdpR, 5);
-                //fallthrough
-            case 8:
-                inc(map, IndieIgnoreMobpdpR, 5);
-                //fallthrough
-            case 7:
-                inc(map, IndieIgnoreMobpdpR, 5);
-                //fallthrough
-            case 6:
-                inc(map, IndieIgnoreMobpdpR, 5);
-                //fallthrough
-            case 5:
-                inc(map, IndieIgnoreMobpdpR, 5);
-                inc(map, IndieCr, 5);
-                //fallthrough
-            case 4:
-                inc(map, IndieBDR, 5);
-                //fallthrough
-            case 3:
-                inc(map, IndieBooster, -1);
-                inc(map, IndiePAD, 50);
-                inc(map, IndieMAD, 50);
-                //fallthrough
-            case 2:
-                inc(map, IndiePAD, 50);
-                inc(map, IndieMAD, 50);
-                //fallthrough
-            case 1:
-                //fallthrough
+            default: {
+                Reborn.inc(map, SecondaryStat.IndiePMdR, 20);
+            }
+            case 29: {
+                Reborn.inc(map, SecondaryStat.IndieBooster, -1);
+            }
+            case 28: {
+                Reborn.inc(map, SecondaryStat.IgnoreMobpdpR, 30);
+            }
+            case 27: {
+                Reborn.inc(map, SecondaryStat.IndiePADR, 30);
+                Reborn.inc(map, SecondaryStat.IndieMADR, 30);
+            }
+            case 26: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 30);
+            }
+            case 24: 
+            case 25: {
+                Reborn.inc(map, SecondaryStat.IndieCr, 10);
+            }
+            case 23: {
+                Reborn.inc(map, SecondaryStat.IndieDamR, 10);
+            }
+            case 22: {
+                Reborn.inc(map, SecondaryStat.IndieCD, 10);
+            }
+            case 21: {
+                Reborn.inc(map, SecondaryStat.IndieBooster, -1);
+            }
+            case 20: {
+                Reborn.inc(map, SecondaryStat.IndieCD, 2);
+            }
+            case 19: {
+                Reborn.inc(map, SecondaryStat.IndieCD, 2);
+            }
+            case 18: {
+                Reborn.inc(map, SecondaryStat.IndieCD, 2);
+            }
+            case 17: {
+                Reborn.inc(map, SecondaryStat.IndieCD, 2);
+            }
+            case 16: {
+                Reborn.inc(map, SecondaryStat.IndieCD, 2);
+            }
+            case 15: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 4);
+            }
+            case 14: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 4);
+            }
+            case 13: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 4);
+            }
+            case 12: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 4);
+            }
+            case 11: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 4);
+            }
+            case 10: {
+                Reborn.inc(map, SecondaryStat.IndieIgnoreMobpdpR, 5);
+            }
+            case 9: {
+                Reborn.inc(map, SecondaryStat.IndieIgnoreMobpdpR, 5);
+            }
+            case 8: {
+                Reborn.inc(map, SecondaryStat.IndieIgnoreMobpdpR, 5);
+            }
+            case 7: {
+                Reborn.inc(map, SecondaryStat.IndieIgnoreMobpdpR, 5);
+            }
+            case 6: {
+                Reborn.inc(map, SecondaryStat.IndieIgnoreMobpdpR, 5);
+            }
+            case 5: {
+                Reborn.inc(map, SecondaryStat.IndieIgnoreMobpdpR, 5);
+                Reborn.inc(map, SecondaryStat.IndieCr, 5);
+            }
+            case 4: {
+                Reborn.inc(map, SecondaryStat.IndieBDR, 5);
+            }
+            case 3: {
+                Reborn.inc(map, SecondaryStat.IndieBooster, -1);
+                Reborn.inc(map, SecondaryStat.IndiePAD, 50);
+                Reborn.inc(map, SecondaryStat.IndieMAD, 50);
+            }
+            case 2: {
+                Reborn.inc(map, SecondaryStat.IndiePAD, 50);
+                Reborn.inc(map, SecondaryStat.IndieMAD, 50);
+            }
+            case 1: 
         }
         return map;
     }
 
     private static MapleStatEffect getEffect(int level) {
-        return MapleItemInformationProvider.getInstance().getItemEffect(REBORN_BUFF_ITEM);
+        return MapleItemInformationProvider.getInstance().getItemEffect(2023519);
     }
 
     public static void giveRebornBuff(MapleCharacter chr) {
         if (!ServerConfig.EnableRebornBuff) {
             return;
         }
-        chr.dispelEffect(REBORN_BUFF_ITEM);
+        chr.dispelEffect(2023519);
         int level = chr.getReborns();
         if (level <= 0) {
             return;
         }
-        MapleStatEffect effect = getEffect(level);
+        MapleStatEffect effect = Reborn.getEffect(level);
         effect.applyTo(chr, true);
     }
 }
+

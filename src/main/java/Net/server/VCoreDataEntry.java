@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
 
 import java.util.ArrayList;
@@ -8,14 +11,14 @@ public final class VCoreDataEntry {
     private String desc;
     private int type = 0;
     private int maxLevel = 0;
-    private final ArrayList<String> jobs = new ArrayList<>();
-    private final ArrayList<Integer> connectSkill = new ArrayList<>();
+    private final ArrayList<String> jobs = new ArrayList();
+    private final ArrayList<Integer> connectSkill = new ArrayList();
     private boolean nobAbleGemStone = false;
     private boolean notAbleCraft = false;
     private boolean noDisassemble = false;
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -23,7 +26,7 @@ public final class VCoreDataEntry {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -31,7 +34,7 @@ public final class VCoreDataEntry {
     }
 
     public String getDesc() {
-        return desc;
+        return this.desc;
     }
 
     public void setDesc(String desc) {
@@ -39,7 +42,7 @@ public final class VCoreDataEntry {
     }
 
     public int getType() {
-        return type;
+        return this.type;
     }
 
     public void setType(int type) {
@@ -47,7 +50,7 @@ public final class VCoreDataEntry {
     }
 
     public int getMaxLevel() {
-        return maxLevel;
+        return this.maxLevel;
     }
 
     public void setMaxLevel(int maxLevel) {
@@ -55,46 +58,47 @@ public final class VCoreDataEntry {
     }
 
     public ArrayList<String> getJobs() {
-        return jobs;
+        return this.jobs;
     }
 
     public boolean haveJob(String job) {
-        return haveJob(job, false);
+        return this.haveJob(job, false);
     }
 
     public boolean haveJob(String job, boolean onlyJob) {
-        return jobs.contains(job) || (!onlyJob && jobs.contains("all"));
+        return this.jobs.contains(job) || !onlyJob && this.jobs.contains("all");
     }
 
     public void addJob(String job) {
-        jobs.add(job);
+        this.jobs.add(job);
     }
 
     public ArrayList<Integer> getConnectSkill() {
-        return connectSkill;
+        return this.connectSkill;
     }
 
     public boolean isNobAbleGemStone() {
-        return nobAbleGemStone;
+        return this.nobAbleGemStone;
     }
 
     public void setNobAbleGemStone(boolean b) {
-        nobAbleGemStone = b;
+        this.nobAbleGemStone = b;
     }
 
     public boolean isNotAbleCraft() {
-        return notAbleCraft;
+        return this.notAbleCraft;
     }
 
     public void setNotAbleCraft(boolean b) {
-        notAbleCraft = b;
+        this.notAbleCraft = b;
     }
 
     public boolean isDisassemble() {
-        return noDisassemble;
+        return this.noDisassemble;
     }
 
     public void setDisassemble(boolean b) {
-        noDisassemble = b;
+        this.noDisassemble = b;
     }
 }
+

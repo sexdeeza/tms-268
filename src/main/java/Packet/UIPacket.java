@@ -1,14 +1,28 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Config.constants.enums.InGameDirectionEventType
+ *  Net.server.events.DimensionMirrorEvent
+ *  Packet.UIPacket$1
+ *  SwordieX.util.Position
+ *  connection.packet.InGameDirectionEvent
+ *  connection.packet.UserLocal
+ */
 package Packet;
 
 import Client.MapleCharacter;
 import Client.MessageOption;
 import Config.constants.enums.InGameDirectionEventType;
 import Net.server.events.DimensionMirrorEvent;
-import Opcode.Headler.OutHeader;
-import Opcode.Opcode.MessageOpcode;
+import Opcode.header.OutHeader;
+import Packet.CWvsContext;
+import Packet.UIPacket;
+import SwordieX.util.Position;
 import connection.packet.InGameDirectionEvent;
 import connection.packet.UserLocal;
-import SwordieX.util.Position;
+import java.util.Arrays;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.Pair;
@@ -16,50 +30,40 @@ import tools.Triple;
 import tools.data.MaplePacketLittleEndianWriter;
 import tools.data.MaplePacketReader;
 
-import java.util.Arrays;
-import java.util.List;
-
 public class UIPacket {
-
     private static final Logger log = LoggerFactory.getLogger(UIPacket.class);
 
     public static byte[] getSPMsg(byte sp, short job) {
         MessageOption option = new MessageOption();
         option.setJob(job);
         option.setAmount(sp);
-        return CWvsContext.sendMessage(MessageOpcode.MS_IncSPMessage, option);
+        return CWvsContext.sendMessage(4, option);
     }
 
     public static byte[] getGPMsg(int amount) {
-        // Temporary transformed as a dragon, even with the skill ......
         MessageOption option = new MessageOption();
         option.setAmount(amount);
-        return CWvsContext.sendMessage(MessageOpcode.MS_IncGPMessage, option);
+        return CWvsContext.sendMessage(7, option);
     }
 
     public static byte[] getGPContribution(int amount) {
-        // Temporary transformed as a dragon, even with the skill ......
         MessageOption option = new MessageOption();
         option.setAmount(amount);
-        return CWvsContext.sendMessage(MessageOpcode.MS_IncCommitmentMessage, option);
+        return CWvsContext.sendMessage(8, option);
     }
 
     public static byte[] getStatusMsg(int itemid) {
-        // Temporary transformed as a dragon, even with the skill ......
         MessageOption option = new MessageOption();
         option.setObjectId(itemid);
-        return CWvsContext.sendMessage(MessageOpcode.MS_GiveBuffMessage, option);
+        return CWvsContext.sendMessage(9, option);
     }
 
     public static byte[] getBPMsg(int amount) {
-        // Temporary transformed as a dragon, even with the skill ......
         MessageOption option = new MessageOption();
         option.setAmount(amount);
-        return CWvsContext.sendMessage(MessageOpcode.MS_IncPvPPointMessage, option);
+        return CWvsContext.sendMessage(25, option);
     }
 
-    /* 巨大寵物的神秘能力傳到我身上，不知為何感覺渾身是勁。 */
-    /* 毒藤花已經新增入怪物收藏品中了。 */
     public static byte[] getTopMsg(String msg) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_ScriptProgressMessage.getValue());
@@ -69,41 +73,33 @@ public class UIPacket {
 
     public static byte[] ScriptProgressItemMessage(int n, String msg) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_ScriptProgressItemMessage.getValue());
         mplew.writeInt(n);
         mplew.writeMapleAsciiString(msg);
-
         return mplew.getPacket();
     }
 
     public static byte[] getMidMsg(int index, String msg, boolean keep) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_SetStaticScreenMessage.getValue());
-        mplew.write(index); //where the message should appear on the screen
+        mplew.write(index);
         mplew.writeMapleAsciiString(msg);
         mplew.write(keep ? 0 : 1);
-
         return mplew.getPacket();
     }
 
     public static byte[] setStaticScreenMessage(int index, String msg, boolean keep) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_SetStaticScreenMessage.getValue());
-        mplew.write(index); //where the message should appear on the screen
+        mplew.write(index);
         mplew.writeMapleAsciiString(msg);
         mplew.writeBool(keep);
-
         return mplew.getPacket();
     }
 
     public static byte[] offStaticScreenMessage() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_OffStaticScreenMessage.getValue());
-
         return mplew.getPacket();
     }
 
@@ -127,52 +123,39 @@ public class UIPacket {
         return mplew.getPacket();
     }
 
-    /*
-     * 特殊的頂部公告
-     * unk = 0細明體 3黑體 7雅園 8小黃
-     * 字體大小最大128
-     */
     public static byte[] getSpecialTopMsg(String msg, int fontNameType, int fontSize, int fontColorType, int fadeOutDelay) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_ProgressMessageFont.getValue());
-        mplew.writeInt(fontNameType); //字體
-        mplew.writeInt(fontSize); //字體大小
-        mplew.writeInt(fontColorType); //顏色代碼
-        mplew.writeInt(fadeOutDelay); //未知
+        mplew.writeInt(fontNameType);
+        mplew.writeInt(fontSize);
+        mplew.writeInt(fontColorType);
+        mplew.writeInt(fadeOutDelay);
         mplew.write(0);
         mplew.writeMapleAsciiString(msg);
-
         return mplew.getPacket();
     }
 
     public static byte[] playMovie(String data, boolean show) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserPlayMovieClip.getValue());
         mplew.writeMapleAsciiString(data);
         mplew.write(show ? 1 : 0);
-
         return mplew.getPacket();
     }
 
     public static byte[] summonHelper(boolean summon) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserHireTutor.getValue());
         mplew.write(summon ? 1 : 0);
-
         return mplew.getPacket();
     }
 
     public static byte[] summonMessage(int type) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserTutorMsg.getValue());
         mplew.write(1);
         mplew.writeInt(type);
-        mplew.writeInt(7000); // probably the delay
-
+        mplew.writeInt(7000);
         return mplew.getPacket();
     }
 
@@ -181,9 +164,8 @@ public class UIPacket {
         mplew.writeShort(OutHeader.LP_UserTutorMsg.getValue());
         mplew.write(0);
         mplew.writeMapleAsciiString(message);
-        mplew.writeInt(200); // IDK
-        mplew.writeInt(10000); // Probably delay
-
+        mplew.writeInt(200);
+        mplew.writeInt(10000);
         return mplew.getPacket();
     }
 
@@ -204,35 +186,35 @@ public class UIPacket {
     }
 
     public static byte[] getDirectionEffectPlay(String data, int value, int s) {
-        return getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, 0, s, 0, 0}, null);
+        return UIPacket.getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, 0, s, 0, 0}, null);
     }
 
     public static byte[] getDirectionEffectPlay(String data, int value, int x, int y, int pro) {
-        return getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, x, y, pro, 0, 0}, null);
+        return UIPacket.getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, x, y, pro, 0, 0}, null);
     }
 
     public static byte[] getDirectionEffectPlay(String data, int value, int x, int y, int a, int b) {
-        return getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, x, y, a, b, 0, 0, 0, 0}, null);
+        return UIPacket.getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, x, y, a, b, 0, 0, 0, 0}, null);
     }
 
     public static byte[] getDirectionEffectPlay(String data, int value, int x, int y) {
-        return getDirectionEffectPlayNpc(data, value, x, y, 0);
+        return UIPacket.getDirectionEffectPlayNpc(data, value, x, y, 0);
     }
 
     public static byte[] getDirectionEffectPlayNpc(String data, int value, int x, int y, int z) {
-        return getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, x, y, 1, 1, 0, z, z > 0 ? 0 : 1, 0}, null);
+        return UIPacket.getDirectionEvent(InGameDirectionEventType.EffectPlay, data, new int[]{value, x, y, 1, 1, 0, z, z > 0 ? 0 : 1, 0}, null);
     }
 
     public static byte[] getDirectionCameraMove(byte type, int value) {
-        return getDirectionEvent(InGameDirectionEventType.CameraMove, null, new int[]{type, value, 0, 0, 0, 0, 0, 0}, null);
+        return UIPacket.getDirectionEvent(InGameDirectionEventType.CameraMove, null, new int[]{type, value, 0, 0, 0, 0, 0, 0}, null);
     }
 
     public static byte[] getDirectionCameraMove(byte type, int x, int y, int z) {
-        return getDirectionEvent(InGameDirectionEventType.CameraMove, null, new int[]{type, x, y, z, 0, 0, 0, 0}, null);
+        return UIPacket.getDirectionEvent(InGameDirectionEventType.CameraMove, null, new int[]{type, x, y, z, 0, 0, 0, 0}, null);
     }
 
     public static byte[] getDirectionEvent(InGameDirectionEventType type, int value) {
-        return getDirectionEvent(type, null, new int[]{value, 0, 0, 0, 0, 0, 0, 0, 0}, null);
+        return UIPacket.getDirectionEvent(type, null, new int[]{value, 0, 0, 0, 0, 0, 0, 0, 0}, null);
     }
 
     public static byte[] getDirectionEvent(InGameDirectionEventType mod, String data, int[] values, String data2) {
@@ -298,23 +280,22 @@ public class UIPacket {
         return ide == null ? new byte[0] : UserLocal.inGameDirectionEvent(ide).getData();
     }
 
+
     public static byte[] UserEmotionLocal(int expression, int duration) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserEmotionLocal.getValue());
         mplew.writeInt(expression);
         mplew.writeInt(duration);
         mplew.write(0);
-
         return mplew.getPacket();
     }
 
     public static byte[] IntroEnableUI(int wtf) {
-        return IntroEnableUI(wtf, true);
+        return UIPacket.IntroEnableUI(wtf, true);
     }
 
     public static byte[] IntroEnableUI(int wtf, boolean block) {
-        return SetInGameDirectionMode(wtf > 0, wtf > 0 ? block : wtf < 0, false, false);
+        return UIPacket.SetInGameDirectionMode(wtf > 0, wtf > 0 ? block : wtf < 0, false, false);
     }
 
     public static byte[] SetInGameDirectionMode(boolean lockUI, boolean blackFrame, boolean forceMouseOver, boolean showUI) {
@@ -364,11 +345,6 @@ public class UIPacket {
         return mplew.getPacket();
     }
 
-    /**
-     * 顯示自由市場小地圖，該數據包只對自由市場生效。
-     *
-     * @參數 show true ? 隱藏 : 顯示
-     */
     public static byte[] showFreeMarketMiniMap(boolean show) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_MiniMapOnOff.getValue());
@@ -376,12 +352,6 @@ public class UIPacket {
         return mplew.getPacket();
     }
 
-    /**
-     * 讓客戶端打開指定窗口
-     *
-     * @param id 類似於子類型
-     * @return
-     */
     public static byte[] sendOpenWindow(int id) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_UserOpenUI.getValue());
@@ -389,12 +359,6 @@ public class UIPacket {
         return mplew.getPacket();
     }
 
-    /**
-     * 讓客戶端关闭指定窗口
-     *
-     * @param id 類似於子類型
-     * @return
-     */
     public static byte[] sendCloseWindow(int id) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_UserCloseUI.getValue());
@@ -402,77 +366,46 @@ public class UIPacket {
         return mplew.getPacket();
     }
 
-    /**
-     * 打開新的聊天界面
-     *
-     * @param npc
-     * @return
-     */
     public static byte[] sendPVPWindow(int npc) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserOpenUI.getValue());
-        mplew.writeInt(0x32);
+        mplew.writeInt(50);
         if (npc > 0) {
             mplew.writeInt(npc);
         }
-
         return mplew.getPacket();
     }
 
-    /**
-     * 打開活動列表界面
-     *
-     * @param npc
-     * @return
-     */
     public static byte[] sendEventWindow(int npc) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserOpenUI.getValue());
-        mplew.writeInt(0x37);
+        mplew.writeInt(55);
         if (npc > 0) {
             mplew.writeInt(npc);
         }
-
         return mplew.getPacket();
     }
 
     public static byte[] inGameCurNodeEventEnd(boolean enable) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_InGameCurNodeEventEnd.getValue());
         mplew.writeBool(enable);
-
         return mplew.getPacket();
     }
 
     public static byte[] sendSceneUI() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.SCENE_UI.getValue());
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 打開1個遊戲窗口界面
-     */
     public static byte[] sendUIWindow(int op, int npc) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserOpenUIWithOption.getValue());
-        /*
-         * 0x03 傳授技能後顯示的窗口
-         * 0x15 組隊搜索窗口
-         * 0x21 道具修理窗口
-         * 0x2A 專業技術窗口
-         */
         mplew.writeInt(op);
         mplew.writeInt(npc);
-        mplew.writeInt(0); //V.114新增 未知
-
+        mplew.writeInt(0);
         return mplew.getPacket();
     }
 
@@ -480,18 +413,15 @@ public class UIPacket {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.PQ_EFFECT.getValue());
         mplew.writeHexString("09 00 43 61 70 45 66 66 65 63 74 00 00 00 00 07 00 00 00 06 03 00 00 27 02 00 00 12 01 00 00 27 02 00 00 1E FF FF FF 27 02 00 00 24 FE FF FF 27 02 00 00 00 04 00 00 27 02 00 00 18 00 00 00 27 02 00 00 2A FD FF FF 27 02 00 00");
-
         return mplew.getPacket();
     }
 
     public static byte[] sendDynamicObj(boolean animation, Pair<Integer, Triple<String, String, String>> dynamicObj) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_DynamicObjShowHide.getValue());
         mplew.writeInt(dynamicObj == null ? 0 : dynamicObj.getLeft());
         mplew.writeInt(dynamicObj == null || animation ? 0 : 1);
         mplew.writeInt(0);
-
         if (dynamicObj != null) {
             if (dynamicObj.getLeft() == 2) {
                 mplew.writeMapleAsciiString(dynamicObj.getRight().getLeft());
@@ -501,20 +431,17 @@ public class UIPacket {
                 mplew.writeInt(0);
             }
         }
-
         return mplew.getPacket();
     }
 
     public static byte[] screenShake(int n2, boolean bl2) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserSetFieldFloating.getValue());
         mplew.writeInt(n2);
         mplew.writeInt(bl2 ? 0 : 20);
         mplew.writeInt(bl2 ? 0 : 50);
         mplew.writeInt(bl2 ? 0 : 20);
         mplew.write(0);
-
         return mplew.getPacket();
     }
 
@@ -525,46 +452,38 @@ public class UIPacket {
         return mplew.getPacket();
     }
 
-    /* 試圖查閱 維度之境 資訊 */
     public static byte[] showDimensionMirror(List<DimensionMirrorEvent> list) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.DimensionMirror.getValue());
         mplew.writeInt(list.size());
-        for (final DimensionMirrorEvent event : list) {
+        for (DimensionMirrorEvent event : list) {
             mplew.writeMapleAsciiString(event.getName());
             mplew.writeMapleAsciiString(event.getInfo());
             mplew.writeInt(event.getLimitLevel());
             mplew.writeInt(event.getPos());
+            mplew.writeInt(0);
+            mplew.writeInt(0);
             mplew.writeInt(event.getID());
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeMapleAsciiString(""); // tms 230
             mplew.writeBool(event.isTeam());
+            mplew.writeInt(0);
             mplew.writeInt(event.getRewards().size());
             for (Integer o : event.getRewards()) {
                 mplew.writeInt(o);
             }
         }
-
         return mplew.getPacket();
     }
 
-
     public static byte[] ShowSpecialUI(boolean b, String s) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.ShowSpecialUI.getValue());
         mplew.writeBool(b);
         mplew.writeMapleAsciiString(s);
-
         return mplew.getPacket();
     }
 
     public static byte[] setAreaControl(List<String> ctrl_1, List<String> ctrl_2, List<String> ctrl_3) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.AREA_CTRLS.getValue());
         mplew.write(ctrl_1 != null);
         if (ctrl_1 != null) {
@@ -587,11 +506,9 @@ public class UIPacket {
                 mplew.writeMapleAsciiString(s);
             }
         }
-
         return mplew.getPacket();
     }
 
-    /* 257 - 12/4 hertz */
     public static byte[] getGold(MapleCharacter player) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.EVENT_GOLD_DAY.getValue());
@@ -626,5 +543,5 @@ public class UIPacket {
         mplew.writeBool(true);
         return mplew.getPacket();
     }
-
 }
+

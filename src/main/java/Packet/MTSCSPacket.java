@@ -1,3 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Client.MemoEntry
+ *  Client.inventory.MaplePotionPot
+ *  Config.constants.enums.MemoOptType
+ *  Net.server.MTSStorage$MTSItemInfo
+ */
 package Packet;
 
 import Client.MapleCharacter;
@@ -8,147 +17,123 @@ import Client.inventory.Item;
 import Client.inventory.MaplePotionPot;
 import Config.configs.CSInfoConfig;
 import Config.constants.enums.CashItemModFlag;
-import Config.constants.enums.CashItemResult;
 import Config.constants.enums.MemoOptType;
 import Net.server.MTSStorage;
 import Net.server.RaffleItem;
 import Net.server.RafflePool;
 import Net.server.cashshop.CashItemFactory;
-import Net.server.cashshop.CashItemInfo.CashModInfo;
+import Net.server.cashshop.CashItemInfo;
 import Net.server.cashshop.CashShop;
-import Opcode.Headler.OutHeader;
 import Opcode.Opcode.EffectOpcode;
-import tools.Pair;
-import tools.Triple;
-import tools.data.MaplePacketLittleEndianWriter;
-
+import Opcode.header.OutHeader;
+import Packet.PacketHelper;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import tools.Pair;
+import tools.Triple;
+import tools.data.MaplePacketLittleEndianWriter;
 
 public class MTSCSPacket {
-
     public static byte[] warpchartoCS(MapleClient c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_SetCashShop.getValue());
-        PacketHelper.addCharacterInfo(mplew, c.getPlayer(), -1);
-
+        PacketHelper.addCharacterInfo(mplew, c.getPlayer(), -1L);
         return mplew.getPacket();
     }
 
-    public static byte[] warpCS(final boolean custom) {
+    public static byte[] warpCS(boolean custom) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_SetCashShopInfo.getValue());
         if (custom) {
             mplew.writeHexString(CSInfoConfig.CASH_CASHSHOPPACK);
         } else {
+            int i;
             mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis()));
             mplew.writeZeroBytes(6);
-
-            // 1452EF810
             mplew.writeInt(2);
             mplew.writeInt(110100165);
             mplew.writeInt(110100166);
-            // 商城道具
-            Map<Integer, CashModInfo> allModInfo = CashItemFactory.getInstance().getAllModInfo();
+            Map<Integer, CashItemInfo.CashModInfo> allModInfo = CashItemFactory.getInstance().getAllModInfo();
             mplew.writeShort(allModInfo.size());
-            for (Map.Entry<Integer, CashModInfo> it : allModInfo.entrySet()) {
-                CashModInfo cmi = it.getValue();
+            for (Map.Entry<Integer, CashItemInfo.CashModInfo> it : allModInfo.entrySet()) {
+                CashItemInfo.CashModInfo cmi = it.getValue();
                 mplew.writeInt(cmi.getSn());
-                writeModItemData(mplew, cmi);
+                MTSCSPacket.writeModItemData(mplew, cmi);
             }
-            // 套組名稱
-            short nCashPackageNameSize = 0;
+            int nCashPackageNameSize = 0;
             mplew.writeShort(nCashPackageNameSize);
-            for (int i = 0; i < nCashPackageNameSize; i++) {
-                mplew.writeInt(0); // nSN
-                mplew.writeMapleAsciiString(""); // m_mCashPackageName
+            for (int i2 = 0; i2 < nCashPackageNameSize; ++i2) {
+                mplew.writeInt(0);
+                mplew.writeMapleAsciiString("");
             }
-            // 點裝道具隨機箱
             Map<Integer, List<Pair<Integer, Integer>>> randomItemInfo = CashItemFactory.getInstance().getRandomItemInfo();
-            final int rndItemSize = (int) randomItemInfo.keySet().stream().filter(k -> k / 1000 == 5533).count();
+            int rndItemSize = (int)randomItemInfo.keySet().stream().filter(k -> k / 1000 == 5533).count();
             mplew.writeInt(rndItemSize);
             for (Map.Entry<Integer, List<Pair<Integer, Integer>>> it : randomItemInfo.entrySet()) {
                 mplew.writeInt(it.getKey());
-                if (it.getKey() / 1000 != 5533) {
-                    break;
-                }
+                if (it.getKey() / 1000 != 5533) break;
                 mplew.writeInt(it.getValue().size());
                 for (Pair<Integer, Integer> itt : it.getValue()) {
-                    mplew.writeInt(itt.left);
+                    mplew.writeInt((Integer)itt.left);
                 }
             }
-            // 限制期限的髮型/整形券
             int nCount = 0;
             mplew.writeInt(nCount);
-            for (int i = 0; i < nCount; i++) {
-                mplew.writeInt(i);
-                mplew.writeInt(0); // 道具SN[F7 A4 98 00] [F8 A4 98 00]
-                mplew.writeInt(0); // 道具ID[96 95 4E 00閃亮髮型卷] [C8 9D 4E 00閃亮整型卷]
-                mplew.writeLong(0); // [00 A0 C1 29 E5 82 CE 01]
-                mplew.writeLong(0); // [00 80 39 0F 01 93 CE 01]
-                mplew.writeInt(0); // [00 00 00 00]
-
-                int[] unkData = {0, 20, 30, 40, 50};
+            for (int i3 = 0; i3 < nCount; ++i3) {
+                mplew.writeInt(i3);
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeLong(0L);
+                mplew.writeLong(0L);
+                mplew.writeInt(0);
+                int[] unkData = new int[]{0, 20, 30, 40, 50};
                 mplew.writeInt(unkData.length);
                 for (int j = 0; j < unkData.length; j++) {
-                    mplew.writeInt(unkData[i]);
+                    mplew.writeInt(unkData[j]);
                 }
             }
-
-            // 主頁推薦商品
             Map<Integer, Byte> allBaseNewInfo = CashItemFactory.getInstance().getAllBaseNewInfo();
             mplew.writeInt(allBaseNewInfo.size());
             for (Map.Entry<Integer, Byte> it : allBaseNewInfo.entrySet()) {
                 mplew.write(it.getValue());
                 mplew.writeInt(it.getKey());
             }
-
-            // sub_141B039F0
             nCount = 0;
             mplew.writeInt(nCount);
-            for (int i = 0; i < nCount; i++) {
+            for (i = 0; i < nCount; ++i) {
                 mplew.writeInt(0);
-                // sub_141B03B90
-                mplew.writeLong(0);
-                mplew.writeLong(0);
-                mplew.writeLong(0);
+                mplew.writeLong(0L);
+                mplew.writeLong(0L);
+                mplew.writeLong(0L);
                 mplew.writeMapleAsciiString("");
             }
-
-            // CCashShop::DecodeCustomizedPackage
             nCount = 0;
             mplew.writeInt(nCount);
-            for (int i = 0; i < nCount; i++) {
+            for (i = 0; i < nCount; ++i) {
                 mplew.write(i);
                 mplew.writeInt(0);
             }
-
-            // SearchHelper
             nCount = 0;
             mplew.writeInt(nCount);
-            for (int i = 0; i < nCount; i++) {
+            for (i = 0; i < nCount; ++i) {
                 mplew.writeMapleAsciiString("");
                 mplew.writeMapleAsciiString("");
             }
-
-            // m_aStock
             nCount = 0;
             mplew.writeShort(nCount);
-            for (int i = 0; i < nCount; i++) {
-                mplew.writeLong(0);
+            for (i = 0; i < nCount; ++i) {
+                mplew.writeLong(0L);
             }
-
-            // m_aLimitGoods 自定義禮包?  (240 應該是 454 bytes)
-            Map<Integer, CashModInfo> customPackages = new HashMap<>();
+            Map<Integer, CashItemInfo.CashModInfo> customPackages = new HashMap<>();
             mplew.writeShort(customPackages.size());
             if (customPackages.size() > 0) {
                 mplew.writeInt(customPackages.size());
-                for (Map.Entry<Integer, CashModInfo> it : customPackages.entrySet()) {
-                    mplew.writeInt(it.getKey());
-                    mplew.writeInt(it.getValue().getSn());
+                for (Map.Entry it : customPackages.entrySet()) {
+                    mplew.writeInt((Integer)it.getKey());
+                    mplew.writeInt(((CashItemInfo.CashModInfo)it.getValue()).getSn());
                     mplew.writeZeroBytes(36);
                     mplew.writeInt(0);
                     mplew.writeInt(0);
@@ -159,54 +144,43 @@ public class MTSCSPacket {
                     mplew.writeInt(0);
                     mplew.writeInt(0);
                     mplew.writeInt(0);
-                    for (int i = 0; i < 7; i++) {
+                    for (int i4 = 0; i4 < 7; ++i4) {
                         mplew.writeInt(0);
                     }
                     mplew.write(0);
                     mplew.writeMapleAsciiString("");
-                    mplew.writeInt(0x3C);
+                    mplew.writeInt(60);
                 }
             }
-
-            // Unknown
             nCount = 0;
             mplew.writeInt(nCount);
-            for (int i = 0; i < nCount; i++) {
+            for (int i5 = 0; i5 < nCount; ++i5) {
                 mplew.writeInt(0);
                 int nCount2 = 0;
                 mplew.writeInt(nCount2);
-                for (int j = 0; j < nCount2; j++) {
+                for (int j = 0; j < nCount2; ++j) {
                     mplew.writeZeroBytes(24);
                 }
             }
-
-            // 道具抽獎隨機箱
-            int[] boxes = new int[]{
-                    5060048, // 黃金蘋果
-                    5060086, // 魔法畫框
-                    5680796, // 聊天貼圖隨機箱
-                    5222138, // 寵物隨機箱
-                    5222123, // 時尚隨機箱
-                    5537000 // 萌獸卡牌包
-            };
+            int[] boxes = new int[]{5060048, 5060086, 5680796, 5222138, 5222123, 5537000};
             mplew.writeInt(boxes.length);
             for (int boxID : boxes) {
                 byte sw = 1;
                 mplew.write(sw);
-                if (sw > 0) {
-                    mplew.writeInt(boxID);
-                    List<RaffleItem> mainRewards = RafflePool.getMainReward(boxID);
-                    mplew.writeShort(mainRewards.size());
-                    for (RaffleItem item : mainRewards) {
-                        mplew.writeInt(item.getItemId());
-                    }
+                if (sw <= 0) continue;
+                mplew.writeInt(boxID);
+                List<RaffleItem> mainRewards = RafflePool.getMainReward(boxID);
+                mplew.writeShort(mainRewards.size());
+                for (RaffleItem item : mainRewards) {
+                    mplew.writeInt(item.getItemId());
                 }
             }
         }
         return mplew.getPacket();
     }
 
-    public static void writeModItemData(MaplePacketLittleEndianWriter mplew, CashModInfo cmi) {
+    public static void writeModItemData(MaplePacketLittleEndianWriter mplew, CashItemInfo.CashModInfo cmi) {
+        String date;
         long flags = cmi.getFlags();
         mplew.writeLong(flags);
         if (CashItemModFlag.ITEM_ID.contains(flags)) {
@@ -273,14 +247,14 @@ public class MTSCSPacket {
             mplew.writeShort(0);
         }
         if (CashItemModFlag.PACKAGE_SN.contains(flags)) {
-            int[] sns = new int[0];
+            int[] sns = new int[]{};
             mplew.write(sns.length);
             for (int sn : sns) {
                 mplew.writeInt(sn);
             }
         }
         if (CashItemModFlag.TERM_START.contains(flags)) {
-            String date = String.valueOf(cmi.getTermStart());
+            date = String.valueOf(cmi.getTermStart());
             if (date.length() >= 4) {
                 mplew.writeShort(Short.parseShort(date.substring(0, 4)));
                 date = date.substring(4);
@@ -288,17 +262,17 @@ public class MTSCSPacket {
                 mplew.writeShort(0);
                 date = "";
             }
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 5; ++i) {
                 if (date.length() >= 2) {
                     mplew.writeShort(Short.parseShort(date.substring(0, 2)));
                     date = date.substring(2);
-                } else {
-                    mplew.writeShort(0);
+                    continue;
                 }
+                mplew.writeShort(0);
             }
         }
         if (CashItemModFlag.TERM_END.contains(flags)) {
-            String date = String.valueOf(cmi.getTermEnd());
+            date = String.valueOf(cmi.getTermEnd());
             if (date.length() >= 4) {
                 mplew.writeShort(Short.parseShort(date.substring(0, 4)));
                 date = date.substring(4);
@@ -306,13 +280,13 @@ public class MTSCSPacket {
                 mplew.writeShort(0);
                 date = "";
             }
-            for (int i = 0; i < 5; i++) {
+            for (int i = 0; i < 5; ++i) {
                 if (date.length() >= 2) {
                     mplew.writeShort(Short.parseShort(date.substring(0, 2)));
                     date = date.substring(2);
-                } else {
-                    mplew.writeShort(0);
+                    continue;
                 }
+                mplew.writeShort(0);
             }
         }
         if (CashItemModFlag.REFUNDABLE.contains(flags)) {
@@ -322,7 +296,7 @@ public class MTSCSPacket {
             mplew.write(0);
         }
         if (CashItemModFlag.CATEGORY_INFO.contains(flags)) {
-            mplew.writeShort(cmi.getCategories()); // [byte] [byte]
+            mplew.writeShort(cmi.getCategories());
         }
         if (CashItemModFlag.WORLD_LIMIT.contains(flags)) {
             mplew.write(0);
@@ -337,12 +311,11 @@ public class MTSCSPacket {
             mplew.write(0);
         }
         if (CashItemModFlag.DISCOUNT_RATE.contains(flags)) {
-            mplew.writeDouble(0);
+            mplew.writeDouble(0.0);
         }
-
         if (CashItemModFlag.MILEAGE_INFO.contains(flags)) {
-            mplew.write(0); // 里程折扣
-            mplew.write(0); // 只能里程購入
+            mplew.write(0);
+            mplew.write(0);
         }
         if (CashItemModFlag.CHECK_QUEST_ID_2.contains(flags)) {
             mplew.writeInt(0);
@@ -377,112 +350,90 @@ public class MTSCSPacket {
         }
     }
 
-    public static byte[] playCashSong(final int itemid, String name) {
+    public static byte[] playCashSong(int itemid, String name) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_PlayJukeBox.getValue());
         mplew.writeInt(itemid);
         mplew.writeMapleAsciiString(name);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 添加玩家使用音樂盒效果
-     */
-    public static byte[] addCharBox(MapleCharacter c, final int itemId) {
+    public static byte[] addCharBox(MapleCharacter c, int itemId) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserMiniRoomBalloon.getValue());
         mplew.writeInt(c.getId());
         mplew.writeInt(itemId);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 取消玩家使用音樂盒效果
-     */
     public static byte[] removeCharBox(MapleCharacter c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserMiniRoomBalloon.getValue());
         mplew.writeInt(c.getId());
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
-    public static byte[] useCharm(final int type, final byte charmsleft, final byte daysleft, final int itemId) {
+    public static byte[] useCharm(int type, byte charmsleft, byte daysleft, int itemId) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserEffectLocal.getValue());
         mplew.write(EffectOpcode.UserEffect_ProtectOnDieItemUse.getValue());
         mplew.writeInt(type);
         mplew.write(charmsleft);
         mplew.write(daysleft);
         switch (type) {
-            case 1:
-            case 2:
+            case 1: 
+            case 2: {
                 break;
-            default:
+            }
+            default: {
                 mplew.writeInt(itemId);
+            }
         }
-
         return mplew.getPacket();
     }
 
-    public static byte[] useWheel(final byte charmsleft) {
+    public static byte[] useWheel(byte charmsleft) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserEffectLocal.getValue());
         mplew.write(EffectOpcode.UserEffect_UpgradeTombItemUse.getValue());
         mplew.write(charmsleft);
-
         return mplew.getPacket();
     }
 
-    public static byte[] sendGoldHammerResult(final int n, final int n2) {
+    public static byte[] sendGoldHammerResult(int n, int n2) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_GoldHammerResult.getValue());
         mplew.write(0);
         mplew.write(n);
         mplew.writeInt(n2);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 白金鎚子效果
-     */
     public static byte[] sendPlatinumHammerResult(int value) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_PlatinumHammerResult.getValue());
         mplew.write(value);
         mplew.write(0);
-
         return mplew.getPacket();
     }
 
-    public static byte[] changePetFlag(final int uniqueId, final boolean added, final int flagAdded) {
+    public static byte[] changePetFlag(int uniqueId, boolean added, int flagAdded) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_UserPetSkillChanged.getValue());
         mplew.writeLong(uniqueId);
-        mplew.write((added ? 1 : 0));
+        mplew.write(added ? 1 : 0);
         mplew.writeShort(flagAdded);
-
         return mplew.getPacket();
     }
 
-    public static byte[] changePetName(MapleCharacter chr, String newname, final int slot) {
+    public static byte[] changePetName(MapleCharacter chr, String newname, int slot) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_PetNameChanged.getValue());
         mplew.writeInt(chr.getId());
         mplew.write(0);
         mplew.writeMapleAsciiString(newname);
         mplew.writeInt(slot);
-
         return mplew.getPacket();
     }
 
@@ -500,7 +451,6 @@ public class MTSCSPacket {
             mplew.writeLong(PacketHelper.getTime(memo.timestamp));
             mplew.write(memo.pop);
         }
-
         return mplew.getPacket();
     }
 
@@ -508,7 +458,6 @@ public class MTSCSPacket {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_MemoResult.getValue());
         mplew.write(MemoOptType.MemoRes_Send_Succeed.getValue());
-
         return mplew.getPacket();
     }
 
@@ -517,7 +466,6 @@ public class MTSCSPacket {
         mplew.writeShort(OutHeader.LP_MemoResult.getValue());
         mplew.write(MemoOptType.MemoRes_Send_Warning.getValue());
         mplew.write(type);
-
         return mplew.getPacket();
     }
 
@@ -525,7 +473,6 @@ public class MTSCSPacket {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_MemoResult.getValue());
         mplew.write(MemoOptType.MemoNotify_Receive.getValue());
-
         return mplew.getPacket();
     }
 
@@ -538,9 +485,6 @@ public class MTSCSPacket {
         return mplew.getPacket();
     }
 
-    /*
-     * 小黑板
-     */
     public static byte[] useChalkboard(int charid, String msg) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_UserADBoard.getValue());
@@ -551,412 +495,289 @@ public class MTSCSPacket {
             mplew.write(1);
             mplew.writeMapleAsciiString(msg);
         }
-
         return mplew.getPacket();
     }
 
-    /*
-     * 使用瞬移之石
-     */
     public static byte[] getTrockRefresh(MapleCharacter chr, byte vip, boolean delete) {
-        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-        /*
-         * 高級瞬移之石
-         * 2F 00
-         * 03 - 添加
-         * 02
-         * C0 A7 23 06
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * FF C9 9A 3B
-         * /...困#.??????????????????
-         */
-        mplew.writeShort(OutHeader.LP_MapTransferResult.getValue());
-        mplew.write(delete ? 2 : 3);
-        mplew.write(vip);
-        if (vip == 1) {
-            int[] map = chr.getRegRocks();
-            for (int i = 0; i <= 4; i++) {
-                mplew.writeInt(map[i]);
+        MaplePacketLittleEndianWriter mplew;
+        block4: {
+            block5: {
+                block3: {
+                    mplew = new MaplePacketLittleEndianWriter();
+                    mplew.writeShort(OutHeader.LP_MapTransferResult.getValue());
+                    mplew.write(delete ? 2 : 3);
+                    mplew.write(vip);
+                    if (vip != 1) break block3;
+                    int[] map = chr.getRegRocks();
+                    for (int i = 0; i <= 4; ++i) {
+                        mplew.writeInt(map[i]);
+                    }
+                    break block4;
+                }
+                if (vip != 2) break block5;
+                int[] map = chr.getRocks();
+                for (int i = 0; i <= 9; ++i) {
+                    mplew.writeInt(map[i]);
+                }
+                break block4;
             }
-        } else if (vip == 2) {
-            int[] map = chr.getRocks();
-            for (int i = 0; i <= 9; i++) {
-                mplew.writeInt(map[i]);
-            }
-        } else if (vip == 3) {
+            if (vip != 3) break block4;
             int[] map = chr.getHyperRocks();
-            for (int i = 0; i <= 12; i++) {
+            for (int i = 0; i <= 12; ++i) {
                 mplew.writeInt(map[i]);
             }
         }
         return mplew.getPacket();
     }
 
-    /*
-     * 使用時空或者超時空卷錯誤提示
-     */
     public static byte[] getTrockMessage(byte op) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_MapTransferResult.getValue());
-        /*
-         * 0x05 因未知原因無法移動 0x0B 因某種原因，不能去那裡
-         */
         mplew.writeShort(op);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 加載完商城道具就是這個包
-     */
     public static byte[] enableCSUse(int type) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.CS_USE.getValue());
-        /*
-         * 0x10 顯示Vip服務界面
-         */
         mplew.write(type);
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城購買藥劑罐更新藥劑罐信息
-     */
     public static byte[] updatePotionPot(MaplePotionPot potionPot) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
-//        mplew.writeShort(OutHeader.CS_POTION_POT_UPDATE.getValue());
-//        PacketHelper.addPotionPotInfo(mplew, potionPot);
         return mplew.getPacket();
     }
 
-    /**
-     * 顯示樂豆點、楓點和里程
-     */
     public static byte[] CashShopQueryCashResult(MapleCharacter chr) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_CashShopQueryCashResult.getValue());
-        mplew.writeInt(chr.getCSPoints(1));//樂豆點
-        mplew.writeInt(chr.getCSPoints(2));//楓點
-        mplew.writeInt(chr.getMileage());//里程
+        mplew.writeInt(chr.getCSPoints(1));
+        mplew.writeInt(chr.getCSPoints(2));
+        mplew.writeInt(chr.getMileage());
         return mplew.getPacket();
     }
 
-    /**
-     *
-     */
     public static byte[] SetItemDayTime(MapleClient c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.SET_ITEM_DAY_TIME.getValue());
-        long Time = System.currentTimeMillis();
-        mplew.writeInt(Time);
+        long Time2 = System.currentTimeMillis();
+        mplew.writeInt(Time2);
         return mplew.getPacket();
     }
 
     public static byte[] showMileageInfo(MapleClient c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.CS_CheckMileageResult.getValue());
-        mplew.writeInt(c.getMileage());//里程
-        // 累積明細
+        mplew.writeInt(c.getMileage());
         List<Pair<Triple<Integer, Integer, Integer>, Long>> rechargeRecordList = c.getMileageRechargeRecords();
-        mplew.writeInt(rechargeRecordList.size()); // 總數
-        for (Pair<Triple<Integer, Integer, Integer>, Long> record : rechargeRecordList) {
-            mplew.writeLong(PacketHelper.getTime(record.getRight())); // 日期
-            mplew.writeInt(record.getLeft().getLeft()); // 金額
-            mplew.writeInt(record.getLeft().getMid()); // 內容 1 - 購買儲值 2 - 活動儲值
-            mplew.writeInt(record.getLeft().getRight()); // 狀態
+        mplew.writeInt(rechargeRecordList.size());
+        for (Pair<Triple<Integer, Integer, Integer>, Long> pair : rechargeRecordList) {
+            mplew.writeLong(PacketHelper.getTime(pair.getRight()));
+            mplew.writeInt(pair.getLeft().getLeft());
+            mplew.writeInt(pair.getLeft().getMid());
+            mplew.writeInt(pair.getLeft().getRight());
         }
-
-        // 使用明細
         List<Pair<Triple<Integer, Integer, Integer>, Long>> purchaseRecordList = c.getMileagePurchaseRecords();
-        mplew.writeInt(purchaseRecordList.size()); // 總數
-        for (Pair<Triple<Integer, Integer, Integer>, Long> record : purchaseRecordList) {
-            mplew.writeLong(PacketHelper.getTime(record.getRight())); // 日期
-            mplew.writeInt(record.getLeft().getLeft()); // 金額
-            mplew.writeInt(record.getLeft().getMid()); // 道具ID
-            mplew.writeInt(record.getLeft().getRight()); // 110200010
-            mplew.writeInt(1); // 狀態
+        mplew.writeInt(purchaseRecordList.size());
+        for (Pair<Triple<Integer, Integer, Integer>, Long> pair : purchaseRecordList) {
+            mplew.writeLong(PacketHelper.getTime(pair.getRight()));
+            mplew.writeInt(pair.getLeft().getLeft());
+            mplew.writeInt(pair.getLeft().getMid());
+            mplew.writeInt(pair.getLeft().getRight());
+            mplew.writeInt(1);
         }
-
-        // 預定刪除
-        List<Pair<Integer, Long>> recordList = c.getMileageRecords();
-        mplew.writeInt(recordList.size()); // 總數
-        for (Pair<Integer, Long> record : recordList) {
-            mplew.writeInt(record.getLeft()); // 金額
-            mplew.writeLong(PacketHelper.getTime(record.getRight())); // 日期
+        List<Pair<Integer, Long>> list = c.getMileageRecords();
+        mplew.writeInt(list.size());
+        for (Pair<Integer, Long> record : list) {
+            mplew.writeInt(record.getLeft());
+            mplew.writeLong(PacketHelper.getTime(record.getRight()));
         }
-
         return mplew.getPacket();
     }
 
-    /**
-     * 刷新角色在商城中的楓幣信息
-     */
     public static byte[] updataMeso(MapleCharacter chr) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCharStatChanged.getValue());
         mplew.writeLong(MapleStat.MONEY.getValue());
         mplew.writeLong(chr.getMeso());
-
         return mplew.getPacket();
     }
 
-    /*
-     * 顯示商城道具欄物品
-     * getCSInventory
-     */
     public static byte[] loadLockerDone(MapleClient c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_LoadLocker_Done);
+        mplew.write((byte)6);
         CashShop mci = c.getPlayer().getCashInventory();
-        mplew.write(0); //V.109 新增
+        mplew.write(0);
         mplew.writeShort(mci.getItemsSize());
         for (Item itemz : mci.getInventory()) {
-            addCashItemInfo(mplew, itemz, c.getAccID(), 0);
+            MTSCSPacket.addCashItemInfo(mplew, itemz, c.getAccID(), 0);
+            mplew.write(0);
+            mplew.write(0);
             mplew.write(0);
         }
-        mplew.writeShort(c.getPlayer().getTrunk().getSlots()); // 倉庫數量
-        mplew.writeShort(c.getAccCharSlots()); // 可以創建的角色數量
+        mplew.writeInt(0);
+        mplew.writeShort(c.getPlayer().getTrunk().getSlots());
+        mplew.writeShort(c.getAccCharSlots());
         mplew.writeShort(0);
-        mplew.writeShort(c.getPlayer().getMapleUnion().getAllUnions().size()); // 已創建的角色數量
-
+        mplew.writeShort(c.getPlayer().getMapleUnion().getAllUnions().size());
         return mplew.getPacket();
     }
 
-    /*
-     * 顯示商城的禮物
-     * getCSGifts
-     */
     public static byte[] 商城禮物信息(List<? extends Pair<Item, String>> gifts) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_LoadGift_Done);
+        mplew.write((byte)9);
         mplew.writeShort(gifts.size());
-        for (Pair<Item, String> gift : gifts) {
-            mplew.writeLong(gift.getLeft().getSN());
-            mplew.writeInt((gift.getLeft()).getItemId());
-            mplew.writeAsciiString((gift.getLeft()).getGiftFrom(), 15);
-            mplew.writeAsciiString(gift.getRight(), 75);
+        for (Pair<Item, String> pair : gifts) {
+            mplew.writeLong(pair.getLeft().getSN());
+            mplew.writeInt(pair.getLeft().getItemId());
+            mplew.writeAsciiString(pair.getLeft().getGiftFrom(), 15);
+            mplew.writeAsciiString(pair.getRight(), 75);
         }
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城購物車
-     * sendWishList
-     */
     public static byte[] sendWishList(MapleCharacter chr, boolean update) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write((update ? CashItemResult.CashItemRes_SetWish_Done : CashItemResult.CashItemRes_LoadWish_Done));
+        mplew.write(update ? (byte)13 : 11);
         int[] list = chr.getWishlist();
-        for (int i = 0; i < 12; i++) {
+        for (int i = 0; i < 12; ++i) {
             mplew.writeInt(list[i] != -1 ? list[i] : 0);
         }
         return mplew.getPacket();
     }
 
-    /*
-     * 購買商城物品
-     * showBoughtCSItem
-     */
     public static byte[] CashItemBuyDone(Item item, int sn, int accid) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_Buy_Done);
-        addCashItemInfo(mplew, item, accid, sn);
+        mplew.write((byte)15);
+        MTSCSPacket.addCashItemInfo(mplew, item, accid, sn);
         return mplew.getPacket();
     }
 
-    /*
-     * 商城送禮物
-     */
     public static byte[] 商城送禮(int itemid, int quantity, String receiver) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_Gift_Done);
+        mplew.write((byte)24);
         mplew.writeMapleAsciiString(receiver);
         mplew.writeInt(itemid);
         mplew.writeShort(quantity);
-
         return mplew.getPacket();
-
     }
 
     public static byte[] 擴充道具欄(int inv, int slots) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_IncSlotCount_Done);
+        mplew.write((byte)26);
         mplew.write(inv);
         mplew.writeShort(slots);
-        mplew.writeInt(0); //V.114新增 未知
+        mplew.writeInt(0);
         mplew.writeInt(0);
         return mplew.getPacket();
     }
 
     public static byte[] 擴充倉庫(int slots) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_IncTrunkCount_Done);
+        mplew.write((byte)28);
         mplew.writeShort(slots);
         mplew.writeInt(0);
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
     public static byte[] 購買角色卡(int slots) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_IncCharSlotCount_Done);
+        mplew.write((byte)-2);
         mplew.writeShort(slots);
         mplew.writeInt(0);
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
     public static byte[] 擴充項鏈(int days) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_EnableEquipSlotExt_Done);
+        mplew.write((byte)31);
         mplew.writeShort(0);
         mplew.writeShort(days);
         mplew.writeInt(0);
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城-->背包
-     */
     public static byte[] moveItemToInvFormCs(Item item) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_MoveLtoS_Done);
+        mplew.write((byte)32);
         mplew.write(item.getQuantity());
         mplew.writeShort(item.getPosition());
         PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
         mplew.writeInt(0);
         mplew.write(0);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 背包-->商城
-     */
     public static byte[] moveItemToCsFromInv(Item item, int accId, int sn) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_MoveStoL_Done);
+        mplew.write((byte)34);
         mplew.write(0);
-        addCashItemInfo(mplew, item, accId, sn);
+        MTSCSPacket.addCashItemInfo(mplew, item, accId, sn);
         mplew.write(0);
         return mplew.getPacket();
     }
 
-    /*
-     * 商城刪除道具
-     */
     public static byte[] 商城刪除道具(int uniqueid) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_Destroy_Done);
+        mplew.write((byte)36);
         mplew.writeLong(uniqueid);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城道具到期
-     */
     public static byte[] cashItemExpired(long uniqueid) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_Expire_Done);
+        mplew.write((byte)38);
         mplew.writeLong(uniqueid);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城換購道具
-     */
     public static byte[] 商城換購道具(int uniqueId, int Money) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_Rebate_Done);
+        mplew.write((byte)67);
         mplew.writeLong(uniqueId);
         mplew.writeInt(Money);
         mplew.writeInt(0);
         return mplew.getPacket();
     }
 
-    /*
-     * 商城購買禮包
-     */
     public static byte[] 商城購買禮包(Map<Integer, ? extends Item> packageItems, int accId) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_BuyPackage_Done);
+        mplew.write((byte)75);
         mplew.write(packageItems.size());
-//        int size = 0;
         for (Map.Entry<Integer, ? extends Item> it : packageItems.entrySet()) {
-            addCashItemInfo(mplew, it.getValue(), accId, it.getKey());
+            MTSCSPacket.addCashItemInfo(mplew, it.getValue(), accId, it.getKey());
             mplew.write(0);
-//            if (ItemConstants.類型.寵物(it.getValue().getItemId()) || ItemConstants.getInventoryType(it.getValue().getItemId()) == MapleInventoryType.EQUIP) {
-//                size++;
-//            }
         }
-//        mplew.writeInt(size);
-//        for (Item it : packageItems.values()) {
-//            if (ItemConstants.類型.寵物(it.getItemId()) || ItemConstants.getInventoryType(it.getItemId()) == MapleInventoryType.EQUIP) {
-//                PacketHelper.addItemInfo(mplew, it);
-//            }
-//        }
         mplew.writeShort(0);
         mplew.writeInt(0);
         mplew.write(0);
         return mplew.getPacket();
     }
 
-    /*
-     * 商城贈送禮包
-     */
     public static byte[] 商城送禮包(int itemId, int quantity, String receiver) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_GiftPackage_Done);
+        mplew.write((byte)77);
         mplew.writeMapleAsciiString(receiver);
         mplew.writeInt(itemId);
         mplew.writeShort(quantity);
@@ -964,156 +785,126 @@ public class MTSCSPacket {
         return mplew.getPacket();
     }
 
-    /*
-     * 商城購買任務物品
-     */
     public static byte[] 商城購買任務道具(int price, short quantity, byte position, int itemid) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_BuyNormal_Done);
+        mplew.write((byte)81);
         mplew.writeInt(1);
-        mplew.writeInt(quantity); // 不確定
-//        mplew.writeShort(quantity);
-//        mplew.writeShort((short) position);
+        mplew.writeInt(quantity);
         mplew.writeInt(itemid);
-
         return mplew.getPacket();
     }
 
     public static byte[] 楓點兌換道具() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.楓點兌換道具);
-
+        mplew.write((byte)-106);
         return mplew.getPacket();
     }
 
     public static byte[] 購買記錄(int sn, int quantity) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.購買記錄);
+        mplew.write((byte)104);
         mplew.writeInt(sn);
         mplew.writeInt(quantity);
-
         return mplew.getPacket();
     }
 
     public static void addCashItemInfo(MaplePacketLittleEndianWriter mplew, Item item, int accId, int sn) {
         CashItemFactory cashinfo = CashItemFactory.getInstance();
-        mplew.writeLong(item.getSN() > 0 ? item.getSN() : 0);
+        mplew.writeInt(item.getSN() > 0 ? item.getSN() : 0);
+        mplew.writeInt(0);
         mplew.writeInt(accId);
         mplew.writeInt(0);
         mplew.writeInt(item.getItemId());
         mplew.writeInt(sn);
         mplew.writeShort(item.getQuantity());
-        mplew.writeInt(0);
-        mplew.writeInt(0);
-        mplew.writeInt(0);
-        mplew.write(0);
-        mplew.writeLong(item.getTrueExpiration());
-        mplew.writeInt(0);
-        mplew.writeInt(0);
-        mplew.writeInt(0);
-        mplew.writeInt(0);
-        mplew.writeInt(0);
-        mplew.write(1);
-        mplew.write(0);
+        mplew.writeZeroBytes(15);
+        mplew.writeLong(150842304000000000L);
+        mplew.writeZeroBytes(23);
         mplew.write(1);
         mplew.write(2);
         mplew.writeInt(item.getItemId());
         mplew.write(1);
-        mplew.writeInt(sn);
+        mplew.writeInt(sn > 0 ? sn : cashinfo.getSnFromId(cashinfo.getLinkItemId(item.getItemId())));
         mplew.writeInt(0);
-        mplew.writeLong(item.getTrueExpiration());
+        mplew.writeLong(150842304000000000L);
         mplew.writeInt(-1);
         mplew.write(0);
         mplew.writeInt(1);
-        mplew.writeHexString("00 00 04 00 00 00 00 00 00 00 90 90 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 30 00 35 00 00 00 0A 00");
+        mplew.writeInt(0);
+        mplew.write(3);
+        mplew.write(2);
+        mplew.write(3);
+        mplew.writeInt(3);
+        mplew.writeInt(1);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeShort(0);
+        mplew.write(0);
     }
 
     public static byte[] 商城錯誤提示(int err) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.CashItemRes_Gift_Failed);
+        mplew.write((byte)25);
         mplew.write(err);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城領獎卡提示
-     */
     public static byte[] showCouponRedeemedItem(int itemid) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.writeShort(CashItemResult.領獎卡提示);
+        mplew.writeShort(-2);
         mplew.writeInt(0);
         mplew.writeInt(1);
         mplew.writeShort(1);
         mplew.writeShort(26);
         mplew.writeInt(itemid);
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城領獎卡提示
-     */
     public static byte[] showCouponRedeemedItem(Map<Integer, ? extends Item> items, int mesos, int maplePoints, MapleClient c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write(CashItemResult.領獎卡提示);
+        mplew.write((byte)-2);
         mplew.write(items.size());
         for (Map.Entry<Integer, ? extends Item> it : items.entrySet()) {
-            addCashItemInfo(mplew, it.getValue(), c.getAccID(), it.getKey());
+            MTSCSPacket.addCashItemInfo(mplew, it.getValue(), c.getAccID(), it.getKey());
             mplew.write(0);
         }
         mplew.writeInt(maplePoints);
-        mplew.writeInt(0); // Normal items size
+        mplew.writeInt(0);
         mplew.writeInt(mesos);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 不發這個好像買不了商城道具
-     */
     public static byte[] redeemResponse() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        /*
-         * T075 0xB9
-         * V111 0xBC
-         */
-        mplew.write(CashItemResult.註冊商城);
+        mplew.write((byte)-2);
         mplew.writeInt(0);
         mplew.writeInt(1);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 商城中打開箱子
-     */
     public static byte[] 商城打開箱子(Item item, Long uniqueId) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_CashShopCashItemResult.getValue());
-        mplew.write((int) CashItemResult.打開箱子);
+        mplew.write(114);
         mplew.writeLong(uniqueId);
         mplew.writeInt(0);
         PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
-        mplew.writeInt(item.getPosition()); //道具在背包中的位置
+        mplew.writeInt(item.getPosition());
         mplew.writeZeroBytes(3);
-
         return mplew.getPacket();
     }
 
@@ -1121,18 +912,12 @@ public class MTSCSPacket {
         return Integer.valueOf(new SimpleDateFormat("yyyyMMdd").format(new Date()));
     }
 
-    /*
-     * 使用楓幣包失敗
-     */
     public static byte[] sendMesobagFailed() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_MesoGive_Failed.getValue());
         return mplew.getPacket();
     }
 
-    /*
-     * 使用楓幣包成功
-     */
     public static byte[] sendMesobagSuccess(int mesos) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_MesoGive_Succeeded.getValue());
@@ -1142,223 +927,181 @@ public class MTSCSPacket {
 
     public static byte[] sendMTS(List<? extends MTSStorage.MTSItemInfo> items, int tab, int type, int page, int pages) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        /*
-         * T065 0x14
-         */
-        mplew.write(0x15); //operation
-        mplew.writeInt(pages); //total items
-        mplew.writeInt(items.size()); //number of items on this page
+        mplew.write(21);
+        mplew.writeInt(pages);
+        mplew.writeInt(items.size());
         mplew.writeInt(tab);
         mplew.writeInt(type);
         mplew.writeInt(page);
         mplew.write(1);
         mplew.write(1);
-
-        for (MTSStorage.MTSItemInfo item : items) {
-            addMTSItemInfo(mplew, item);
+        for (MTSStorage.MTSItemInfo mTSItemInfo : items) {
+            MTSCSPacket.addMTSItemInfo(mplew, mTSItemInfo);
         }
-        mplew.write(0); //0 or 1?
-
+        mplew.write(0);
         return mplew.getPacket();
     }
 
-    /*
-     * 在拍賣中顯示角色楓點
-     */
     public static byte[] showMTSCash(MapleCharacter chr) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.GET_MTS_TOKENS.getValue());
         mplew.writeInt(chr.getCSPoints(2));
-
         return mplew.getPacket();
     }
 
     public static byte[] getMTSWantedListingOver(int nx, int items) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x3D);
+        mplew.write(61);
         mplew.writeInt(nx);
         mplew.writeInt(items);
-
         return mplew.getPacket();
     }
 
     public static byte[] getMTSConfirmSell() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x1D);
-
+        mplew.write(29);
         return mplew.getPacket();
     }
 
     public static byte[] getMTSFailSell() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x1E);
-        mplew.write(0x42);
-
+        mplew.write(30);
+        mplew.write(66);
         return mplew.getPacket();
     }
 
     public static byte[] getMTSConfirmBuy() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x33);
-
+        mplew.write(51);
         return mplew.getPacket();
     }
 
     public static byte[] getMTSFailBuy() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x34);
-        mplew.write(0x42);
-
+        mplew.write(52);
+        mplew.write(66);
         return mplew.getPacket();
     }
 
     public static byte[] getMTSConfirmCancel() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x25);
-
+        mplew.write(37);
         return mplew.getPacket();
     }
 
     public static byte[] getMTSFailCancel() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x26);
-        mplew.write(0x42);
-
+        mplew.write(38);
+        mplew.write(66);
         return mplew.getPacket();
     }
 
     public static byte[] getMTSConfirmTransfer(int quantity, int pos) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x27);
+        mplew.write(39);
         mplew.writeInt(quantity);
         mplew.writeInt(pos);
-
         return mplew.getPacket();
     }
 
     private static void addMTSItemInfo(MaplePacketLittleEndianWriter mplew, MTSStorage.MTSItemInfo item) {
         PacketHelper.GW_ItemSlotBase_Encode(mplew, item.getItem());
-        mplew.writeInt(item.getId()); //id
-        mplew.writeInt(item.getTaxes()); //this + below = price
-        mplew.writeInt(item.getPrice()); //price
+        mplew.writeInt(item.getId());
+        mplew.writeInt(item.getTaxes());
+        mplew.writeInt(item.getPrice());
         mplew.writeZeroBytes(8);
         mplew.writeLong(PacketHelper.getTime(item.getEndingDate()));
-        mplew.writeMapleAsciiString(item.getSeller()); //account name (what was nexon thinking?)
-        mplew.writeMapleAsciiString(item.getSeller()); //char name
+        mplew.writeMapleAsciiString(item.getSeller());
+        mplew.writeMapleAsciiString(item.getSeller());
         mplew.writeZeroBytes(28);
     }
 
     public static byte[] getNotYetSoldInv(List<? extends MTSStorage.MTSItemInfo> items) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x23);
+        mplew.write(35);
         mplew.writeInt(items.size());
-        for (MTSStorage.MTSItemInfo item : items) {
-            addMTSItemInfo(mplew, item);
+        for (MTSStorage.MTSItemInfo mTSItemInfo : items) {
+            MTSCSPacket.addMTSItemInfo(mplew, mTSItemInfo);
         }
-
         return mplew.getPacket();
     }
 
     public static byte[] getTransferInventory(List<? extends Item> items, boolean changed) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(0x21);
-
+        mplew.write(33);
         mplew.writeInt(items.size());
         int i = 0;
         for (Item item : items) {
             PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
-            mplew.writeInt(Integer.MAX_VALUE - i); //fake ID
-            mplew.writeZeroBytes(56);//really just addMTSItemInfo
-            i++;
+            mplew.writeInt(Integer.MAX_VALUE - i);
+            mplew.writeZeroBytes(56);
+            ++i;
         }
         mplew.writeInt(-47 + i - 1);
         mplew.write(changed ? 1 : 0);
-
         return mplew.getPacket();
     }
 
     public static byte[] addToCartMessage(boolean fail, boolean remove) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
         if (remove) {
             if (fail) {
-                mplew.write(0x2C);
+                mplew.write(44);
                 mplew.writeInt(-1);
             } else {
-                mplew.write(0x2B); //T065 0x28
+                mplew.write(43);
             }
+        } else if (fail) {
+            mplew.write(42);
+            mplew.writeInt(-1);
         } else {
-            if (fail) {
-                mplew.write(0x2A);
-                mplew.writeInt(-1);
-            } else {
-                mplew.write(0x29); //T065 0x26
-            }
+            mplew.write(41);
         }
-
         return mplew.getPacket();
     }
 
     public static byte[] sendBuyFailed(byte result) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(CashItemResult.CashItemRes_Buy_Failed);
+        mplew.write((byte)16);
         mplew.write(result);
-
         return mplew.getPacket();
     }
 
-    public static byte[] sendCoupleDone(final int accId, final String s, final int sn, final Item item) {
+    public static byte[] sendCoupleDone(int accId, String s, int sn, Item item) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(CashItemResult.CashItemRes_Couple_Done);
-        addCashItemInfo(mplew, item, accId, sn);
+        mplew.write((byte)73);
+        MTSCSPacket.addCashItemInfo(mplew, item, accId, sn);
         mplew.write(0);
         mplew.writeMapleAsciiString(s);
         mplew.writeInt(item.getItemId());
         mplew.writeShort(item.getQuantity());
         mplew.writeInt(0);
         mplew.writeInt(0);
-
         return mplew.getPacket();
     }
 
     public static byte[] sendCoupleFailed(byte result) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.MTS_OPERATION.getValue());
-        mplew.write(CashItemResult.CashItemRes_Couple_Failed);
+        mplew.write((byte)74);
         mplew.write(result);
-        if (result == CashItemResult.CashItemRes_IncBuyCharCount_Failed || result == CashItemResult.CashItemRes_IncBuyCharCount_Done) {
+        if (result == 31 || result == 30) {
             mplew.writeInt(0);
         }
-
         return mplew.getPacket();
     }
 
@@ -1378,99 +1121,87 @@ public class MTSCSPacket {
         if (!full) {
             mplew.writeLong(cashId);
             mplew.writeInt(quantity);
-            addCashItemInfo(mplew, item, accid, 0);
+            MTSCSPacket.addCashItemInfo(mplew, item, accid, 0);
             mplew.write(0);
             PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
             mplew.writeInt(item.getItemId());
             mplew.write(showItemName);
             mplew.write(smega);
         }
-
         return mplew.getPacket();
     }
 
     public static byte[] getCashShopPreviewInfo() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_CashShopPreviewInfo.getValue());
-
-        byte unkCouponTypeSize = 0;
-        mplew.write(unkCouponTypeSize);
-        for (int i = 0; i < unkCouponTypeSize; i++) {
-            short unkCouponSize = 0;
+        int unkCouponTypeSize = 0;
+        mplew.write((byte)unkCouponTypeSize);
+        for (int i = 0; i < unkCouponTypeSize; ++i) {
+            int unkCouponSize = 0;
             mplew.write(unkCouponSize > 0);
-            if (unkCouponSize > 0) {
-                mplew.writeInt(0); // nCouponItemId
-                mplew.write(0);
-                mplew.writeShort(unkCouponSize);
-                for (int j = 0; j < unkCouponSize; j++) {
-                    mplew.writeInt(0); // MaleRewardItemId
-                    mplew.writeInt(0); // FemaleRewardItemId
-                }
+            if (unkCouponSize <= 0) continue;
+            mplew.writeInt(0);
+            mplew.write(0);
+            mplew.writeShort(unkCouponSize);
+            for (int j = 0; j < unkCouponSize; ++j) {
+                mplew.writeInt(0);
+                mplew.writeInt(0);
             }
         }
-
-        byte unkCoupon2TypeSize = 0;
-        mplew.write(unkCoupon2TypeSize);
-        for (int i = 0; i < unkCoupon2TypeSize; i++) {
-            short unkCoupon2Size = 0;
+        int unkCoupon2TypeSize = 0;
+        mplew.write((byte)unkCoupon2TypeSize);
+        for (int i = 0; i < unkCoupon2TypeSize; ++i) {
+            int unkCoupon2Size = 0;
             mplew.write(unkCoupon2Size > 0);
-            if (unkCoupon2Size > 0) {
-                mplew.writeInt(0); // nCouponItemId
-                short unkCoupon2RewardListSize = 0;
-                mplew.writeShort(unkCoupon2RewardListSize);
-                for (int j = 0; j < unkCoupon2RewardListSize; j++) {
-                    byte unkCoupon2RewardSize = 0;
-                    mplew.write(unkCoupon2RewardSize > 0);
-                    if (unkCoupon2RewardSize > 0) {
-                        mplew.writeShort(unkCoupon2RewardSize);
-                        for (int k = 0; k < unkCoupon2RewardSize; k++) {
-                            mplew.writeInt(0); // MaleRewardItemId
-                            mplew.writeInt(0); // FemaleRewardItemId
-                        }
-                    }
+            if (unkCoupon2Size <= 0) continue;
+            mplew.writeInt(0);
+            int unkCoupon2RewardListSize = 0;
+            mplew.writeShort(unkCoupon2RewardListSize);
+            for (int j = 0; j < unkCoupon2RewardListSize; ++j) {
+                int unkCoupon2RewardSize = 0;
+                mplew.write(unkCoupon2RewardSize > 0);
+                if (unkCoupon2RewardSize <= 0) continue;
+                mplew.writeShort(unkCoupon2RewardSize);
+                for (int k = 0; k < unkCoupon2RewardSize; ++k) {
+                    mplew.writeInt(0);
+                    mplew.writeInt(0);
                 }
             }
         }
-
         return mplew.getPacket();
     }
 
     public static byte[] getCashShopStyleCouponPreviewInfo() {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.CashShopStyleCouponPreviewInfo.getValue());
-
         mplew.write(0);
-
-        mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis())); // 開始時間
-
+        mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis()));
         Map<Integer, Pair<List<Integer>, List<Integer>>> couponList = RafflePool.getRoyalCouponList();
         mplew.writeInt(couponList.size());
         for (Map.Entry<Integer, Pair<List<Integer>, List<Integer>>> couponInfo : couponList.entrySet()) {
             mplew.writeInt(0);
             mplew.writeInt(couponInfo.getKey());
             mplew.writeInt((couponInfo.getValue().getLeft() == null ? 0 : couponInfo.getValue().getLeft().size()) + (couponInfo.getValue().getRight() == null ? 0 : couponInfo.getValue().getRight().size()));
-            mplew.writeLong(PacketHelper.getTime(-2));
-            mplew.writeLong(PacketHelper.getTime(-1));
+            mplew.writeLong(PacketHelper.getTime(-2L));
+            mplew.writeLong(PacketHelper.getTime(-1L));
             mplew.writeInt((couponInfo.getValue().getLeft() == null || couponInfo.getValue().getLeft().isEmpty() ? 0 : 1) + (couponInfo.getValue().getRight() == null || couponInfo.getValue().getRight().isEmpty() ? 0 : 1));
             if (couponInfo.getValue().getLeft() != null && !couponInfo.getValue().getLeft().isEmpty()) {
                 mplew.write(0);
-                mplew.writeInt(2); // 類型 1 選擇 2 隨機
+                mplew.writeInt(2);
                 mplew.writeInt(couponInfo.getValue().getLeft().size());
                 for (int styleID : couponInfo.getValue().getLeft()) {
                     mplew.writeInt(styleID);
                 }
             }
-            if (couponInfo.getValue().getRight() != null && !couponInfo.getValue().getRight().isEmpty()) {
-                mplew.write(1);
-                mplew.writeInt(2); // ??
-                mplew.writeInt(couponInfo.getValue().getRight().size());
-                for (int styleID : couponInfo.getValue().getRight()) {
-                    mplew.writeInt(styleID);
-                }
+            if (couponInfo.getValue().getRight() == null || couponInfo.getValue().getRight().isEmpty()) continue;
+            mplew.write(1);
+            mplew.writeInt(2);
+            mplew.writeInt(couponInfo.getValue().getRight().size());
+            for (int styleID : couponInfo.getValue().getRight()) {
+                mplew.writeInt(styleID);
             }
         }
-
-
         return mplew.getPacket();
     }
 }
+

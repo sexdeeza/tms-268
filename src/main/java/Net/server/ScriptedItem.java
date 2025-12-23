@@ -1,14 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server;
 
-/**
- * @author PlayDK
- */
 public class ScriptedItem {
-
     private final boolean runOnPickup;
     private final int npc;
     private final String script;
@@ -20,14 +15,15 @@ public class ScriptedItem {
     }
 
     public int getNpc() {
-        return npc;
+        return this.npc;
     }
 
     public String getScript() {
-        return script;
+        return this.script;
     }
 
     public boolean runOnPickup() {
-        return runOnPickup;
+        return this.runOnPickup;
     }
 }
+

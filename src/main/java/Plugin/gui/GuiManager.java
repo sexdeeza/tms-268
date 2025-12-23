@@ -1,10 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.gui;
 
+import Plugin.gui.GuiListener;
 import java.util.ArrayList;
 import java.util.List;
 
 public class GuiManager {
-    private static final List<GuiListener> LISTENERS = new ArrayList<>();
+    private static final List<GuiListener> LISTENERS = new ArrayList<GuiListener>();
 
     public static void registerListener(GuiListener listener) {
         LISTENERS.add(listener);
@@ -30,3 +34,4 @@ public class GuiManager {
         LISTENERS.forEach(it -> it.onlineStatusChanged(channel, count));
     }
 }
+

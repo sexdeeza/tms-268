@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.其他;
 
 import Client.MapleCharacter;
@@ -7,23 +10,21 @@ import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.盜賊通用;
+import Config.constants.skills.通用V核心;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static Config.constants.skills.通用V核心.盜賊通用.必死決心;
-
-public class 全部盜賊 extends AbstractSkillHandler {
-
+public class 全部盜賊
+extends AbstractSkillHandler {
     public 全部盜賊() {
-        for (Field field : 盜賊通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.盜賊通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -36,10 +37,10 @@ public class 全部盜賊 extends AbstractSkillHandler {
 
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
-        if (effect.getSourceId() == 必死決心) {
-            statups.put(SecondaryStat.IndiePMdR, effect.getInfo().get(MapleStatInfo.y));
-            statups.put(SecondaryStat.IndieEVARReduceR, effect.getInfo().get(MapleStatInfo.x));
-            statups.put(SecondaryStat.IndieHitDamR, effect.getInfo().get(MapleStatInfo.z));
+        if (effect.getSourceId() == 400041032) {
+            statups.put(SecondaryStat.IndiePMdR, effect.getInfo().get((Object)MapleStatInfo.y));
+            statups.put(SecondaryStat.IndieEVARReduceR, effect.getInfo().get((Object)MapleStatInfo.x));
+            statups.put(SecondaryStat.IndieHitDamR, effect.getInfo().get((Object)MapleStatInfo.z));
             statups.put(SecondaryStat.ReadyToDie, 1);
             return 1;
         }
@@ -48,8 +49,8 @@ public class 全部盜賊 extends AbstractSkillHandler {
 
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 必死決心) {
-            final int value = applyto.getBuffedIntValue(SecondaryStat.ReadyToDie) + 1;
+        if (applier.effect.getSourceId() == 400041032) {
+            int value = applyto.getBuffedIntValue(SecondaryStat.ReadyToDie) + 1;
             if (value > 2) {
                 applier.overwrite = false;
                 applier.localstatups.clear();
@@ -65,7 +66,7 @@ public class 全部盜賊 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -100,3 +101,4 @@ public class 全部盜賊 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

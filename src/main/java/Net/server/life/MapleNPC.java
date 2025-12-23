@@ -1,12 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
 import Client.MapleClient;
+import Net.server.life.AbstractLoadedMapleLife;
 import Net.server.maps.MapleMapObjectType;
 import Net.server.shop.MapleShopFactory;
 import Packet.NPCPacket;
 
-public class MapleNPC extends AbstractLoadedMapleLife {
-
+public class MapleNPC
+extends AbstractLoadedMapleLife {
     private final int mapid;
     private String name = "MISSINGNO";
     private boolean custom = false;
@@ -20,11 +24,11 @@ public class MapleNPC extends AbstractLoadedMapleLife {
     }
 
     public boolean hasShop() {
-        return MapleShopFactory.getInstance().getShopForNPC(getId()) != null;
+        return MapleShopFactory.getInstance().getShopForNPC(this.getId()) != null;
     }
 
     public void sendShop(MapleClient c) {
-        MapleShopFactory.getInstance().getShopForNPC(getId()).sendShop(c);
+        MapleShopFactory.getInstance().getShopForNPC(this.getId()).sendShop(c);
     }
 
     @Override
@@ -34,7 +38,7 @@ public class MapleNPC extends AbstractLoadedMapleLife {
 
     @Override
     public void sendSpawnData(MapleClient client) {
-        if (getId() < 9901000 && getId() != 9000069 && getId() != 9000133) {
+        if (this.getId() < 9901000 && this.getId() != 9000069 && this.getId() != 9000133) {
             client.announce(NPCPacket.spawnNPC(this));
             client.announce(NPCPacket.spawnNPCRequestController(this, true));
         }
@@ -42,9 +46,9 @@ public class MapleNPC extends AbstractLoadedMapleLife {
 
     @Override
     public void sendDestroyData(MapleClient client) {
-        client.announce(NPCPacket.removeNPC(getObjectId()));
-        if (!isHidden() && client.getPlayer() != null && client.getPlayer().getMap() != null && client.getPlayer().getMap().isNpcHide(getId())) {
-            client.announce(NPCPacket.removeNPCController(getObjectId(), false));
+        client.announce(NPCPacket.removeNPC(this.getObjectId()));
+        if (!this.isHidden() && client.getPlayer() != null && client.getPlayer().getMap() != null && client.getPlayer().getMap().isNpcHide(this.getId())) {
+            client.announce(NPCPacket.removeNPCController(this.getObjectId(), false));
         }
     }
 
@@ -54,27 +58,29 @@ public class MapleNPC extends AbstractLoadedMapleLife {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String n) {
         this.name = n;
     }
 
+    @Override
     public boolean isCustom() {
-        return custom;
+        return this.custom;
     }
 
+    @Override
     public void setCustom(boolean custom) {
         this.custom = custom;
     }
 
     public int getMapid() {
-        return mapid;
+        return this.mapid;
     }
 
     public int getOwnerid() {
-        return ownerid;
+        return this.ownerid;
     }
 
     public void setOwnerid(int ownerid) {
@@ -82,11 +88,11 @@ public class MapleNPC extends AbstractLoadedMapleLife {
     }
 
     public boolean isMove() {
-        return move;
+        return this.move;
     }
 
     public void setMove(boolean move) {
         this.move = move;
     }
-
 }
+

@@ -1,6 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
 public interface MonsterListener {
-
-    void monsterKilled();
+    public void monsterKilled();
 }
+

@@ -1,9 +1,17 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
 
 public class RaffleItem {
-
-    private int id, period, itemId, quantity, chance, type;
-    private boolean smega, allow;
+    private int id;
+    private int period;
+    private int itemId;
+    private int quantity;
+    private int chance;
+    private int type;
+    private boolean smega;
+    private boolean allow;
 
     public RaffleItem(int id, int period, int itemId, int quantity, int chance, boolean smega, int type, boolean allow) {
         this.id = id;
@@ -17,35 +25,35 @@ public class RaffleItem {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public int getPeriod() {
-        return period;
+        return this.period;
     }
 
     public int getItemId() {
-        return itemId;
+        return this.itemId;
     }
 
     public int getQuantity() {
-        return quantity;
+        return this.quantity;
     }
 
     public int getChance() {
-        return chance;
+        return this.chance;
     }
 
     public boolean isSmega() {
-        return smega;
+        return this.smega;
     }
 
     public int getType() {
-        return type;
+        return this.type;
     }
 
     public boolean isAllow() {
-        return allow;
+        return this.allow;
     }
 
     public void setId(int value) {
@@ -80,3 +88,4 @@ public class RaffleItem {
         this.allow = value;
     }
 }
+

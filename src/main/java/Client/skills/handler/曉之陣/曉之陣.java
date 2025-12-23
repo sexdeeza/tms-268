@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.曉之陣;
 
 import Client.MapleCharacter;
@@ -6,23 +9,21 @@ import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.曉之陣通用;
+import Config.constants.skills.通用V核心;
 import Net.server.life.MapleMonster;
+import java.awt.Point;
+import java.lang.reflect.Field;
 import tools.Randomizer;
 import tools.data.MaplePacketReader;
 
-import java.awt.*;
-import java.lang.reflect.Field;
-
-import static Config.constants.skills.通用V核心.曉之陣通用.*;
-
-public class 曉之陣 extends AbstractSkillHandler {
-
+public class 曉之陣
+extends AbstractSkillHandler {
     public 曉之陣() {
-        for (Field field : 曉之陣通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.曉之陣通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -36,11 +37,11 @@ public class 曉之陣 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 集結曉之陣_上杉謙信:
-            case 集結曉之陣_安倍晴明:
-            case 集結曉之陣_菖蒲:
-            case 集結曉之陣_武田信玄: {
-                return 集結曉之陣;
+            case 400001032: 
+            case 400001033: 
+            case 400001034: 
+            case 400001035: {
+                return 400001031;
             }
         }
         return -1;
@@ -48,14 +49,14 @@ public class 曉之陣 extends AbstractSkillHandler {
 
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 集結曉之陣) {
-            final int[] array6 = new int[]{集結曉之陣_上杉謙信, 集結曉之陣_安倍晴明, 集結曉之陣_菖蒲, 集結曉之陣_武田信玄};
-            final int id1 = 集結曉之陣_上杉謙信 + Randomizer.nextInt(4);
-            for (int l = 集結曉之陣_上杉謙信; l <= 集結曉之陣_武田信玄; ++l) {
+        if (applier.effect.getSourceId() == 400001031) {
+            int id2;
+            int[] array6 = new int[]{400001032, 400001033, 400001034, 400001035};
+            int id1 = 400001032 + Randomizer.nextInt(4);
+            for (int l = 400001032; l <= 400001035; ++l) {
                 chr.dispelEffect(l);
             }
-            int id2;
-            while ((id2 = 集結曉之陣_上杉謙信 + Randomizer.nextInt(4)) == id1) {
+            while ((id2 = 400001032 + Randomizer.nextInt(4)) == id1) {
             }
             applier.effect = chr.getSkillEffect(id1);
             chr.getSkillEffect(id2).applyTo(chr, new Point(chr.getPosition().x + 50, chr.getPosition().y));
@@ -65,7 +66,7 @@ public class 曉之陣 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -100,3 +101,4 @@ public class 曉之陣 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

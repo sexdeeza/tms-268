@@ -1,23 +1,28 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
 import Client.MapleCharacter;
 import Client.SecondaryStat;
 import Packet.MaplePacketCreator;
-import tools.Randomizer;
-
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import tools.Randomizer;
 
-public class MapleMount implements Serializable {
-
+public class MapleMount
+implements Serializable {
     private static final long serialVersionUID = 9179541993413738569L;
-    private int itemid, skillid, exp;
-    private byte fatigue, level;
+    private int itemid;
+    private int skillid;
+    private int exp;
+    private byte fatigue;
+    private byte level;
     private transient boolean changed = false;
-    private long lastFatigue = 0;
+    private long lastFatigue = 0L;
     private transient WeakReference<MapleCharacter> owner;
 
     public MapleMount() {
@@ -29,105 +34,96 @@ public class MapleMount implements Serializable {
         this.fatigue = fatigue;
         this.level = level;
         this.exp = exp;
-        this.owner = new WeakReference<>(owner);
+        this.owner = new WeakReference<MapleCharacter>(owner);
     }
 
     public void saveMount(Connection con, int charid) throws SQLException {
-        if (!changed) {
+        if (!this.changed) {
             return;
         }
         PreparedStatement ps = con.prepareStatement("UPDATE mountdata SET `Level` = ?, `Exp` = ?, `Fatigue` = ? WHERE characterid = ?");
-        ps.setByte(1, level);
-        ps.setInt(2, exp);
-        ps.setByte(3, fatigue);
+        ps.setByte(1, this.level);
+        ps.setInt(2, this.exp);
+        ps.setByte(3, this.fatigue);
         ps.setInt(4, charid);
         ps.executeUpdate();
         ps.close();
     }
 
     public int getItemId() {
-        return itemid;
+        return this.itemid;
     }
 
     public void setItemId(int c) {
-        changed = true;
+        this.changed = true;
         this.itemid = c;
     }
 
     public int getSkillId() {
-        return skillid;
+        return this.skillid;
     }
 
     public byte getFatigue() {
-        return fatigue;
+        return this.fatigue;
     }
 
     public void setFatigue(byte amount) {
-        changed = true;
-        fatigue += amount;
-        if (fatigue < 0) {
-            fatigue = 0;
+        this.changed = true;
+        this.fatigue = (byte)(this.fatigue + amount);
+        if (this.fatigue < 0) {
+            this.fatigue = 0;
         }
     }
 
     public int getExp() {
-        return exp;
+        return this.exp;
     }
 
     public void setExp(int c) {
-        changed = true;
+        this.changed = true;
         this.exp = c;
     }
 
     public byte getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(byte c) {
-        changed = true;
+        this.changed = true;
         this.level = c;
     }
 
     public void increaseFatigue() {
-        changed = true;
-        this.fatigue++;
-        if (fatigue > 100 && owner.get() != null) {
-            owner.get().dispelEffect(SecondaryStat.RideVehicle);
+        this.changed = true;
+        this.fatigue = (byte)(this.fatigue + 1);
+        if (this.fatigue > 100 && this.owner.get() != null) {
+            ((MapleCharacter)this.owner.get()).dispelEffect(SecondaryStat.RideVehicle);
         }
-        update();
+        this.update();
     }
 
     public boolean canTire(long now) {
-        return lastFatigue > 0 && lastFatigue + 30000 < now;
+        return this.lastFatigue > 0L && this.lastFatigue + 30000L < now;
     }
 
     public void startSchedule() {
-        lastFatigue = System.currentTimeMillis();
+        this.lastFatigue = System.currentTimeMillis();
     }
 
     public void cancelSchedule() {
-        lastFatigue = 0;
+        this.lastFatigue = 0L;
     }
 
     public void increaseExp() {
-        int e;
-        if (level >= 1 && level <= 7) {
-            e = Randomizer.nextInt(10) + 15;
-        } else if (level >= 8 && level <= 15) {
-            e = Randomizer.nextInt(13) + 15 / 2;
-        } else if (level >= 16 && level <= 24) {
-            e = Randomizer.nextInt(23) + 18 / 2;
-        } else {
-            e = Randomizer.nextInt(28) + 25 / 2;
-        }
-        setExp(exp + e);
+        int e = this.level >= 1 && this.level <= 7 ? Randomizer.nextInt(10) + 15 : (this.level >= 8 && this.level <= 15 ? Randomizer.nextInt(13) + 7 : (this.level >= 16 && this.level <= 24 ? Randomizer.nextInt(23) + 9 : Randomizer.nextInt(28) + 12));
+        this.setExp(this.exp + e);
     }
 
     public void update() {
-        MapleCharacter chr = owner.get();
+        MapleCharacter chr = (MapleCharacter)this.owner.get();
         if (chr != null) {
-            //cancelSchedule();
             chr.getMap().broadcastMessage(MaplePacketCreator.updateMount(chr, false));
         }
     }
 }
+

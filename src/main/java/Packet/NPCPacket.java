@@ -1,6 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.shop.MapleShopResponse
+ *  Packet.NPCPacket$1
  */
 package Packet;
 
@@ -8,47 +11,39 @@ import Client.MapleClient;
 import Client.inventory.Item;
 import Client.inventory.MapleInventoryType;
 import Config.constants.enums.NpcMessageType;
-import Config.constants.enums.TrunkOptType;
 import Net.server.life.MapleNPC;
 import Net.server.life.PlayerNPC;
 import Net.server.shop.MapleShop;
 import Net.server.shop.MapleShopResponse;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
+import Packet.NPCPacket;
+import Packet.PacketHelper;
 import Plugin.script.NpcScriptInfo;
 import connection.packet.ScriptMan;
+import java.util.Collection;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.MaplePacketLittleEndianWriter;
 
-import java.util.Collection;
-import java.util.List;
-
-/**
- * @author admin
- */
 public class NPCPacket {
-
-    // InitialQuiz
-    public static final int InitialQuizRes_Request = 0x0;
-    public static final int InitialQuizRes_Fail = 0x1;
-    // InitialSpeedQuiz
-    public static final int TypeSpeedQuizNpc = 0x0;
-    public static final int TypeSpeedQuizMob = 0x1;
-    public static final int TypeSpeedQuizItem = 0x2;
-    // SpeakerTypeID
-    public static final int NoESC = 0x1;
-    public static final int NpcReplacedByUser = 0x2;
-    public static final int NpcReplayedByNpc = 0x4;
-    public static final int FlipImage = 0x8;
+    public static final int InitialQuizRes_Request = 0;
+    public static final int InitialQuizRes_Fail = 1;
+    public static final int TypeSpeedQuizNpc = 0;
+    public static final int TypeSpeedQuizMob = 1;
+    public static final int TypeSpeedQuizItem = 2;
+    public static final int NoESC = 1;
+    public static final int NpcReplacedByUser = 2;
+    public static final int NpcReplayedByNpc = 4;
+    public static final int FlipImage = 8;
     private static final Logger log = LoggerFactory.getLogger(NPCPacket.class);
 
     public static byte[] sendNpcHide(List<Integer> hide) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_LimitedNPCDisableInfo.getValue());
         mplew.write(hide.size());
         for (Integer h : hide) {
-            mplew.writeInt(h.intValue());
+            mplew.writeInt(h);
         }
         return mplew.getPacket();
     }
@@ -57,16 +52,14 @@ public class NPCPacket {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_FieldNpcEnter.getValue());
         mplew.writeInt(life.getObjectId());
-        writeNpcData(mplew, life, false);
+        NPCPacket.writeNpcData(mplew, life, false);
         return mplew.getPacket();
     }
 
     public static byte[] removeNPC(int objectid) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_NpcLeaveField.getValue());
         mplew.writeInt(objectid);
-
         return mplew.getPacket();
     }
 
@@ -89,8 +82,8 @@ public class NPCPacket {
         mplew.writeShort(npc.getCurrentFH());
         mplew.writeShort(npc.getRx0());
         mplew.writeShort(npc.getRx1());
-        mplew.writeShort(npc.getCy()); // v267 官方改變封包y軸
-        mplew.writeShort(npc.getCy()); // v267 官方改變封包y軸
+        mplew.writeShort(npc.getCy());
+        mplew.writeShort(npc.getCy());
         mplew.write(MiniMap || npc.isHidden() ? 0 : 1);
         mplew.writeInt(0);
         mplew.writeInt(0);
@@ -110,19 +103,17 @@ public class NPCPacket {
         mplew.writeShort(OutHeader.LP_NpcController.getValue());
         mplew.write(1);
         mplew.writeInt(life.getObjectId());
-        writeNpcData(mplew, life, MiniMap);
+        NPCPacket.writeNpcData(mplew, life, MiniMap);
         return mplew.getPacket();
     }
 
     public static byte[] spawnPlayerNPC(PlayerNPC npc) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.PLAYER_NPC.getValue());
         mplew.write(npc.getF() == 1 ? 0 : 1);
         mplew.writeInt(npc.getId());
         mplew.writeMapleAsciiString(npc.getName());
         npc.getPlayer().getAvatarLook().encode(mplew, false);
-
         return mplew.getPacket();
     }
 
@@ -138,7 +129,6 @@ public class NPCPacket {
         nsi.setPrevPossible(bPrev);
         nsi.setNextPossible(bNext);
         nsi.setDelay(n5);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.Say).getData();
     }
 
@@ -149,7 +139,6 @@ public class NPCPacket {
         nsi.setSpeakerType(b);
         nsi.setParam(n2);
         nsi.setImages(array);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.SayImage).getData();
     }
 
@@ -166,7 +155,6 @@ public class NPCPacket {
         nsi.setDelay(n5);
         nsi.setUnk(n6);
         nsi.setBUnk(b5);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.SayIllustration).getData();
     }
 
@@ -182,7 +170,6 @@ public class NPCPacket {
         nsi.setNextPossible(b4);
         nsi.setDelay(n5);
         nsi.setUnk(n6);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.SayDualIllustration).getData();
     }
 
@@ -194,7 +181,6 @@ public class NPCPacket {
         nsi.setParam(n3);
         nsi.setInnerOverrideSpeakerTemplateID(n2);
         nsi.setText(s);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskYesNo).getData();
     }
 
@@ -206,7 +192,6 @@ public class NPCPacket {
         nsi.setParam(n3);
         nsi.setInnerOverrideSpeakerTemplateID(diffnpc);
         nsi.setText(s);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskAccept).getData();
     }
 
@@ -218,7 +203,6 @@ public class NPCPacket {
         nsi.setParam(n3);
         nsi.setInnerOverrideSpeakerTemplateID(diffnpc);
         nsi.setText(s);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskAcceptNoEsc).getData();
     }
 
@@ -233,7 +217,6 @@ public class NPCPacket {
         nsi.setDefaultText(sMsgDefault);
         nsi.setMin(nLenMin);
         nsi.setMax(nLenMax);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskText).getData();
     }
 
@@ -247,7 +230,6 @@ public class NPCPacket {
         nsi.setDefaultText(sMsgDefault);
         nsi.setCol(nCol);
         nsi.setLine(nLine);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskBoxtext).getData();
     }
 
@@ -261,7 +243,6 @@ public class NPCPacket {
         nsi.setDefaultNumber(nDef);
         nsi.setMin(nMin);
         nsi.setMax(nMax);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskNumber).getData();
     }
 
@@ -282,12 +263,11 @@ public class NPCPacket {
         nsi.setSpeakerType(b);
         nsi.setParam(0);
         nsi.setColor(0);
-        nsi.setSecondLookValue(b2 ? 1 : b3 ? 2 : 0);
+        nsi.setSecondLookValue(b2 ? 1 : (b3 ? 2 : 0));
         nsi.setText(s);
         nsi.setOptions(array);
         nsi.setItemID(n2);
         nsi.setSrcBeauty(0);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskAvatar).getData();
     }
 
@@ -301,7 +281,6 @@ public class NPCPacket {
         nsi.setOptions(array);
         nsi.setItemID(cardID);
         nsi.setSrcBeauty(0);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskAndroid).getData();
     }
 
@@ -311,7 +290,6 @@ public class NPCPacket {
         nsi.setSpeakerType(b);
         nsi.setParam(0);
         nsi.setColor(0);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskAngelicBuster).getData();
     }
 
@@ -327,7 +305,6 @@ public class NPCPacket {
         nsi.setOptions2(array2);
         nsi.setSrcBeauty(0);
         nsi.setSrcBeauty2(0);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskAvatarZero).getData();
     }
 
@@ -339,7 +316,6 @@ public class NPCPacket {
         nsi.setColor(0);
         nsi.setText(sMsg);
         nsi.setItems(items);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskPet).getData();
     }
 
@@ -351,7 +327,6 @@ public class NPCPacket {
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskPetAll).getData();
     }
 
@@ -368,7 +343,6 @@ public class NPCPacket {
         nsi.setMin(nMinInput);
         nsi.setMax(nMaxInput);
         nsi.setTime(0);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.InitialQuiz).getData();
     }
 
@@ -384,7 +358,6 @@ public class NPCPacket {
         nsi.setCorrectAnswers(nCorrect);
         nsi.setRemaining(nRemain);
         nsi.setTime(tRemainInitialQuiz);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.InitialSpeedQuiz).getData();
     }
 
@@ -398,7 +371,6 @@ public class NPCPacket {
         nsi.setText(s);
         nsi.setHintText(s2);
         nsi.setTime(n3);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.ICQuiz).getData();
     }
 
@@ -414,7 +386,6 @@ public class NPCPacket {
         nsi.setCorrectAnswers(nCorrect);
         nsi.setRemaining(nRemain);
         nsi.setTime(tRemainInitialQuiz);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskOlympicQuiz).getData();
     }
 
@@ -425,7 +396,6 @@ public class NPCPacket {
         nsi.setParam(n2);
         nsi.setColor(0);
         nsi.setDefaultNumber(n3);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.OnAskNumberUseKeyPad).getData();
     }
 
@@ -437,7 +407,6 @@ public class NPCPacket {
         nsi.setColor(0);
         nsi.setDefaultNumber(n3);
         nsi.setText(s);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskUserSurvey).getData();
     }
 
@@ -450,7 +419,6 @@ public class NPCPacket {
         nsi.setDlgType(bSlideDlgEX);
         nsi.setDefaultSelect(nIndex);
         nsi.setText(sMsg);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskSlideMenu).getData();
     }
 
@@ -464,7 +432,6 @@ public class NPCPacket {
         nsi.setDlgType(n2);
         nsi.setDefaultSelect(0);
         nsi.setSelectText(array);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskSelectMenu).getData();
     }
 
@@ -476,17 +443,13 @@ public class NPCPacket {
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(items);
-
         return ScriptMan.scriptMessage(nsi, NpcMessageType.AskActionPetEvolution).getData();
     }
 
-    /*
-     * 打開1個商店
-     */
     public static byte[] getNPCShop(int shopId, MapleShop shop, MapleClient c) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_OpenShopDlg.getValue());
-        mplew.writeInt(shopId);//V.160 new
+        mplew.writeInt(shopId);
         mplew.write(0);
         PacketHelper.addShopInfo(mplew, shop, c);
         return mplew.getPacket();
@@ -565,18 +528,14 @@ public class NPCPacket {
 
         return mplew.getPacket();
     }
-
-    /*
-     * 倉庫取出
-     */
     public static byte[] takeOutStorage(short slots, MapleInventoryType type, Collection<Item> items) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
-        mplew.write(TrunkOptType.TrunkRes_GetSuccess);
+        mplew.write(9);
         mplew.write(slots & 0xFF);
         mplew.write(0);
         mplew.write(0);
-        if(type != MapleInventoryType.EQUIP) {
+        if (type != MapleInventoryType.EQUIP) {
             mplew.write(0);
             mplew.write(0);
             mplew.write(0);
@@ -590,61 +549,44 @@ public class NPCPacket {
         for (Item item : items) {
             PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
         }
-
         return mplew.getPacket();
     }
 
-    /*
-     * 取回道具
-     * 0x0A = 請確認是不是你的背包空間不夠。
-     * 0x0B = 楓幣不足
-     * 保存道具
-     * 0x10 = 楓幣不足
-     * 0x11 = 倉庫已滿
-     */
     public static byte[] getStorageError(byte op) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
         mplew.write(op);
-
         return mplew.getPacket();
     }
 
-    /*
-     * 倉庫存入道具 V267
-     */
     public static byte[] storeStorage(short slots, MapleInventoryType type, Collection<Item> items) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
-        mplew.write(TrunkOptType.TrunkRes_PutSuccess);
+        mplew.write(13);
         mplew.write(slots & 0xFF);
         mplew.write(0);
         mplew.write(0);
-        if(type != MapleInventoryType.EQUIP) {
+        if (type != MapleInventoryType.EQUIP) {
             mplew.write(0);
             mplew.write(0);
             mplew.write(0);
             mplew.write(1);
             mplew.writeZeroBytes(94);
         } else {
-        mplew.write(1);
-        mplew.writeZeroBytes(97);
+            mplew.write(1);
+            mplew.writeZeroBytes(97);
         }
-        mplew.write(items.size()); //仔裡面的道具總數輛
+        mplew.write(items.size());
         for (Item item : items) {
             PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
         }
         return mplew.getPacket();
     }
 
-    /*
-     * 倉庫道具排序
-     */
     public static byte[] arrangeStorage(short slots, Collection<Item> items, boolean changed) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
-        mplew.write(TrunkOptType.TrunkRes_SortItem);
+        mplew.write(15);
         mplew.write(slots & 0xFF);
         mplew.write(0);
         mplew.write(0);
@@ -654,7 +596,6 @@ public class NPCPacket {
         mplew.write(1);
         mplew.write(1);
         mplew.writeZeroBytes(96);
-
         mplew.write(items.size());
         for (Item item : items) {
             PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
@@ -664,13 +605,10 @@ public class NPCPacket {
         return mplew.getPacket();
     }
 
-    /*
-     * 倉庫保存楓幣
-     */
     public static byte[] mesoStorage(short slots, long meso) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
-        mplew.write(TrunkOptType.TrunkRes_MoneySuccess);
+        mplew.write(19);
         mplew.write(slots & 0xFF);
         mplew.write(0);
         mplew.write(1);
@@ -682,20 +620,17 @@ public class NPCPacket {
     public static byte[] getStoragePwd(boolean wrong) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
-        mplew.write(TrunkOptType.TrunkRes_TrunkCheckSSN2);
+        mplew.write(23);
         mplew.write(wrong);
         return mplew.getPacket();
     }
 
-    /*
-     * 打開倉庫
-     */
     public static byte[] getStorage(int npcId, short slots, Collection<Item> items, long meso) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TrunkResult.getValue());
-        mplew.write(TrunkOptType.TrunkRes_OpenTrunkDlg);
+        mplew.write(24);
         mplew.writeInt(npcId);
-        mplew.write(slots & 0xFF); // 倉庫欄位格數
+        mplew.write(slots & 0xFF);
         mplew.write(0);
         mplew.write(1);
         mplew.write(1);
@@ -707,33 +642,11 @@ public class NPCPacket {
         mplew.write(1);
         mplew.writeZeroBytes(52);
         mplew.writeLong(meso);
-        mplew.write(items.size()); //裡面的道具總數
+        mplew.write(items.size());
         for (Item item : items) {
             PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
         }
-        mplew.writeLong(0);
-        return mplew.getPacket();
-    }
-
-    public static byte[] setNPCSpecialAction(int npcoid, String string) {
-        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-        mplew.writeShort(OutHeader.LP_NpcSpecialAction.getValue());
-        mplew.writeInt(npcoid);
-        mplew.writeMapleAsciiString(string);
-        mplew.writeInt(0);
-        mplew.write(0);
-        return mplew.getPacket();
-    }
-
-    public static byte[] updateNPCSpecialAction(int npcoid, int value, int x, int y) {
-        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
-        mplew.writeShort(OutHeader.LP_ForceMoveByScript.getValue());
-        mplew.writeInt(npcoid);
-        mplew.writeInt(value);
-        mplew.writeInt(x);
-        mplew.writeInt(y);
-
+        mplew.writeLong(0L);
         return mplew.getPacket();
     }
 
@@ -751,7 +664,6 @@ public class NPCPacket {
     public static byte[] ResetBuyLimitCount(int shopId, List<Integer> list) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_ResetBuyLimitcount.getValue());
-
         mplew.writeInt(shopId);
         mplew.writeInt(list.size());
         for (Integer integer : list) {
@@ -759,6 +671,5 @@ public class NPCPacket {
         }
         return mplew.getPacket();
     }
-
-
 }
+

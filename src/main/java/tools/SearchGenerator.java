@@ -7,8 +7,8 @@ import Config.constants.ServerConstants;
 import Net.server.MapleItemInformationProvider;
 import Net.server.StructSetItem;
 import Net.server.VCoreDataEntry;
-import Opcode.Headler.InHeader;
-import Opcode.Headler.OutHeader;
+import Opcode.header.InHeader;
+import Opcode.header.OutHeader;
 import Plugin.provider.loaders.StringData;
 
 import java.util.*;

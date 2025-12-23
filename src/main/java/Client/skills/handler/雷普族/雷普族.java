@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.雷普族;
 
 import Client.MapleCharacter;
@@ -8,23 +11,20 @@ import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.雷普族通用;
+import Config.constants.skills.通用V核心;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static Config.constants.skills.通用V核心.雷普族通用.魔法迴路效能全開;
-import static Config.constants.skills.通用V核心.雷普族通用.魔法迴路效能全開_1;
-
-public class 雷普族 extends AbstractSkillHandler {
-
+public class 雷普族
+extends AbstractSkillHandler {
     public 雷普族() {
-        for (Field field : 雷普族通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.雷普族通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -37,15 +37,15 @@ public class 雷普族 extends AbstractSkillHandler {
 
     @Override
     public int getLinkedSkillID(int skillId) {
-        if (skillId == 魔法迴路效能全開_1) {
-            return 魔法迴路效能全開;
+        if (skillId == 400001038) {
+            return 400001037;
         }
         return -1;
     }
 
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
-        if (effect.getSourceId() == 魔法迴路效能全開) {
+        if (effect.getSourceId() == 400001037) {
             statups.put(SecondaryStat.LPMagicCircuitFullDrive, 1);
             statups.put(SecondaryStat.IndieDamR, 1);
             return 1;
@@ -55,9 +55,9 @@ public class 雷普族 extends AbstractSkillHandler {
 
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 魔法迴路效能全開) {
-            final SecondaryStatValueHolder mbsvh;
-            if ((mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.LPMagicCircuitFullDrive)) != null) {
+        if (applier.effect.getSourceId() == 400001037) {
+            SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.LPMagicCircuitFullDrive);
+            if (mbsvh != null) {
                 applier.duration = mbsvh.getLeftTime();
             }
             applier.localstatups.put(SecondaryStat.LPMagicCircuitFullDrive, 1);
@@ -68,7 +68,7 @@ public class 雷普族 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -103,3 +103,4 @@ public class 雷普族 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

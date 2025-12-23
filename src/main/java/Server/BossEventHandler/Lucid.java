@@ -4,7 +4,7 @@ import Client.MapleCharacter;
 import Net.server.life.MapleLifeFactory;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Server.BossEventHandler.spawnL.Butterfly;
 import Server.BossEventHandler.spawnL.FairyDust;
 import tools.data.MaplePacketLittleEndianWriter;
@@ -266,5 +266,9 @@ public class Lucid {
         mplew.writeShort(OutHeader.LUCID2_WELCOME_BARRAGE.getValue());
         mplew.writeInt(type);
         return mplew.getPacket();
+    }
+
+    public static void startField2(MapleCharacter chr) {
+
     }
 }

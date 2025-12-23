@@ -1,17 +1,15 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Server;
 
-/**
- * @author PlayDK
- */
 public enum ServerType {
     ChannelServer,
     LoginServer,
     WorldServer,
     CashShopServer,
     AuctionServer,
-    ChatServer
+    ChatServer;
+
 }
+

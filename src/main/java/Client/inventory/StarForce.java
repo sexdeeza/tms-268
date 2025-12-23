@@ -1,9 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
+import Client.inventory.EnchantScrollFlag;
+import Client.inventory.Equip;
 import Config.constants.ItemConstants;
 import Net.server.MapleItemInformationProvider;
 import Server.channel.handler.EnchantHandler;
-
 import java.util.Map;
 
 public class StarForce {
@@ -26,270 +30,278 @@ public class StarForce {
     private int ignorePDR;
     private int totalDamage;
     private int allStat;
-
     private byte level;
 
     public StarForce() {
-        reset();
+        this.reset();
     }
 
     public StarForce(StarForce s) {
-        str = s.str;
-        dex = s.dex;
-        _int = s._int;
-        luk = s.luk;
-        hp = s.hp;
-        mp = s.mp;
-        pad = s.pad;
-        mad = s.mad;
-        pdd = s.pdd;
-        mdd = s.mdd;
-        acc = s.acc;
-        avoid = s.avoid;
-        hands = s.hands;
-        speed = s.speed;
-        jump = s.jump;
-        bossDamage = s.bossDamage;
-        ignorePDR = s.ignorePDR;
-        totalDamage = s.totalDamage;
-        allStat = s.allStat;
-        level = s.level;
+        this.str = s.str;
+        this.dex = s.dex;
+        this._int = s._int;
+        this.luk = s.luk;
+        this.hp = s.hp;
+        this.mp = s.mp;
+        this.pad = s.pad;
+        this.mad = s.mad;
+        this.pdd = s.pdd;
+        this.mdd = s.mdd;
+        this.acc = s.acc;
+        this.avoid = s.avoid;
+        this.hands = s.hands;
+        this.speed = s.speed;
+        this.jump = s.jump;
+        this.bossDamage = s.bossDamage;
+        this.ignorePDR = s.ignorePDR;
+        this.totalDamage = s.totalDamage;
+        this.allStat = s.allStat;
+        this.level = s.level;
     }
 
     public void reset() {
-        str = 0;
-        dex = 0;
-        _int = 0;
-        luk = 0;
-        hp = 0;
-        mp = 0;
-        pad = 0;
-        mad = 0;
-        pdd = 0;
-        mdd = 0;
-        acc = 0;
-        avoid = 0;
-        hands = 0;
-        speed = 0;
-        jump = 0;
-        bossDamage = 0;
-        ignorePDR = 0;
-        totalDamage = 0;
-        allStat = 0;
-        level = 0;
+        this.str = 0;
+        this.dex = 0;
+        this._int = 0;
+        this.luk = 0;
+        this.hp = 0;
+        this.mp = 0;
+        this.pad = 0;
+        this.mad = 0;
+        this.pdd = 0;
+        this.mdd = 0;
+        this.acc = 0;
+        this.avoid = 0;
+        this.hands = 0;
+        this.speed = 0;
+        this.jump = 0;
+        this.bossDamage = 0;
+        this.ignorePDR = 0;
+        this.totalDamage = 0;
+        this.allStat = 0;
+        this.level = 0;
     }
 
-    public void resetEquipStats(final Equip equip) {
-        byte nLevel = level;
-        reset();
-        for (int i = 0; i < nLevel; i++) {
+    public void resetEquipStats(Equip equip) {
+        int nLevel = this.level;
+        this.reset();
+        block16: for (int i = 0; i < nLevel; ++i) {
             Map<EnchantScrollFlag, Integer> enchantMap = EnchantHandler.getEnchantScrollList(equip);
-            level++;
-            if (enchantMap.containsKey(EnchantScrollFlag.力量)) {
-                str += enchantMap.get(EnchantScrollFlag.力量);
+            this.level = (byte)(this.level + 1);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.力量)) {
+                this.str += enchantMap.get((Object)EnchantScrollFlag.力量).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.敏捷)) {
-                dex += enchantMap.get(EnchantScrollFlag.敏捷);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.敏捷)) {
+                this.dex += enchantMap.get((Object)EnchantScrollFlag.敏捷).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.智力)) {
-                _int += enchantMap.get(EnchantScrollFlag.智力);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.智力)) {
+                this._int += enchantMap.get((Object)EnchantScrollFlag.智力).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.幸運)) {
-                luk += enchantMap.get(EnchantScrollFlag.幸運);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.幸運)) {
+                this.luk += enchantMap.get((Object)EnchantScrollFlag.幸運).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.Hp)) {
-                hp += enchantMap.get(EnchantScrollFlag.Hp);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.Hp)) {
+                this.hp += enchantMap.get((Object)EnchantScrollFlag.Hp).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.Mp)) {
-                mp += enchantMap.get(EnchantScrollFlag.Mp);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.Mp)) {
+                this.mp += enchantMap.get((Object)EnchantScrollFlag.Mp).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.物攻)) {
-                pad += enchantMap.get(EnchantScrollFlag.物攻);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.物攻)) {
+                this.pad += enchantMap.get((Object)EnchantScrollFlag.物攻).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.魔攻)) {
-                mad += enchantMap.get(EnchantScrollFlag.魔攻);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.魔攻)) {
+                this.mad += enchantMap.get((Object)EnchantScrollFlag.魔攻).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.物防)) {
-                pdd += enchantMap.get(EnchantScrollFlag.物防);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.物防)) {
+                this.pdd += enchantMap.get((Object)EnchantScrollFlag.物防).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.魔防)) {
-                mdd += enchantMap.get(EnchantScrollFlag.魔防);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.魔防)) {
+                this.mdd += enchantMap.get((Object)EnchantScrollFlag.魔防).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.命中)) {
-                acc += enchantMap.get(EnchantScrollFlag.命中);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.命中)) {
+                this.acc += enchantMap.get((Object)EnchantScrollFlag.命中).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.迴避)) {
-                avoid += enchantMap.get(EnchantScrollFlag.迴避);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.迴避)) {
+                this.avoid += enchantMap.get((Object)EnchantScrollFlag.迴避).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.手技)) {
-                hands += enchantMap.get(EnchantScrollFlag.手技);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.手技)) {
+                this.hands += enchantMap.get((Object)EnchantScrollFlag.手技).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.速度)) {
-                speed += enchantMap.get(EnchantScrollFlag.速度);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.速度)) {
+                this.speed += enchantMap.get((Object)EnchantScrollFlag.速度).intValue();
             }
-            if (enchantMap.containsKey(EnchantScrollFlag.跳躍)) {
-                jump += enchantMap.get(EnchantScrollFlag.跳躍);
+            if (enchantMap.containsKey((Object)EnchantScrollFlag.跳躍)) {
+                this.jump += enchantMap.get((Object)EnchantScrollFlag.跳躍).intValue();
             }
-            // MVP裝備額外加成
-            if (equip.isMvpEquip()) {
-                if (MapleItemInformationProvider.getInstance().isCash(equip.getItemId()) || ItemConstants.類型.圖騰(equip.getItemId())) {
-                    switch (level) {
-                        case 6:
-                            pad += 5;
-                            mad += 5;
-                            hp += 500;
-                            mp += 500;
-                            break;
-                        case 8:
-                            pad += 10;
-                            mad += 10;
-                            hp += 500;
-                            mp += 500;
-                            break;
-                        case 10:
-                            pad += 10;
-                            mad += 10;
-                            hp += 1000;
-                            mp += 1000;
-                            break;
-                        case 15:
-                            pad += 10;
-                            mad += 10;
-                            hp += 1500;
-                            mp += 1500;
-                            break;
-                        case 20:
-                            pad += 10;
-                            mad += 10;
-                            hp += 2500;
-                            mp += 2500;
-                            break;
-                        case 25:
-                            pad += 10;
-                            mad += 10;
-                            hp += 4000;
-                            mp += 4000;
-                            break;
+            if (!equip.isMvpEquip()) continue;
+            if (MapleItemInformationProvider.getInstance().isCash(equip.getItemId()) || ItemConstants.類型.圖騰(equip.getItemId())) {
+                switch (this.level) {
+                    case 6: {
+                        this.pad += 5;
+                        this.mad += 5;
+                        this.hp += 500;
+                        this.mp += 500;
+                        break;
                     }
-                } else {
-                    switch (level) {
-                        case 6:
-                            ignorePDR += 2;
-                            totalDamage += 2;
-                            allStat += 2;
-                            break;
-                        case 8:
-                            ignorePDR += 2;
-                            totalDamage += 2;
-                            allStat += 2;
-                            break;
-                        case 10:
-                            ignorePDR += 3;
-                            totalDamage += 3;
-                            allStat += 3;
-                            break;
-                        case 15:
-                            ignorePDR += 3;
-                            totalDamage += 3;
-                            allStat += 3;
-                            break;
-                        case 20:
-                            ignorePDR += 5;
-                            totalDamage += 10;
-                            allStat += 5;
-                            break;
-                        case 25:
-                            ignorePDR += 10;
-                            totalDamage += 10;
-                            allStat += 5;
-                            break;
+                    case 8: {
+                        this.pad += 10;
+                        this.mad += 10;
+                        this.hp += 500;
+                        this.mp += 500;
+                        break;
                     }
+                    case 10: {
+                        this.pad += 10;
+                        this.mad += 10;
+                        this.hp += 1000;
+                        this.mp += 1000;
+                        break;
+                    }
+                    case 15: {
+                        this.pad += 10;
+                        this.mad += 10;
+                        this.hp += 1500;
+                        this.mp += 1500;
+                        break;
+                    }
+                    case 20: {
+                        this.pad += 10;
+                        this.mad += 10;
+                        this.hp += 2500;
+                        this.mp += 2500;
+                        break;
+                    }
+                    case 25: {
+                        this.pad += 10;
+                        this.mad += 10;
+                        this.hp += 4000;
+                        this.mp += 4000;
+                    }
+                }
+                continue;
+            }
+            switch (this.level) {
+                case 6: {
+                    this.ignorePDR += 2;
+                    this.totalDamage += 2;
+                    this.allStat += 2;
+                    continue block16;
+                }
+                case 8: {
+                    this.ignorePDR += 2;
+                    this.totalDamage += 2;
+                    this.allStat += 2;
+                    continue block16;
+                }
+                case 10: {
+                    this.ignorePDR += 3;
+                    this.totalDamage += 3;
+                    this.allStat += 3;
+                    continue block16;
+                }
+                case 15: {
+                    this.ignorePDR += 3;
+                    this.totalDamage += 3;
+                    this.allStat += 3;
+                    continue block16;
+                }
+                case 20: {
+                    this.ignorePDR += 5;
+                    this.totalDamage += 10;
+                    this.allStat += 5;
+                    continue block16;
+                }
+                case 25: {
+                    this.ignorePDR += 10;
+                    this.totalDamage += 10;
+                    this.allStat += 5;
                 }
             }
         }
     }
 
     public int getStr() {
-        return str;
+        return this.str;
     }
 
     public int getDex() {
-        return dex;
+        return this.dex;
     }
 
     public int getInt() {
-        return _int;
+        return this._int;
     }
 
     public int getLuk() {
-        return luk;
+        return this.luk;
     }
 
     public int getHp() {
-        return hp;
+        return this.hp;
     }
 
     public int getMp() {
-        return mp;
+        return this.mp;
     }
 
     public int getPad() {
-        return pad;
+        return this.pad;
     }
 
     public int getMad() {
-        return mad;
+        return this.mad;
     }
 
     public int getPdd() {
-        return pdd;
+        return this.pdd;
     }
 
     public int getMdd() {
-        return mdd;
+        return this.mdd;
     }
 
     public int getAcc() {
-        return acc;
+        return this.acc;
     }
 
     public int getAvoid() {
-        return avoid;
+        return this.avoid;
     }
 
     public int getHands() {
-        return hands;
+        return this.hands;
     }
 
     public int getSpeed() {
-        return speed;
+        return this.speed;
     }
 
     public int getJump() {
-        return jump;
+        return this.jump;
     }
 
     public int getBossDamage() {
-        return bossDamage;
+        return this.bossDamage;
     }
 
     public int getIgnorePDR() {
-        return ignorePDR;
+        return this.ignorePDR;
     }
 
     public int getTotalDamage() {
-        return totalDamage;
+        return this.totalDamage;
     }
 
     public int getAllStat() {
-        return allStat;
+        return this.allStat;
     }
 
     public byte getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(byte level) {
         this.level = level;
     }
 }
+

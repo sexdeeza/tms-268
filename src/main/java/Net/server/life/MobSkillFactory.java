@@ -1,37 +1,44 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
 import Client.SecondaryStat;
 import Client.status.MonsterStatus;
-import Database.DatabaseLoader.DatabaseConnection;
+import Database.DatabaseLoader;
 import Database.tools.SqlTool;
 import Net.server.InitializeServer;
 import Net.server.MapleStatInfo;
-import Plugin.provider.*;
+import Net.server.life.MobSkill;
+import Plugin.provider.MapleData;
+import Plugin.provider.MapleDataDirectoryEntry;
+import Plugin.provider.MapleDataEntry;
+import Plugin.provider.MapleDataFileEntry;
+import Plugin.provider.MapleDataProvider;
+import Plugin.provider.MapleDataProviderFactory;
+import Plugin.provider.MapleDataTool;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-
 public class MobSkillFactory {
-
     private static final Logger log = LoggerFactory.getLogger(MobSkillFactory.class);
+    private static final Map<String, MobSkill> mobSkillData = new HashMap<String, MobSkill>();
+    private static final Map<Integer, MobSkill> familiarSkillData = new HashMap<Integer, MobSkill>();
 
-    private static final Map<String, MobSkill> mobSkillData = new HashMap<>();
-    private static final Map<Integer, MobSkill> familiarSkillData = new HashMap<>();
-
-    /**
-     * 加載怪物技能信息
-     */
     public static void initialize() {
-        DatabaseConnection.domain(con -> {
-            if (InitializeServer.WzSqlName.wz_mobskilldata.check(con)) {//load from sql
+        DatabaseLoader.DatabaseConnection.domain(con -> {
+            if (InitializeServer.WzSqlName.wz_mobskilldata.check(con)) {
                 SqlTool.queryAndGetList(con, "SELECT * FROM `wz_mobskilldata`", rs -> {
                     int skillId = rs.getInt("id");
                     int level = rs.getInt("level");
                     MobSkill ret = new MobSkill(skillId, level);
-                    List<Integer> list = new ArrayList<>();
+                    ArrayList<Integer> list = new ArrayList<Integer>();
                     String toSummon = rs.getString("toSummon");
                     if (!toSummon.isEmpty()) {
                         for (String mobid : toSummon.split(",")) {
@@ -63,11 +70,11 @@ public class MobSkillFactory {
                     ret.setLimit(limit);
                     boolean summonOnce = rs.getBoolean("summonOnce");
                     ret.setSummonOnce(summonOnce);
-                    Point lt = decodePointString(rs.getString("lt"));
-                    Point rb = decodePointString(rs.getString("rb"));
+                    Point lt = MobSkillFactory.decodePointString(rs.getString("lt"));
+                    Point rb = MobSkillFactory.decodePointString(rs.getString("rb"));
                     ret.setLtRb(lt, rb);
-                    Point lt2 = decodePointString(rs.getString("lt2"));
-                    Point rb2 = decodePointString(rs.getString("rb2"));
+                    Point lt2 = MobSkillFactory.decodePointString(rs.getString("lt2"));
+                    Point rb2 = MobSkillFactory.decodePointString(rs.getString("rb2"));
                     ret.setLtRb2(lt2, rb2);
                     int areaSequenceDelay = rs.getInt("areaSequenceDelay");
                     ret.setAreaSequenceDelay(areaSequenceDelay);
@@ -77,25 +84,25 @@ public class MobSkillFactory {
                     ret.setForce(force);
                     int forcex = rs.getInt("forcex");
                     ret.setForcex(forcex);
-                    initMobSkillInfo(ret, level);
+                    MobSkillFactory.initMobSkillInfo(ret, level);
                     mobSkillData.put(skillId + ":" + level, ret);
                     return null;
                 });
-            } else {//load from wz and insert into sql
+            } else {
                 InitializeServer.WzSqlName.wz_mobskilldata.drop(con);
                 SqlTool.update(con, "CREATE TABLE `wz_mobskilldata` (`id` int(11) NOT NULL, `level` int NOT NULL,`toSummon` text NOT NULL,`interval` bigint NOT NULL,`time` INT(11) NOT NULL,`hp` int NOT NULL,`mpCon` int NOT NULL,`summonEffect` int NOT NULL,`x` int NOT NULL,`y` int NOT NULL,`w` int NOT NULL,`z` int NOT NULL,`prop` float NOT NULL,`limit` smallint NOT NULL,`summonOnce` BOOLEAN NOT NULL,`lt` text NOT NULL,`rb` text NOT NULL,`lt2` text NOT NULL,`rb2` text NOT NULL,`areaSequenceDelay` int NOT NULL,`skillAfter` int NOT NULL,`force` int NOT NULL,`forcex` int NOT NULL,PRIMARY KEY (`id`, `level`))");
                 MapleDataProvider dataSource = MapleDataProviderFactory.getSkill();
                 MapleDataEntry dataEntry = dataSource.getRoot().getEntry("MobSkill");
-                List<MapleDataFileEntry> mobSkillFiles = ((MapleDataDirectoryEntry) dataEntry).getFiles();
+                List<MapleDataFileEntry> mobSkillFiles = ((MapleDataDirectoryEntry)dataEntry).getFiles();
                 for (MapleDataFileEntry mobSkillFile : mobSkillFiles) {
                     String name = mobSkillFile.getName();
                     MapleData skillData = dataSource.getData("MobSkill/" + name);
                     int skillId = name.endsWith(".img") ? Integer.parseInt(name.substring(0, name.length() - 4)) : Integer.parseInt(name);
                     for (MapleData levelData : skillData.getChildByPath("level").getChildren()) {
-                        int level = Integer.parseInt(levelData.getName());
-                        List<Integer> toSummon = new ArrayList<>();
-                        int i = 0;
                         MapleData data;
+                        int level = Integer.parseInt(levelData.getName());
+                        ArrayList<Integer> toSummon = new ArrayList<Integer>();
+                        int i = 0;
                         StringBuilder s = new StringBuilder();
                         while ((data = levelData.getChildByPath(String.valueOf(i++))) != null) {
                             int id = MapleDataTool.getInt(data, 0);
@@ -105,37 +112,37 @@ public class MobSkillFactory {
                         if (s.length() > 0 && s.charAt(s.length() - 1) == ',') {
                             s.deleteCharAt(s.length() - 1);
                         }
-                        List<Point> fixedPos = new ArrayList<>();
+                        ArrayList<Point> fixedPos = new ArrayList<Point>();
                         MapleData fixedPosData = levelData.getChildByPath("fixedPos");
                         if (fixedPosData != null) {
                             for (MapleData d : fixedPosData) {
-                                fixedPos.add((Point) d.getData());
+                                fixedPos.add((Point)d.getData());
                             }
                         }
                         MapleData ltdata = levelData.getChildByPath("lt");
                         Point lt = null;
                         if (ltdata != null) {
-                            lt = (Point) ltdata.getData();
+                            lt = (Point)ltdata.getData();
                         }
                         MapleData rbdata = levelData.getChildByPath("rb");
                         Point rb = null;
                         if (rbdata != null) {
-                            rb = (Point) rbdata.getData();
+                            rb = (Point)rbdata.getData();
                         }
                         MapleData ltdata2 = levelData.getChildByPath("lt2");
                         Point lt2 = null;
                         if (ltdata2 != null) {
-                            lt2 = (Point) ltdata2.getData();
+                            lt2 = (Point)ltdata2.getData();
                         }
                         MapleData rbdata2 = levelData.getChildByPath("rb2");
                         Point rb2 = null;
                         if (rbdata2 != null) {
-                            rb2 = (Point) rbdata2.getData();
+                            rb2 = (Point)rbdata2.getData();
                         }
                         MobSkill ret = new MobSkill(skillId, level);
                         ret.setSummons(toSummon);
                         ret.setFixedPos(fixedPos);
-                        long interval = MapleDataTool.getInt("interval", levelData, 0) * 1000L;
+                        long interval = (long)MapleDataTool.getInt("interval", levelData, 0) * 1000L;
                         ret.setCoolTime(interval);
                         int time = MapleDataTool.getInt("time", levelData, 0) * 1000;
                         ret.setDuration(time);
@@ -153,9 +160,9 @@ public class MobSkillFactory {
                         ret.setW(w);
                         int z = MapleDataTool.getInt("z", levelData, 1);
                         ret.setZ(z);
-                        float prop = MapleDataTool.getInt("prop", levelData, 100) / 100.0f;
+                        float prop = (float)MapleDataTool.getInt("prop", levelData, 100) / 100.0f;
                         ret.setProp(prop);
-                        short limit = (short) MapleDataTool.getInt("limit", levelData, 0);
+                        short limit = (short)MapleDataTool.getInt("limit", levelData, 0);
                         ret.setLimit(limit);
                         boolean summonOnce = MapleDataTool.getInt("summonOnce", levelData, 0) > 0;
                         ret.setSummonOnce(summonOnce);
@@ -169,12 +176,11 @@ public class MobSkillFactory {
                         ret.setForce(force);
                         int forcex = MapleDataTool.getInt("forcex", levelData, 0);
                         ret.setForcex(forcex);
-                        initMobSkillInfo(ret, level);
+                        MobSkillFactory.initMobSkillInfo(ret, level);
                         mobSkillData.put(skillId + ":" + level, ret);
-                        SqlTool.update(con, "INSERT INTO `wz_mobskilldata` (`id`,`level`,`toSummon`,`interval`,`time`,`hp`,`mpCon`,`summonEffect`,`x`,`y`,`w`,`z`,`prop`,`limit`,`summonOnce`,`lt`,`rb`,`lt2`,`rb2`,`areaSequenceDelay`,`skillAfter`,`force`,`forcex`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", skillId, level, s.toString(), interval, time, hp, mpCon, summonEffect, x, y, w, z, prop, limit, summonOnce, lt == null ? "" : lt.toString(), rb == null ? "" : rb.toString(), lt2 == null ? "" : lt2.toString(), rb2 == null ? "" : rb2.toString(), areaSequenceDelay, skillAfter, force, forcex);
+                        SqlTool.update(con, "INSERT INTO `wz_mobskilldata` (`id`,`level`,`toSummon`,`interval`,`time`,`hp`,`mpCon`,`summonEffect`,`x`,`y`,`w`,`z`,`prop`,`limit`,`summonOnce`,`lt`,`rb`,`lt2`,`rb2`,`areaSequenceDelay`,`skillAfter`,`force`,`forcex`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", skillId, level, s.toString(), interval, time, hp, mpCon, summonEffect, x, y, w, z, Float.valueOf(prop), limit, summonOnce, lt == null ? "" : lt.toString(), rb == null ? "" : rb.toString(), lt2 == null ? "" : lt2.toString(), rb2 == null ? "" : rb2.toString(), areaSequenceDelay, skillAfter, force, forcex);
                     }
                 }
-
                 InitializeServer.WzSqlName.wz_mobskilldata.update(con);
             }
             if (InitializeServer.WzSqlName.wz_familiarskill.check(con)) {
@@ -195,11 +201,11 @@ public class MobSkillFactory {
                     ret.setZ(z);
                     float prop = rs.getFloat("prop");
                     ret.setProp(prop);
-                    Point lt = decodePointString(rs.getString("lt"));
-                    Point rb = decodePointString(rs.getString("rb"));
+                    Point lt = MobSkillFactory.decodePointString(rs.getString("lt"));
+                    Point rb = MobSkillFactory.decodePointString(rs.getString("rb"));
                     ret.setLtRb(lt, rb);
-                    Point lt2 = decodePointString(rs.getString("lt2"));
-                    Point rb2 = decodePointString(rs.getString("rb2"));
+                    Point lt2 = MobSkillFactory.decodePointString(rs.getString("lt2"));
+                    Point rb2 = MobSkillFactory.decodePointString(rs.getString("rb2"));
                     ret.setLtRb2(lt2, rb2);
                     familiarSkillData.put(skillId, ret);
                     return null;
@@ -213,25 +219,25 @@ public class MobSkillFactory {
                     MapleData ltdata = skillData.getChildByPath("lt");
                     Point lt = null;
                     if (ltdata != null) {
-                        lt = (Point) ltdata.getData();
+                        lt = (Point)ltdata.getData();
                     }
                     MapleData rbdata = skillData.getChildByPath("rb");
                     Point rb = null;
                     if (rbdata != null) {
-                        rb = (Point) rbdata.getData();
+                        rb = (Point)rbdata.getData();
                     }
                     MapleData ltdata2 = skillData.getChildByPath("lt2");
                     Point lt2 = null;
                     if (ltdata2 != null) {
-                        lt2 = (Point) ltdata2.getData();
+                        lt2 = (Point)ltdata2.getData();
                     }
                     MapleData rbdata2 = skillData.getChildByPath("rb2");
                     Point rb2 = null;
                     if (rbdata2 != null) {
-                        rb2 = (Point) rbdata2.getData();
+                        rb2 = (Point)rbdata2.getData();
                     }
                     MobSkill ret = new MobSkill(skillId, 1);
-                    long interval = MapleDataTool.getInt("interval", skillData, 0) * 1000L;
+                    long interval = (long)MapleDataTool.getInt("interval", skillData, 0) * 1000L;
                     ret.setCoolTime(interval);
                     int time = MapleDataTool.getInt("time", skillData, 0) * 1000;
                     ret.setDuration(time);
@@ -243,17 +249,16 @@ public class MobSkillFactory {
                     ret.setW(w);
                     int z = MapleDataTool.getInt("z", skillData, 1);
                     ret.setZ(z);
-                    float prop = MapleDataTool.getInt("prop", skillData, 100) / 100.0f;
+                    float prop = (float)MapleDataTool.getInt("prop", skillData, 100) / 100.0f;
                     ret.setProp(prop);
                     ret.setLtRb(lt, rb);
                     ret.setLtRb2(lt2, rb2);
                     familiarSkillData.put(skillId, ret);
-                    SqlTool.update(con, "INSERT INTO `wz_familiarskill` (`id`,`interval`,`time`,`x`,`y`,`w`,`z`,`prop`,`lt`,`rb`,`lt2`,`rb2`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", skillId, interval, time, x, y, w, z, prop, lt == null ? "" : lt.toString(), rb == null ? "" : rb.toString(), lt2 == null ? "" : lt2.toString(), rb2 == null ? "" : rb2.toString());
+                    SqlTool.update(con, "INSERT INTO `wz_familiarskill` (`id`,`interval`,`time`,`x`,`y`,`w`,`z`,`prop`,`lt`,`rb`,`lt2`,`rb2`) VALUES (?,?,?,?,?,?,?,?,?,?,?,?)", skillId, interval, time, x, y, w, z, Float.valueOf(prop), lt == null ? "" : lt.toString(), rb == null ? "" : rb.toString(), lt2 == null ? "" : lt2.toString(), rb2 == null ? "" : rb2.toString());
                 }
             }
             return null;
         });
-        //log.info("共加載 " + mobSkillData.size() + " 個怪物技能訊息..."); /* 暫時關閉 */
     }
 
     private static void initMobSkillInfo(MobSkill ret, int level) {
@@ -263,29 +268,29 @@ public class MobSkillFactory {
         if (ret.getInfo() != null && !ret.getInfo().isEmpty()) {
             return;
         }
-        ret.setInfo(new EnumMap<>(MapleStatInfo.class));
+        ret.setInfo(new EnumMap<MapleStatInfo, Integer>(MapleStatInfo.class));
         for (MapleStatInfo info : MapleStatInfo.values()) {
             ret.getInfo().put(info, info.getDefault());
         }
-        ret.setStatups(new EnumMap<>(SecondaryStat.class));
-        ret.setMonsterStatus(new EnumMap<>(MonsterStatus.class));
+        ret.setStatups(new EnumMap<SecondaryStat, Integer>(SecondaryStat.class));
+        ret.setMonsterStatus(new EnumMap<MonsterStatus, Integer>(MonsterStatus.class));
         switch (ret.getSourceId()) {
-            case 100:
+            case 100: 
             case 110: {
                 ret.getMonsterStatus().put(MonsterStatus.PowerUp, ret.getX());
                 break;
             }
-            case 101:
+            case 101: 
             case 111: {
                 ret.getMonsterStatus().put(MonsterStatus.MagicUp, ret.getX());
                 break;
             }
-            case 102:
+            case 102: 
             case 112: {
                 ret.getMonsterStatus().put(MonsterStatus.PGuardUp, ret.getX());
                 break;
             }
-            case 103:
+            case 103: 
             case 113: {
                 ret.getMonsterStatus().put(MonsterStatus.MGuardUp, ret.getX());
                 break;
@@ -314,8 +319,8 @@ public class MobSkillFactory {
                 ret.getMonsterStatus().put(MonsterStatus.EVA, ret.getX());
                 break;
             }
-            case 104:
-            case 115:
+            case 104: 
+            case 115: 
             case 156: {
                 ret.getMonsterStatus().put(MonsterStatus.Speed, ret.getX());
                 break;
@@ -488,21 +493,16 @@ public class MobSkillFactory {
             case 800: {
                 ret.setDuration(2100000000);
                 ret.getStatups().put(SecondaryStat.GiantBossDeathCnt, ret.getY());
-                break;
             }
         }
     }
 
-    /*
-     * 通過技能ID 和 等級 獲取怪物的技能信息
-     */
     public static MobSkill getMobSkill(int skillId, int level) {
         MobSkill skill = mobSkillData.get(skillId + ":" + level);
         if (skill == null) {
-            //log.warn("MobSkill 不存在: skillId={}, level={}", skillId, level);
             return null;
         }
-        initMobSkillInfo(skill, level);
+        MobSkillFactory.initMobSkillInfo(skill, level);
         return skill;
     }
 
@@ -514,3 +514,4 @@ public class MobSkillFactory {
         return new Point(Integer.parseInt(s[0].split("=")[1]), Integer.parseInt(s[1].split("=")[1]));
     }
 }
+

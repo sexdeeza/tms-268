@@ -1,26 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.shop;
 
 import Client.inventory.Item;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 
 public class MapleShopItem {
-
-    private int buyLimit; //允許購買次數
+    private int buyLimit;
     private int buyLimitWorldAccount;
-    private int itemId; //物品ID
-    private long price; //物品價格
-    private int tokenItemID; //自定義購買物品需要的道具ID
-    private int tokenPrice; //購買需要的道具數量
-    private int period; //該道具購買後的天數
-    private int potentialGrade; //道具狀態 1=未鑒定
-    private int category; //商店道具分類
-    private int minLevel; //購買道具最小等級
-    private int maxLevel;//購買道具最大等級
-    private Item rebuy; //回購的道具信息
-    private int position; //道具位置
+    private int itemId;
+    private long price;
+    private int tokenItemID;
+    private int tokenPrice;
+    private int period;
+    private int potentialGrade;
+    private int category;
+    private int minLevel;
+    private int maxLevel;
+    private Item rebuy;
+    private int position;
     private int pointQuestID;
     private int pointPrice;
     private long sellStart;
@@ -33,12 +34,6 @@ public class MapleShopItem {
     private MapleShopItem() {
     }
 
-    /**
-     * 回購信息相關
-     * 道具信息
-     * 道具價格
-     * 道具數量
-     */
     public MapleShopItem(Item rebuy, long price, short buyable) {
         this.itemId = rebuy.getItemId();
         this.price = price;
@@ -53,17 +48,14 @@ public class MapleShopItem {
         this.rebuy = rebuy;
         this.pointQuestID = 0;
         this.pointPrice = 0;
-        this.sellStart = -2;
-        this.sellEnd = -1;
+        this.sellStart = -2L;
+        this.sellEnd = -1L;
         this.buyLimit = 0;
         this.buyLimitWorldAccount = 0;
         this.quantity = buyable;
         this.buyable = buyable;
     }
 
-    /**
-     * 加載商店信息相關
-     */
     public MapleShopItem(int itemId, long price, int position, int tokenItemID, int tokenPrice, int pointQuestID, int pointPrice, int itemPeriod, int potentialGrade, int tabIndex, int minLevel, int maxLevel, long sellStart, long sellEnd, int buyLimit, int buyLimitWorldAccount, short buyable) {
         this.itemId = itemId;
         this.price = price;
@@ -87,92 +79,88 @@ public class MapleShopItem {
     }
 
     public int getBuyLimit() {
-        return buyLimit;
+        return this.buyLimit;
     }
 
     public int getBuyLimitWorldAccount() {
-        return buyLimitWorldAccount;
+        return this.buyLimitWorldAccount;
     }
 
     public int getItemId() {
-        return itemId;
+        return this.itemId;
     }
 
     public long getPrice() {
-        return price;
+        return this.price;
     }
 
     public int getTokenItemID() {
-        return tokenItemID;
+        return this.tokenItemID;
     }
 
     public int getTokenPrice() {
-        return tokenPrice;
+        return this.tokenPrice;
     }
 
     public int getCategory() {
-        return category;
+        return this.category;
     }
 
     public int getPeriod() {
-        return period;
+        return this.period;
     }
 
     public int getPotentialGrade() {
-        return potentialGrade;
+        return this.potentialGrade;
     }
 
     public Item getRebuy() {
-        return rebuy;
+        return this.rebuy;
     }
 
     public int getMinLevel() {
-        return minLevel;
+        return this.minLevel;
     }
 
     public int getPosition() {
-        return position;
+        return this.position;
     }
 
     public boolean isRechargeableItem() {
-        int n = itemId / 10000;
+        int n = this.itemId / 10000;
         return n == 233 || n == 207;
     }
 
     public int getPointQuestID() {
-        return pointQuestID;
+        return this.pointQuestID;
     }
 
     public int getPointPrice() {
-        return pointPrice;
+        return this.pointPrice;
     }
 
     public long getSellStart() {
-        return sellStart;
+        return this.sellStart;
     }
 
     public long getSellEnd() {
-        return sellEnd;
+        return this.sellEnd;
     }
 
     public long[] getResetInfo() {
-        return resetInfo;
+        return this.resetInfo;
     }
 
     public void setQuantity(short quantity) {
-        if (quantity > 1) {
-            this.quantity = quantity;
-        } else {
-            this.quantity = 1;
-        }
+        this.quantity = quantity > 1 ? quantity : (short)1;
     }
 
     public short getQuantity() {
-        return quantity;
+        return this.quantity;
     }
 
     public short getBuyable() {
-        return buyable;
+        return this.buyable;
     }
 
     public void setResetInfo(List<Long> resetInfo) {
@@ -202,14 +190,15 @@ public class MapleShopItem {
     }
 
     public int getMaxLevel() {
-        return maxLevel;
+        return this.maxLevel;
     }
 
     public byte getResetType() {
-        return resetType;
+        return this.resetType;
     }
 
     public void setResetType(byte resetType) {
         this.resetType = resetType;
     }
 }
+

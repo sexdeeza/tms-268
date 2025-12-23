@@ -1,18 +1,21 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
 import Net.server.maps.MapleMap;
 import Server.channel.ChannelServer;
-
-import java.awt.*;
+import java.awt.Point;
 
 public class MaplePortal {
-
     public static final int DOOR_PORTAL = 6;
     public static int MAP_PORTAL = 2;
     private final int type;
-    private String name, target, scriptName;
+    private String name;
+    private String target;
+    private String scriptName;
     private Point position;
     private int targetmap;
     private int id;
@@ -23,7 +26,7 @@ public class MaplePortal {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public void setId(int id) {
@@ -31,7 +34,7 @@ public class MaplePortal {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -39,7 +42,7 @@ public class MaplePortal {
     }
 
     public Point getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(Point position) {
@@ -47,7 +50,7 @@ public class MaplePortal {
     }
 
     public String getTarget() {
-        return target;
+        return this.target;
     }
 
     public void setTarget(String target) {
@@ -55,7 +58,7 @@ public class MaplePortal {
     }
 
     public int getTargetMapId() {
-        return targetmap;
+        return this.targetmap;
     }
 
     public void setTargetMapId(int targetmapid) {
@@ -63,11 +66,11 @@ public class MaplePortal {
     }
 
     public int getType() {
-        return type;
+        return this.type;
     }
 
     public String getScriptName() {
-        return scriptName;
+        return this.scriptName;
     }
 
     public void setScriptName(String scriptName) {
@@ -76,48 +79,34 @@ public class MaplePortal {
 
     public void enterPortal(MapleClient c) {
         MapleCharacter player = c.getPlayer();
-//        if (getPosition().distance(player.getPosition()) > 90 && !c.getPlayer().isGM() && c.getPlayer().getMapId() != 4000010) {
-//            c.sendEnableActions();
-//            c.getPlayer().getCheatTracker().registerOffense(CheatingOffense.USING_FARAWAY_PORTAL);
-//            return;
-//        }
         MapleMap currentmap = c.getPlayer().getMap();
-//        if (!c.getPlayer().hasBlockedInventory() && (portalState || c.getPlayer().isGM())) {
-        if (getScriptName() != null) {
+        if (this.getScriptName() != null) {
             c.getPlayer().checkFollow();
             c.getPlayer().getScriptManager().startPortalScript(this);
-//            PortalScriptManager.getInstance().executePortalScript(this, c);
-        } else if (getTargetMapId() != 999999999) {
-            MapleMap to = ChannelServer.getInstance(c.getChannel()).getMapFactory().getMap(getTargetMapId());
+        } else if (this.getTargetMapId() != 999999999) {
+            MapleMap to = ChannelServer.getInstance(c.getChannel()).getMapFactory().getMap(this.getTargetMapId());
             if (to == null) {
                 c.sendEnableActions();
                 return;
             }
-            if (!c.getPlayer().isGm()) {
-                if (to.getLevelLimit() > 0 && to.getLevelLimit() > c.getPlayer().getLevel()) {
-                    c.getPlayer().dropMessage(-1, "未達到等級要求，無法進入該地區.");
-                    c.sendEnableActions();
-                    return;
-                }
-                //if (to.getForceMove() > 0 && to.getForceMove() < c.getPlayer().getLevel()) {
-                //    c.getPlayer().dropMessage(-1, "You are too high of a level to enter this place.");
-                //    c.sendEnableActions(true);
-                //    return;
-                //}
+            if (!c.getPlayer().isGm() && to.getLevelLimit() > 0 && to.getLevelLimit() > c.getPlayer().getLevel()) {
+                c.getPlayer().dropMessage(-1, "未達到等級要求，無法進入該地區.");
+                c.sendEnableActions();
+                return;
             }
-            c.getPlayer().changeMap(to, to.getPortal(getTarget()) == null ? to.getPortal(0) : to.getPortal(getTarget())); //late resolving makes this harder but prevents us from loading the whole world at once
+            c.getPlayer().changeMap(to, to.getPortal(this.getTarget()) == null ? to.getPortal(0) : to.getPortal(this.getTarget()));
         }
-//        }
-        if (c.getPlayer() != null && c.getPlayer().getMap() == currentmap) { // Character is still on the same map.
+        if (c.getPlayer() != null && c.getPlayer().getMap() == currentmap) {
             c.sendEnableActions();
         }
     }
 
     public boolean getPortalState() {
-        return portalState;
+        return this.portalState;
     }
 
     public void setPortalState(boolean ps) {
         this.portalState = ps;
     }
 }
+

@@ -1,6 +1,31 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Client.inventory.EquipStats
+ *  Client.inventory.MapleRing
+ *  Client.inventory.SocketFlag
+ *  Config.constants.ItemConstants$方塊
+ *  Config.constants.ItemConstants$方塊$CubeType
+ *  Server.world.WorldBroadcastService
+ *  connection.packet.OverseasPacket
+ */
 package Client.inventory;
 
 import Client.MapleCharacter;
+import Client.inventory.EnhanceResultType;
+import Client.inventory.EquipBaseStat;
+import Client.inventory.EquipSpecialStat;
+import Client.inventory.EquipStats;
+import Client.inventory.Item;
+import Client.inventory.ItemAttribute;
+import Client.inventory.MapleAndroid;
+import Client.inventory.MapleInventoryType;
+import Client.inventory.MapleRing;
+import Client.inventory.MapleWeapon;
+import Client.inventory.NirvanaFlame;
+import Client.inventory.SocketFlag;
+import Client.inventory.StarForce;
 import Config.configs.ServerConfig;
 import Config.constants.GameConstants;
 import Config.constants.ItemConstants;
@@ -13,157 +38,196 @@ import Packet.EffectPacket;
 import Packet.InventoryPacket;
 import Packet.MaplePacketCreator;
 import Server.world.WorldBroadcastService;
+import SwordieX.util.FileTime;
 import connection.OutPacket;
 import connection.packet.OverseasPacket;
-import SwordieX.util.FileTime;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import tools.DateUtil;
 import tools.Pair;
 import tools.Randomizer;
-import SwordieX.util.FileTime.Type;
 
-import java.io.Serializable;
-import java.util.*;
-
-public class Equip extends Item implements Serializable {
-
-    public static final long ARMOR_RATIO = 350000;
-    public static final long WEAPON_RATIO = 700000;
+public class Equip
+extends Item
+implements Serializable {
+    public static final long ARMOR_RATIO = 350000L;
+    public static final long WEAPON_RATIO = 700000L;
     private static final long serialVersionUID = -4385634094556865314L;
-    //charm: -1 = has not been initialized yet, 0 = already been worn, >0 = has teh charm exp
-    private byte restUpgradeCount = 0, currentUpgradeCount = 0, vicioushammer = 0, platinumhammer = 0, state = 0, addState;
-    private short enchantBuff = 0, reqLevel = -1, yggdrasilWisdom = 0, bossDamage = 0, ignorePDR = 0, totalDamage = 0, allStat = 0, karmaCount = -1; //新增的裝備屬性
-    private boolean finalStrike = false;  //新增的裝備屬性
-    private short str = 0, dex = 0, _int = 0, luk = 0, hp = 0, mp = 0, pad = 0, mad = 0, pdd = 0, mdd = 0, acc = 0, avoid = 0, hands = 0, speed = 0, jump = 0, charmExp = 0, pvpDamage = 0;
-    private int durability = -1, incSkill = -1;
-    private int potential1 = 0, potential2 = 0, potential3 = 0, potential4 = 0, potential5 = 0, potential6 = 0;
-    private int socket1 = -1, socket2 = -1, socket3 = -1; //V.102新增 裝備插槽
-    private int itemSkin = 0; //裝備皮膚 也是裝備外觀改變 以後會用到暫時寫在這
+    private byte restUpgradeCount = 0;
+    private byte currentUpgradeCount = 0;
+    private byte vicioushammer = 0;
+    private byte platinumhammer = 0;
+    private byte state = 0;
+    private byte addState;
+    private short enchantBuff = 0;
+    private short reqLevel = (short)-1;
+    private short yggdrasilWisdom = 0;
+    private short bossDamage = 0;
+    private short ignorePDR = 0;
+    private short totalDamage = 0;
+    private short allStat = 0;
+    private short karmaCount = (short)-1;
+    private boolean finalStrike = false;
+    private short str = 0;
+    private short dex = 0;
+    private short _int = 0;
+    private short luk = 0;
+    private short hp = 0;
+    private short mp = 0;
+    private short pad = 0;
+    private short mad = 0;
+    private short pdd = 0;
+    private short mdd = 0;
+    private short acc = 0;
+    private short avoid = 0;
+    private short hands = 0;
+    private short speed = 0;
+    private short jump = 0;
+    private short charmExp = 0;
+    private short pvpDamage = 0;
+    private int durability = -1;
+    private int incSkill = -1;
+    private int potential1 = 0;
+    private int potential2 = 0;
+    private int potential3 = 0;
+    private int potential4 = 0;
+    private int potential5 = 0;
+    private int potential6 = 0;
+    private int socket1 = -1;
+    private int socket2 = -1;
+    private int socket3 = -1;
+    private int itemSkin = 0;
     private MapleRing ring = null;
     private MapleAndroid android = null;
-    // 潛能鎖
     private int lockSlot = 0;
     private short lockId = 0;
     private byte sealedLevel = 0;
-    private long sealedExp = 0, itemEXP = 0;
-    private short soulOptionID, soulSocketID, soulOption;
+    private long sealedExp = 0L;
+    private long itemEXP = 0L;
+    private short soulOptionID;
+    private short soulSocketID;
+    private short soulOption;
     private int soulSkill = 0;
-    private Map<EquipStats, Long> statsTest = new LinkedHashMap<>();
+    private Map<EquipStats, Long> statsTest = new LinkedHashMap<EquipStats, Long>();
     private int iIncReq;
     private NirvanaFlame nirvanaFlame = new NirvanaFlame();
     private StarForce starForce = new StarForce();
     private int failCount = 0;
     private int ARCExp = 1;
-    private short ARC, ARCLevel = 1;
+    private short ARC;
+    private short ARCLevel = 1;
     private int autExp = 1;
-    private short aut, autLevel = 1;
-
+    private short aut;
+    private short autLevel = 1;
     private boolean mvpEquip = false;
 
     public Equip(int id, short position, int sn, int flag, short espos) {
-        super(id, position, (short) 1, flag, sn, espos);
+        super(id, position, (short)1, flag, sn, espos);
+    }
+
+    public enum ScrollResult {
+
+        失敗, 成功, 消失
     }
 
     @Override
     public Item copy() {
-        Equip ret = new Equip(getItemId(), getPosition(), getSN(), getAttribute(), getESPos());
-        ret.mvpEquip = mvpEquip;
-
-        ret.str = str; //力量
-        ret.dex = dex; //敏捷
-        ret._int = _int; //智力
-        ret.luk = luk; //幸運
-        ret.hp = hp; //Hp
-        ret.mp = mp; //Mp
-        ret.mad = mad; //魔法攻擊
-        ret.mdd = mdd; //魔法防禦
-        ret.pad = pad; //物理攻擊
-        ret.pdd = pdd; //物理防禦
-        ret.acc = acc; //命中率
-        ret.avoid = avoid; //迴避率
-        ret.hands = hands; //手技
-        ret.speed = speed; //移動速度
-        ret.jump = jump; //跳躍力
-        ret.restUpgradeCount = restUpgradeCount;  //可升級次數
-        ret.currentUpgradeCount = currentUpgradeCount; //已升級次數
-        ret.itemEXP = itemEXP;
-        ret.durability = durability; //耐久度
-        ret.vicioushammer = vicioushammer; //金錘子
-        ret.platinumhammer = platinumhammer; //白金鎚子
-        ret.state = state; //潛能等級
-        ret.addState = addState;
-        ret.potential1 = potential1; //潛能1
-        ret.potential2 = potential2; //潛能2
-        ret.potential3 = potential3; //潛能3
-        ret.potential4 = potential4; //潛能4
-        ret.potential5 = potential5; //潛能5
-        ret.potential6 = potential6; //潛能6
-        ret.charmExp = charmExp; //魅力經驗
-        ret.pvpDamage = pvpDamage; //大亂鬥攻擊力
-        ret.incSkill = incSkill; //是否擁有技能
-        ret.socket1 = socket1; //鑲嵌寶石1
-        ret.socket2 = socket2; //鑲嵌寶石1
-        ret.socket3 = socket3; //鑲嵌寶石1
-        ret.itemSkin = itemSkin; //道具合成後的外觀
-        //---------------------------------------------------------
-        //下面的為新增的裝備屬性
-        ret.enchantBuff = enchantBuff;
-        ret.reqLevel = reqLevel;
-        ret.yggdrasilWisdom = yggdrasilWisdom;
-        ret.finalStrike = finalStrike;
-        ret.bossDamage = bossDamage;
-        ret.ignorePDR = ignorePDR;
-        ret.totalDamage = totalDamage;
-        ret.allStat = allStat;
-        ret.karmaCount = karmaCount;
-        ret.statsTest = statsTest;
-        //---------------------------------------------------------
-        ret.setGMLog(getGMLog()); //裝備是從什麼地方獲得的信息
-        ret.setGiftFrom(getGiftFrom()); //是誰送的禮物
-        ret.setOwner(getOwner()); //擁有者名字
-        ret.setQuantity(getQuantity()); //數量
-        ret.setExpiration(getTrueExpiration()); //道具經驗
-        ret.setInventoryId(getInventoryId()); //道具的SQLid分解裝備和合成裝備需要
-        //--------------------------------------------------------
-        ret.lockSlot = lockSlot;
-        ret.lockId = lockId;
-        ret.sealedLevel = sealedLevel;
-        ret.sealedExp = sealedExp;
-        //靈魂武器
-        ret.soulOptionID = soulOptionID;
-        ret.soulSocketID = soulSocketID;
-        ret.soulOption = soulOption;
-        ret.soulSkill = soulSkill;
-        ret.nirvanaFlame = new NirvanaFlame(nirvanaFlame);
+        Equip ret = new Equip(this.getItemId(), this.getPosition(), this.getSN(), this.getAttribute(), this.getESPos());
+        ret.mvpEquip = this.mvpEquip;
+        ret.str = this.str;
+        ret.dex = this.dex;
+        ret._int = this._int;
+        ret.luk = this.luk;
+        ret.hp = this.hp;
+        ret.mp = this.mp;
+        ret.mad = this.mad;
+        ret.mdd = this.mdd;
+        ret.pad = this.pad;
+        ret.pdd = this.pdd;
+        ret.acc = this.acc;
+        ret.avoid = this.avoid;
+        ret.hands = this.hands;
+        ret.speed = this.speed;
+        ret.jump = this.jump;
+        ret.restUpgradeCount = this.restUpgradeCount;
+        ret.currentUpgradeCount = this.currentUpgradeCount;
+        ret.itemEXP = this.itemEXP;
+        ret.durability = this.durability;
+        ret.vicioushammer = this.vicioushammer;
+        ret.platinumhammer = this.platinumhammer;
+        ret.state = this.state;
+        ret.addState = this.addState;
+        ret.potential1 = this.potential1;
+        ret.potential2 = this.potential2;
+        ret.potential3 = this.potential3;
+        ret.potential4 = this.potential4;
+        ret.potential5 = this.potential5;
+        ret.potential6 = this.potential6;
+        ret.charmExp = this.charmExp;
+        ret.pvpDamage = this.pvpDamage;
+        ret.incSkill = this.incSkill;
+        ret.socket1 = this.socket1;
+        ret.socket2 = this.socket2;
+        ret.socket3 = this.socket3;
+        ret.itemSkin = this.itemSkin;
+        ret.enchantBuff = this.enchantBuff;
+        ret.reqLevel = this.reqLevel;
+        ret.yggdrasilWisdom = this.yggdrasilWisdom;
+        ret.finalStrike = this.finalStrike;
+        ret.bossDamage = this.bossDamage;
+        ret.ignorePDR = this.ignorePDR;
+        ret.totalDamage = this.totalDamage;
+        ret.allStat = this.allStat;
+        ret.karmaCount = this.karmaCount;
+        ret.statsTest = this.statsTest;
+        ret.setGMLog(this.getGMLog());
+        ret.setGiftFrom(this.getGiftFrom());
+        ret.setOwner(this.getOwner());
+        ret.setQuantity(this.getQuantity());
+        ret.setExpiration(this.getTrueExpiration());
+        ret.setInventoryId(this.getInventoryId());
+        ret.lockSlot = this.lockSlot;
+        ret.lockId = this.lockId;
+        ret.sealedLevel = this.sealedLevel;
+        ret.sealedExp = this.sealedExp;
+        ret.soulOptionID = this.soulOptionID;
+        ret.soulSocketID = this.soulSocketID;
+        ret.soulOption = this.soulOption;
+        ret.soulSkill = this.soulSkill;
+        ret.nirvanaFlame = new NirvanaFlame(this.nirvanaFlame);
         ret.nirvanaFlame.resetEquipExStats(ret);
-        ret.starForce = new StarForce(starForce);
+        ret.starForce = new StarForce(this.starForce);
         ret.starForce.resetEquipStats(ret);
-        ret.ARC = ARC;
-        ret.ARCExp = ARCExp;
-        ret.ARCLevel = ARCLevel;
-        ret.aut = aut;
-        ret.autExp = autExp;
-        ret.autLevel = autLevel;
-
-        ret.mvpEquip = mvpEquip;
+        ret.ARC = this.ARC;
+        ret.ARCExp = this.ARCExp;
+        ret.ARCLevel = this.ARCLevel;
+        ret.aut = this.aut;
+        ret.autExp = this.autExp;
+        ret.autLevel = this.autLevel;
+        ret.mvpEquip = this.mvpEquip;
         return ret;
     }
 
     public Item inherit(Equip srcEquip, Equip decEquip) {
-        this.str = (short) (this.str + (short) (srcEquip.str - decEquip.str));
-        this.dex = (short) (this.dex + (short) (srcEquip.dex - decEquip.dex));
-        this._int = (short) (this._int + (short) (srcEquip._int - decEquip._int));
-        this.luk = (short) (this.luk + (short) (srcEquip.luk - decEquip.luk));
-        this.hp = (short) (this.hp + (short) (srcEquip.hp - decEquip.hp));
-        this.mp = (short) (this.mp + (short) (srcEquip.mp - decEquip.mp));
-        this.mad = (short) (this.mad + (short) (srcEquip.mad - decEquip.mad));
-        this.mdd = (short) (this.mdd + (short) (srcEquip.mdd - decEquip.mdd));
-        this.pad = (short) (this.pad + (short) (srcEquip.pad - decEquip.pad));
-        this.pdd = (short) (this.pdd + (short) (srcEquip.pdd - decEquip.pdd));
-        this.acc = (short) (this.acc + (short) (srcEquip.acc - decEquip.acc));
-        this.avoid = (short) (this.avoid + (short) (srcEquip.avoid - decEquip.avoid));
-        this.hands = (short) (this.hands + (short) (srcEquip.hands - decEquip.hands));
-        this.speed = (short) (this.speed + (short) (srcEquip.speed - decEquip.speed));
-        this.jump = (short) (this.jump + (short) (srcEquip.jump - decEquip.jump));
+        this.str = (short)(this.str + (short)(srcEquip.str - decEquip.str));
+        this.dex = (short)(this.dex + (short)(srcEquip.dex - decEquip.dex));
+        this._int = (short)(this._int + (short)(srcEquip._int - decEquip._int));
+        this.luk = (short)(this.luk + (short)(srcEquip.luk - decEquip.luk));
+        this.hp = (short)(this.hp + (short)(srcEquip.hp - decEquip.hp));
+        this.mp = (short)(this.mp + (short)(srcEquip.mp - decEquip.mp));
+        this.mad = (short)(this.mad + (short)(srcEquip.mad - decEquip.mad));
+        this.mdd = (short)(this.mdd + (short)(srcEquip.mdd - decEquip.mdd));
+        this.pad = (short)(this.pad + (short)(srcEquip.pad - decEquip.pad));
+        this.pdd = (short)(this.pdd + (short)(srcEquip.pdd - decEquip.pdd));
+        this.acc = (short)(this.acc + (short)(srcEquip.acc - decEquip.acc));
+        this.avoid = (short)(this.avoid + (short)(srcEquip.avoid - decEquip.avoid));
+        this.hands = (short)(this.hands + (short)(srcEquip.hands - decEquip.hands));
+        this.speed = (short)(this.speed + (short)(srcEquip.speed - decEquip.speed));
+        this.jump = (short)(this.jump + (short)(srcEquip.jump - decEquip.jump));
         this.restUpgradeCount = srcEquip.restUpgradeCount;
         this.currentUpgradeCount = srcEquip.currentUpgradeCount;
         this.itemEXP = srcEquip.itemEXP;
@@ -201,7 +265,7 @@ public class Equip extends Item implements Serializable {
         return 1;
     }
 
-    public Equip copyPotential(final Equip equip) {
+    public Equip copyPotential(Equip equip) {
         this.potential1 = equip.potential1;
         this.potential2 = equip.potential2;
         this.potential3 = equip.potential3;
@@ -214,7 +278,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public byte getRestUpgradeCount() {
-        return restUpgradeCount;
+        return this.restUpgradeCount;
     }
 
     public void setRestUpgradeCount(byte restUpgradeCount) {
@@ -222,15 +286,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalStr() {
-        return (short) (str + starForce.getStr() + nirvanaFlame.getStr());
+        return (short)(this.str + this.starForce.getStr() + this.nirvanaFlame.getStr());
     }
 
     public short getSF_Str() {
-        return (short) (starForce.getStr() + nirvanaFlame.getStr());
+        return (short)(this.starForce.getStr() + this.nirvanaFlame.getStr());
     }
 
     public short getStr() {
-        return str;
+        return this.str;
     }
 
     public void setStr(short str) {
@@ -241,15 +305,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalDex() {
-        return (short) (dex + starForce.getDex() + nirvanaFlame.getDex());
+        return (short)(this.dex + this.starForce.getDex() + this.nirvanaFlame.getDex());
     }
 
     public short getSF_Dex() {
-        return (short) (starForce.getDex() + nirvanaFlame.getDex());
+        return (short)(this.starForce.getDex() + this.nirvanaFlame.getDex());
     }
 
     public short getDex() {
-        return dex;
+        return this.dex;
     }
 
     public void setDex(short dex) {
@@ -260,15 +324,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalInt() {
-        return (short) (_int + starForce.getInt() + nirvanaFlame.getInt());
+        return (short)(this._int + this.starForce.getInt() + this.nirvanaFlame.getInt());
     }
 
     public short getSF_Int() {
-        return (short) (starForce.getInt() + nirvanaFlame.getInt());
+        return (short)(this.starForce.getInt() + this.nirvanaFlame.getInt());
     }
 
     public short getInt() {
-        return _int;
+        return this._int;
     }
 
     public void setInt(short _int) {
@@ -279,15 +343,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalLuk() {
-        return (short) (luk + starForce.getLuk() + nirvanaFlame.getLuk());
+        return (short)(this.luk + this.starForce.getLuk() + this.nirvanaFlame.getLuk());
     }
 
     public short getSF_Luk() {
-        return (short) (starForce.getLuk() + nirvanaFlame.getLuk());
+        return (short)(this.starForce.getLuk() + this.nirvanaFlame.getLuk());
     }
 
     public short getLuk() {
-        return luk;
+        return this.luk;
     }
 
     public void setLuk(short luk) {
@@ -298,15 +362,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalHp() {
-        return (short) (hp + starForce.getHp() + nirvanaFlame.getHp());
+        return (short)(this.hp + this.starForce.getHp() + this.nirvanaFlame.getHp());
     }
 
     public short getSF_Hp() {
-        return (short) (starForce.getHp() + nirvanaFlame.getHp());
+        return (short)(this.starForce.getHp() + this.nirvanaFlame.getHp());
     }
 
     public short getHp() {
-        return hp;
+        return this.hp;
     }
 
     public void setHp(short hp) {
@@ -317,15 +381,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalMp() {
-        return (short) (mp + starForce.getMp() + nirvanaFlame.getMp());
+        return (short)(this.mp + this.starForce.getMp() + this.nirvanaFlame.getMp());
     }
 
     public short getSF_Mp() {
-        return (short) (starForce.getMp() + nirvanaFlame.getMp());
+        return (short)(this.starForce.getMp() + this.nirvanaFlame.getMp());
     }
 
     public short getMp() {
-        return mp;
+        return this.mp;
     }
 
     public void setMp(short mp) {
@@ -336,15 +400,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalPad() {
-        return (short) (pad + starForce.getPad() + nirvanaFlame.getPad());
+        return (short)(this.pad + this.starForce.getPad() + this.nirvanaFlame.getPad());
     }
 
     public short getSF_Pad() {
-        return (short) (starForce.getPad() + nirvanaFlame.getPad());
+        return (short)(this.starForce.getPad() + this.nirvanaFlame.getPad());
     }
 
     public short getPad() {
-        return pad;
+        return this.pad;
     }
 
     public void setPad(short pad) {
@@ -355,15 +419,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalMad() {
-        return (short) (mad + starForce.getMad() + nirvanaFlame.getMad());
+        return (short)(this.mad + this.starForce.getMad() + this.nirvanaFlame.getMad());
     }
 
     public short getMad() {
-        return mad;
+        return this.mad;
     }
 
     public short getSF_Mad() {
-        return (short) (starForce.getMad() + nirvanaFlame.getMad());
+        return (short)(this.starForce.getMad() + this.nirvanaFlame.getMad());
     }
 
     public void setMad(short mad) {
@@ -374,15 +438,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalPdd() {
-        return (short) (pdd + starForce.getPdd() + nirvanaFlame.getPdd());
+        return (short)(this.pdd + this.starForce.getPdd() + this.nirvanaFlame.getPdd());
     }
 
     public short getSF_Pdd() {
-        return (short) (starForce.getPdd() + nirvanaFlame.getPdd());
+        return (short)(this.starForce.getPdd() + this.nirvanaFlame.getPdd());
     }
 
     public short getPdd() {
-        return pdd;
+        return this.pdd;
     }
 
     public void setPdd(short pdd) {
@@ -393,15 +457,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalMdd() {
-        return (short) (mdd + starForce.getMdd() + nirvanaFlame.getMdd());
+        return (short)(this.mdd + this.starForce.getMdd() + this.nirvanaFlame.getMdd());
     }
 
     public short getSF_Mdd() {
-        return (short) (starForce.getMdd() + nirvanaFlame.getMdd());
+        return (short)(this.starForce.getMdd() + this.nirvanaFlame.getMdd());
     }
 
     public short getMdd() {
-        return mdd;
+        return this.mdd;
     }
 
     public void setMdd(short mdd) {
@@ -412,11 +476,11 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalAcc() {
-        return (short) (acc + starForce.getAcc() + nirvanaFlame.getAcc());
+        return (short)(this.acc + this.starForce.getAcc() + this.nirvanaFlame.getAcc());
     }
 
     public short getAcc() {
-        return acc;
+        return this.acc;
     }
 
     public void setAcc(short acc) {
@@ -427,11 +491,11 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalAvoid() {
-        return (short) (avoid + starForce.getAvoid() + nirvanaFlame.getAvoid());
+        return (short)(this.avoid + this.starForce.getAvoid() + this.nirvanaFlame.getAvoid());
     }
 
     public short getAvoid() {
-        return avoid;
+        return this.avoid;
     }
 
     public void setAvoid(short avoid) {
@@ -442,15 +506,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalHands() {
-        return (short) (hands + starForce.getHands() + nirvanaFlame.getHands());
+        return (short)(this.hands + this.starForce.getHands() + this.nirvanaFlame.getHands());
     }
 
     public short getSF_Hands() {
-        return (short) (starForce.getHands() + nirvanaFlame.getHands());
+        return (short)(this.starForce.getHands() + this.nirvanaFlame.getHands());
     }
 
     public short getHands() {
-        return hands;
+        return this.hands;
     }
 
     public void setHands(short hands) {
@@ -461,15 +525,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalSpeed() {
-        return (short) (speed + starForce.getSpeed() + nirvanaFlame.getSpeed());
+        return (short)(this.speed + this.starForce.getSpeed() + this.nirvanaFlame.getSpeed());
     }
 
     public short getSpeed() {
-        return speed;
+        return this.speed;
     }
 
     public short getSF_Speed() {
-        return (short) (starForce.getSpeed() + nirvanaFlame.getSpeed());
+        return (short)(this.starForce.getSpeed() + this.nirvanaFlame.getSpeed());
     }
 
     public void setSpeed(short speed) {
@@ -480,15 +544,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalJump() {
-        return (short) (jump + starForce.getJump() + nirvanaFlame.getJump());
+        return (short)(this.jump + this.starForce.getJump() + this.nirvanaFlame.getJump());
     }
 
     public short getSF_Jump() {
-        return (short) (starForce.getJump() + nirvanaFlame.getJump());
+        return (short)(this.starForce.getJump() + this.nirvanaFlame.getJump());
     }
 
     public short getJump() {
-        return jump;
+        return this.jump;
     }
 
     public void setJump(short jump) {
@@ -499,7 +563,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public byte getCurrentUpgradeCount() {
-        return currentUpgradeCount;
+        return this.currentUpgradeCount;
     }
 
     public void setCurrentUpgradeCount(byte currentUpgradeCount) {
@@ -507,110 +571,94 @@ public class Equip extends Item implements Serializable {
     }
 
     public byte getViciousHammer() {
-        return vicioushammer;
+        return this.vicioushammer;
     }
 
     public void setViciousHammer(byte ham) {
-        vicioushammer = ham;
+        this.vicioushammer = ham;
     }
 
     public byte getPlatinumHammer() {
-        return platinumhammer;
+        return this.platinumhammer;
     }
 
     public void setPlatinumHammer(byte ham) {
-        platinumhammer = ham;
+        this.platinumhammer = ham;
     }
 
     public byte getTotalHammer() {
-        return (byte) (vicioushammer + platinumhammer);
+        return (byte)(this.vicioushammer + this.platinumhammer);
     }
 
     public long getItemEXP() {
-        return itemEXP;
+        return this.itemEXP;
     }
 
     public void setItemEXP(long itemEXP) {
-        if (itemEXP < 0) {
-            itemEXP = 0;
+        if (itemEXP < 0L) {
+            itemEXP = 0L;
         }
         this.itemEXP = itemEXP;
     }
 
     public long getEquipExp() {
-        if (itemEXP <= 0) {
-            return 0;
+        if (this.itemEXP <= 0L) {
+            return 0L;
         }
-        //aproximate value
-        if (ItemConstants.類型.武器(getItemId())) {
-            return itemEXP / WEAPON_RATIO;
-        } else {
-            return itemEXP / ARMOR_RATIO;
+        if (ItemConstants.類型.武器(this.getItemId())) {
+            return this.itemEXP / 700000L;
         }
+        return this.itemEXP / 350000L;
     }
 
     public long getEquipExpForLevel() {
-        if (getEquipExp() <= 0) {
-            return 0;
+        if (this.getEquipExp() <= 0L) {
+            return 0L;
         }
-        long expz = getEquipExp();
-        for (int i = getBaseLevel(); i <= ItemConstants.getMaxLevel(getItemId()); i++) {
-            if (expz >= ItemConstants.getExpForLevel(i, getItemId())) {
-                expz -= ItemConstants.getExpForLevel(i, getItemId());
-            } else {
-                break;
-            }
+        long expz = this.getEquipExp();
+        for (int i = this.getBaseLevel(); i <= ItemConstants.getMaxLevel(this.getItemId()) && expz >= (long)ItemConstants.getExpForLevel(i, this.getItemId()); expz -= (long)ItemConstants.getExpForLevel(i, this.getItemId()), ++i) {
         }
         return expz;
     }
 
     public long getExpPercentage() {
-        if (getEquipLevel() < getBaseLevel() || getEquipLevel() > ItemConstants.getMaxLevel(getItemId()) || ItemConstants.getExpForLevel(getEquipLevel(), getItemId()) <= 0) {
-            return 0;
+        if (this.getEquipLevel() < this.getBaseLevel() || this.getEquipLevel() > ItemConstants.getMaxLevel(this.getItemId()) || ItemConstants.getExpForLevel(this.getEquipLevel(), this.getItemId()) <= 0) {
+            return 0L;
         }
-        return getEquipExpForLevel() * 100 / ItemConstants.getExpForLevel(getEquipLevel(), getItemId());
+        return this.getEquipExpForLevel() * 100L / (long)ItemConstants.getExpForLevel(this.getEquipLevel(), this.getItemId());
     }
 
     public int getEquipLevel() {
-        int fixLevel = MapleItemInformationProvider.getInstance().getEquipmentSkillsFixLevel(getItemId());
+        int fixLevel = MapleItemInformationProvider.getInstance().getEquipmentSkillsFixLevel(this.getItemId());
         if (fixLevel > 0) {
             return fixLevel;
         }
-
-        int maxLevel = ItemConstants.getMaxLevel(getItemId());
-        int levelz = getBaseLevel();
-        if (getEquipExp() <= 0) {
+        int maxLevel = ItemConstants.getMaxLevel(this.getItemId());
+        int levelz = this.getBaseLevel();
+        if (this.getEquipExp() <= 0L) {
             return Math.min(levelz, maxLevel);
         }
-        long expz = getEquipExp();
-        for (int i = levelz; i < maxLevel; i++) {
-            if (expz >= ItemConstants.getExpForLevel(i, getItemId())) {
-                levelz++;
-                expz -= ItemConstants.getExpForLevel(i, getItemId());
-            } else {
-                break;
-            }
+        long expz = this.getEquipExp();
+        for (int i = levelz; i < maxLevel && expz >= (long)ItemConstants.getExpForLevel(i, this.getItemId()); expz -= (long)ItemConstants.getExpForLevel(i, this.getItemId()), ++i) {
+            ++levelz;
         }
         return levelz;
     }
 
     public int getBaseLevel() {
-        return (GameConstants.getStatFromWeapon(getItemId()) == null ? 1 : 0);
+        return GameConstants.getStatFromWeapon(this.getItemId()) == null ? 1 : 0;
     }
 
     @Override
     public void setQuantity(short quantity) {
         if (quantity < 0 || quantity > 1) {
-            throw new RuntimeException("設置裝備的數量錯誤 欲設置的數量： " + quantity + " (道具ID: " + getItemId() + ")");
+            throw new RuntimeException("設置裝備的數量錯誤 欲設置的數量： " + quantity + " (道具ID: " + this.getItemId() + ")");
         }
         super.setQuantity(quantity);
     }
 
-    /*
-     * 耐久度也就是持久
-     */
     public int getDurability() {
-        return durability;
+        return this.durability;
     }
 
     public void setDurability(int dur) {
@@ -669,108 +717,85 @@ public class Equip extends Item implements Serializable {
         }
     }
 
-    /*
-     * 潛能屬性1
-     */
     public int getPotential1() {
-        return potential1;
+        return this.potential1;
     }
 
     public void setPotential1(int en) {
         this.potential1 = en;
     }
 
-    /*
-     * 潛能屬性2
-     */
     public int getPotential2() {
-        return potential2;
+        return this.potential2;
     }
 
     public void setPotential2(int en) {
         this.potential2 = en;
     }
 
-    /*
-     * 潛能屬性3
-     */
     public int getPotential3() {
-        return potential3;
+        return this.potential3;
     }
 
     public void setPotential3(int en) {
         this.potential3 = en;
     }
 
-    /*
-     * 潛能屬性4
-     */
     public int getPotential4() {
-        return potential4;
+        return this.potential4;
     }
 
     public void setPotential4(int en) {
         this.potential4 = en;
     }
 
-    /*
-     * 潛能屬性5
-     */
     public int getPotential5() {
-        return potential5;
+        return this.potential5;
     }
 
     public void setPotential5(int en) {
         this.potential5 = en;
     }
 
-    /*
-     * 潛能屬性6
-     */
     public int getPotential6() {
-        return potential6;
+        return this.potential6;
     }
 
     public void setPotential6(int en) {
         this.potential6 = en;
     }
 
-    /*
-     * 裝備的等級
-     * 15 = 未鑒定 16以下 20以上都是未鑒定
-     * 16 = C級
-     * 17 = B級
-     * 18 = A級
-     * 19 = S級
-     * 20 = SS級
-     */
     public byte getState(boolean add) {
-        if (ServerConfig.DISABLE_POTENTIAL) return 0;
-        if (add) {
-            return addState;
+        if (ServerConfig.DISABLE_POTENTIAL) {
+            return 0;
         }
-        return state;
+        if (add) {
+            return this.addState;
+        }
+        return this.state;
     }
 
     public void setState(byte en, boolean add) {
-        if (ServerConfig.DISABLE_POTENTIAL) en = 0;
+        if (ServerConfig.DISABLE_POTENTIAL) {
+            en = 0;
+        }
         if (add) {
-            addState = en;
+            this.addState = en;
         } else {
-            state = en;
+            this.state = en;
         }
     }
 
     public void initAllState() {
-        initState(false);
-        initState(true);
+        this.initState(false);
+        this.initState(true);
     }
 
     public void initState(boolean useAddPot) {
-        int ret = 0;
-        int v1;
-        int v2;
         int v3;
+        int v2;
+        int v1;
+        int ret = 0;
         if (!useAddPot) {
             v1 = this.potential1;
             v2 = this.potential2;
@@ -781,76 +806,59 @@ public class Equip extends Item implements Serializable {
             v3 = this.potential6;
         }
         if (v1 >= 40000 || v2 >= 40000 || v3 >= 40000) {
-            ret = 20;// 傳說
+            ret = 20;
         } else if (v1 >= 30000 || v2 >= 30000 || v3 >= 30000) {
-            ret = 19;// 罕見
+            ret = 19;
         } else if (v1 >= 20000 || v2 >= 20000 || v3 >= 20000) {
-            ret = 18;// 稀有
+            ret = 18;
         } else if (v1 >= 1 || v2 >= 1 || v3 >= 1) {
-            ret = 17;// 特殊
+            ret = 17;
         } else if (v1 == -20 || v2 == -20 || v1 == -4 || v2 == -4) {
-            ret = 4;// 未鑒定傳說
+            ret = 4;
         } else if (v1 == -19 || v2 == -19 || v1 == -3 || v2 == -3) {
-            ret = 3;// 未鑒定罕見
+            ret = 3;
         } else if (v1 == -18 || v2 == -18 || v1 == -2 || v2 == -2) {
-            ret = 2;// 未鑒定稀有
+            ret = 2;
         } else if (v1 == -17 || v2 == -17 || v1 == -1 || v2 == -1) {
-            ret = 1;// 未鑒定特殊
+            ret = 1;
         } else if (v1 < 0 || v2 < 0 || v3 < 0) {
             return;
         }
-        setState((byte) ret, useAddPot);
+        this.setState((byte)ret, useAddPot);
     }
 
-    public void resetPotential_Fuse(boolean half, int potentialState) { //makeskill - equip first receive
-        //0.16% chance unique, 4% chance epic, else rare
+    public void resetPotential_Fuse(boolean half, int potentialState) {
         potentialState = -potentialState;
         if (Randomizer.nextInt(100) < 4) {
             potentialState -= Randomizer.nextInt(100) < 4 ? 2 : 1;
         }
-        setPotential1(potentialState);
-        setPotential2((Randomizer.nextInt(half ? 5 : 10) == 0 ? potentialState : 0)); //1/10 chance of 3 line
-        setPotential3(0); //just set it theoretically
-        initState(false);
+        this.setPotential1(potentialState);
+        this.setPotential2(Randomizer.nextInt(half ? 5 : 10) == 0 ? potentialState : 0);
+        this.setPotential3(0);
+        this.initState(false);
     }
 
-    public void renewPotential(final boolean add) {
+    public void renewPotential(boolean add) {
         this.renewPotential(0, add);
     }
 
-    public void renewPotential(final int rank, final boolean add) {
+    public void renewPotential(int rank, boolean add) {
         this.renewPotential(rank, false, add);
     }
 
-    public void renewPotential(final boolean third, final boolean add) {
+    public void renewPotential(boolean third, boolean add) {
         this.renewPotential(0, third, add);
     }
 
-    public void renewPotential(final int rank, final boolean third, final boolean add) {
-        int state;
-        switch (rank) {
-            case 1: {
-                state = -17;
-                break;
-            }
-            case 2: {
-                state = -18;
-                break;
-            }
-            case 3: {
-                state = -19;
-                break;
-            }
-            case 4: {
-                state = -20;
-                break;
-            }
-            default: {
-                state = ((Randomizer.nextInt(100) < 4) ? ((Randomizer.nextInt(100) < 4) ? -19 : -18) : -17);
-                break;
-            }
-        }
-        final boolean b3 = (this.getState(add) != 0 && this.getPotential(3, add) != 0) || third;
+    public void renewPotential(int rank, boolean third, boolean add) {
+        int state = switch (rank) {
+            case 1 -> -17;
+            case 2 -> -18;
+            case 3 -> -19;
+            case 4 -> -20;
+            default -> Randomizer.nextInt(100) < 4 ? (Randomizer.nextInt(100) < 4 ? -19 : -18) : -17;
+        };
+        boolean b3 = this.getState(add) != 0 && this.getPotential(3, add) != 0 || third;
         this.setPotential(state, 1, add);
         this.setPotential(Randomizer.nextInt(10) <= 1 || b3 ? state : 0, 2, add);
         this.setPotential(0, 3, add);
@@ -858,178 +866,161 @@ public class Equip extends Item implements Serializable {
     }
 
     public boolean useCube(int cubeId, MapleCharacter player) {
-        return useCube(cubeId, player, 0);
+        return this.useCube(cubeId, player, 0);
     }
 
     public boolean useCube(int cubeId, MapleCharacter player, int lockslot) {
-        return useCube((short) 0, 0, cubeId, player, lockslot);
+        return this.useCube((short)0, 0, cubeId, player, lockslot);
     }
 
     public boolean useCube(short opcode, int action, int cubeId, MapleCharacter player) {
-        return useCube(opcode, action, cubeId, player, 0);
+        return this.useCube(opcode, action, cubeId, player, 0);
     }
 
     public boolean useCube(short opcode, int action, int cubeId, MapleCharacter player, int lockslot) {
         if (player.getInventory(MapleInventoryType.EQUIP).getNumFreeSlot() >= 1) {
-            int cubeTpye = ItemConstants.方塊.getDefaultPotentialFlag(cubeId);
+            int cubeTpye = ItemConstants.方塊.getDefaultPotentialFlag((int)cubeId);
             boolean isBonus = ItemConstants.方塊.CubeType.附加潛能.check(cubeTpye);
-            if (!ItemConstants.方塊.canUseCube(this, cubeId)) {
+            if (!ItemConstants.方塊.canUseCube((Equip)this, (int)cubeId)) {
                 player.dropMessage(5, "你無法對這個物品使用這個方塊。");
                 return false;
             }
             switch (cubeId) {
-                case 3994895: // 楓方塊
-                case 3996222: // v259 神秘方塊
-                case 5062017: // 閃耀方塊
-                case 5062019: // 閃耀鏡射方塊
-                case 5062020: // 閃炫方塊
-                case 5062021: // 新對等方塊
-                case 5062024: // 六角魔方
-                case 5062026: // 組合方塊
-                case 5062030: // 恢復方塊
-                case 5062032: // 卡勒瑪恢復方塊
+                case 3994895: 
+                case 3996222: 
+                case 5062017: 
+                case 5062019: 
+                case 5062020: 
+                case 5062021: 
+                case 5062024: 
+                case 5062026: 
+                case 5062030: 
+                case 5062032: {
                     break;
-                default:
-                    long meso = ItemConstants.方塊.getCubeNeedMeso(this);
+                }
+                default: {
+                    long meso = ItemConstants.方塊.getCubeNeedMeso((Equip)this);
                     if (player.getMeso() < meso) {
                         player.dropMessage(5, "您沒有足夠的楓幣。");
                         player.sendEnableActions();
                         return false;
                     }
                     player.gainMeso(-meso, false);
-                    break;
+                }
             }
             if (this.getState(isBonus) >= 17 && this.getState(isBonus) <= 20) {
-                int oldState = getState(isBonus);
-                int rateIndex = oldState - (oldState < 17 ? 1 : 17);
-                int stateRate;
-                if (rateIndex >= 0 && rateIndex <= 2) {
-                    stateRate = ServerConfig.CHANNEL_RATE_POTENTIALLEVEL * ItemConstants.方塊.getCubeRankUpRate(cubeId)[rateIndex];
-                } else {
-                    stateRate = 0;
-                }
-                if (EnhanceResultType.UPGRADE_TIER.check(getEnchantBuff())) {
+                byte oldState = 0;
+                int rateIndex = oldState - ((oldState = this.getState(isBonus)) < 17 ? 1 : 17);
+                int stateRate = rateIndex >= 0 && rateIndex <= 2 ? ServerConfig.CHANNEL_RATE_POTENTIALLEVEL * ItemConstants.方塊.getCubeRankUpRate((int)cubeId)[rateIndex] : 0;
+                if (EnhanceResultType.UPGRADE_TIER.check(this.getEnchantBuff())) {
                     stateRate = 1000000;
                     if (player.isAdmin()) {
                         player.dropMessage(-6, "裝備自帶100%潛能等級提升成功率");
                     }
-                } else if (player.isAdmin() && player.isInvincible() && getState(isBonus) < 20 && stateRate < 1000000) {
-                    //player.dropMessage(-6, "伺服器管理員無敵狀態潛能等級提升成功率100%");
+                } else if (player.isAdmin() && player.isInvincible() && this.getState(isBonus) < 20 && stateRate < 1000000) {
                     stateRate = 1000000;
                 }
                 boolean isMemorial = false;
                 switch (cubeId) {
-                    case 5062010: // 黑色方塊
-                    case 5062017: // 閃耀方塊
-                    case 5062090: // 記憶方塊
-                    case 3994895: // 楓方塊
-                    case 5062019: // 閃耀鏡射方塊
-                    case 5062020: // 閃炫方塊
-                    case 5062030: // 恢復方塊
-                    case 5062021: // 新對等方塊
-                    case 5062024: // 六角魔方
-                    case 5062026: // 組合方塊
-                    case 5062500:
-                    case 5062032: // 卡勒瑪恢復方塊
-                    case 5062503: { // 白色附加方塊
+                    case 3994895: 
+                    case 5062010: 
+                    case 5062017: 
+                    case 5062019: 
+                    case 5062020: 
+                    case 5062021: 
+                    case 5062024: 
+                    case 5062026: 
+                    case 5062030: 
+                    case 5062032: 
+                    case 5062090: 
+                    case 5062500: 
+                    case 5062503: {
                         isMemorial = true;
-                        break;
                     }
                 }
-                int debris = ItemConstants.方塊.getCubeDebris(cubeId);
+                int debris = ItemConstants.方塊.getCubeDebris((int)cubeId);
                 if (debris > 0 && !MapleInventoryManipulator.addById(player.getClient(), debris, 1, "Cube on " + DateUtil.getCurrentDate())) {
                     return false;
                 }
                 if (isMemorial) {
                     int lines;
-                    String pots = "";
-                    if (cubeId == 5062020 || cubeId == 5062100) { // 閃炫方塊 || 六角魔方
-                        int newState = getState(isBonus);
-                        List<Integer> newPots = new ArrayList<>();
-                        for (int i = 0; i < 2; i++) {
-                            renewPotential(stateRate, cubeTpye, lockslot);
-                            magnify();
-                            newPots.add(getPotential(1, isBonus));
-                            newPots.add(getPotential(2, isBonus));
-                            if (getPotential(3, isBonus) > 0) {
-                                newPots.add(getPotential(3, isBonus));
+                    Object pots = "";
+                    if (cubeId == 5062020 || cubeId == 0x4D3DD4) {
+                        int i;
+                        byte newState = this.getState(isBonus);
+                        ArrayList<Integer> newPots = new ArrayList<Integer>();
+                        for (i = 0; i < 2; ++i) {
+                            this.renewPotential(stateRate, cubeTpye, lockslot);
+                            this.magnify();
+                            newPots.add(this.getPotential(1, isBonus));
+                            newPots.add(this.getPotential(2, isBonus));
+                            if (this.getPotential(3, isBonus) > 0) {
+                                newPots.add(this.getPotential(3, isBonus));
                             }
-                            if (i == 0) {
-                                int state = getState(isBonus);
-                                setState((byte) newState, isBonus);
-                                newState = state;
-                            }
+                            if (i != 0) continue;
+                            byte state = this.getState(isBonus);
+                            this.setState(newState, isBonus);
+                            newState = state;
                         }
                         lines = newPots.size() / 2;
-                        setState((byte) newState, isBonus);
-                        for (int i = 0; i < newPots.size(); i++) {
-                            pots += newPots.get(i);
-                            if (i < newPots.size() - 1) {
-                                pots += ",";
-                            }
+                        this.setState(newState, isBonus);
+                        for (i = 0; i < newPots.size(); ++i) {
+                            pots = (String)pots + String.valueOf(newPots.get(i));
+                            if (i >= newPots.size() - 1) continue;
+                            pots = (String)pots + ",";
                         }
-                        if (cubeId == 5062024) { // 六角魔方
+                        if (cubeId == 5062024) {
                             player.send(InventoryPacket.showHyunPotentialResult(newPots));
                         } else {
-                            player.write(OverseasPacket.getHexaCubeRes(opcode, action, newPots));
+                            player.write(OverseasPacket.getHexaCubeRes((short)opcode, (int)action, newPots));
                         }
                     } else {
-                        lines = getPotential(2, isBonus) != 0 ? 3 : 2;
-//                        player.updateInfoQuest(GameConstants.楓方塊, "dst=-1;Pot0=-1;Pot1=-1;Pot2=-1;add=0");
+                        lines = this.getPotential(2, isBonus) != 0 ? 3 : 2;
                         for (int i = 0; i < lines; ++i) {
-//                            player.updateOneInfo(GameConstants.楓方塊, "Pot" + i, String.valueOf(getPotential(i + 1, isBonus)));
-                            pots += getPotential(i + 1, isBonus);
-                            if (i < lines - 1) {
-                                pots += ",";
-                            }
+                            pots = (String)pots + this.getPotential(i + 1, isBonus);
+                            if (i >= lines - 1) continue;
+                            pots = (String)pots + ",";
                         }
-                        renewPotential(stateRate, cubeTpye, lockslot);
-                        magnify();
-//                        player.updateOneInfo(GameConstants.楓方塊, "dst", String.valueOf(getPosition()));
-//                        player.updateOneInfo(GameConstants.楓方塊, "add", isBonus ? "1" : "0");
-                        if (cubeId == 5062017 || cubeId == 5062030) { // 閃耀方塊
-                            player.write(OverseasPacket.getAnimusCubeRes(opcode, action, cubeId, this));
+                        this.renewPotential(stateRate, cubeTpye, lockslot);
+                        this.magnify();
+                        if (cubeId == 5062017 || cubeId == 5062030) {
+                            player.write(OverseasPacket.getAnimusCubeRes((short)opcode, (int)action, (int)cubeId, (Item)this));
                         } else {
-                            player.send(InventoryPacket.showCubeResetResult(getPosition(), this, cubeId, player.getInventory(MapleInventoryType.CASH).findById(cubeId).getPosition()));
+                            player.send(InventoryPacket.showCubeResetResult(this.getPosition(), this, cubeId, player.getInventory(MapleInventoryType.CASH).findById(cubeId).getPosition()));
                         }
                     }
-                    player.updateOneInfo(GameConstants.台方塊, "c", String.valueOf(lines), false);
-                    player.updateOneInfo(GameConstants.台方塊, "i", String.valueOf(getItemId()), false);
-                    player.updateOneInfo(GameConstants.台方塊, "o", pots, false);
-                    player.updateOneInfo(GameConstants.台方塊, "p", String.valueOf(getPosition()), false);
-                    player.updateOneInfo(GameConstants.台方塊, "u", String.valueOf(cubeId), false);
-                    player.updateOneInfo(GameConstants.台方塊, "s", String.valueOf(oldState), false);
-                } else if (cubeId == 5062026) { // 結合方塊
+                    player.updateOneInfo(52998, "c", String.valueOf(lines), false);
+                    player.updateOneInfo(52998, "i", String.valueOf(this.getItemId()), false);
+                    player.updateOneInfo(52998, "o", (String)pots, false);
+                    player.updateOneInfo(52998, "p", String.valueOf(this.getPosition()), false);
+                    player.updateOneInfo(52998, "u", String.valueOf(cubeId), false);
+                    player.updateOneInfo(52998, "s", String.valueOf(oldState), false);
+                } else if (cubeId == 5062026) {
+                    StructItemOption pot;
                     MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-                    int reqLevel = ii.getReqLevel(getItemId()) / 10;
-                    final List<List<StructItemOption>> pots = new LinkedList<>(ii.getAllPotentialInfo().values());
-                    while (true) {
-                        if (reqLevel >= 20) {
-                            reqLevel = 19;
-                        }
-                        StructItemOption pot = pots.get(Randomizer.nextInt(pots.size())).get(reqLevel);
-                        if (pot != null && pot.reqLevel / 10 <= reqLevel && ItemConstants.方塊.optionTypeFits(pot.optionType, getItemId()) && ItemConstants.方塊.potentialIDFits(pot.opID, getState(isBonus), lockslot) && ItemConstants.方塊.isAllowedPotentialStat(this, pot.opID, isBonus, ItemConstants.方塊.CubeType.點商光環.check(cubeTpye)) && (!ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeTpye) || (ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeTpye) && !ItemConstants.方塊.isUselessPotential(pot)))) { // optionType
-                            setPotential(pot.opID, lockslot, isBonus);
-                            break;
-                        }
-                    }
+                    int reqLevel = ii.getReqLevel(this.getItemId()) / 10;
+                    LinkedList<List<StructItemOption>> pots = new LinkedList<List<StructItemOption>>(ii.getAllPotentialInfo().values());
+                    do {
+                        if (reqLevel < 20) continue;
+                        reqLevel = 19;
+                    } while ((pot = (StructItemOption)((List)pots.get(Randomizer.nextInt(pots.size()))).get(reqLevel)) == null || pot.reqLevel / 10 > reqLevel || !ItemConstants.方塊.optionTypeFits((int)pot.optionType, (int)this.getItemId()) || !ItemConstants.方塊.potentialIDFits((int)pot.opID, (int)this.getState(isBonus), (int)lockslot) || !ItemConstants.方塊.isAllowedPotentialStat((Equip)this, (int)pot.opID, (boolean)isBonus, (boolean)ItemConstants.方塊.CubeType.點商光環.check(cubeTpye)) || ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeTpye) && (!ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeTpye) || ItemConstants.方塊.isUselessPotential((StructItemOption)pot)));
+                    this.setPotential(pot.opID, lockslot, isBonus);
                 } else {
-                    renewPotential(stateRate, cubeTpye, lockslot);
-                    magnify();
-                    if (cubeId == 5062019 || cubeId == 5062021) { // 閃耀鏡射方塊 || 新對等方塊
-                        player.write(OverseasPacket.getTmsCubeRes(opcode, action, 0));
-                    } else if (cubeId != 3994895) { // 不是楓方塊
-                        player.send(InventoryPacket.showCubeResult(player.getId(), oldState < getState(isBonus), cubeId, this.getPosition(), Math.max(0, player.getItemQuantity(cubeId) - 1), this.copy()));
+                    this.renewPotential(stateRate, cubeTpye, lockslot);
+                    this.magnify();
+                    if (cubeId == 5062019 || cubeId == 5062021) {
+                        player.write(OverseasPacket.getTmsCubeRes((short)opcode, (int)action, (int)0));
+                    } else if (cubeId != 3994895) {
+                        player.send(InventoryPacket.showCubeResult(player.getId(), oldState < this.getState(isBonus), cubeId, this.getPosition(), Math.max(0, player.getItemQuantity(cubeId) - 1), this.copy()));
                         player.forceUpdateItem(this);
-                        player.getMap().broadcastMessage(InventoryPacket.showPotentialReset(player.getId(), oldState < getState(isBonus), cubeId, debris, getItemId()));
+                        player.getMap().broadcastMessage(InventoryPacket.showPotentialReset(player.getId(), oldState < this.getState(isBonus), cubeId, debris, this.getItemId()));
                     }
                 }
-
-                if (oldState < getState(isBonus) && getState(isBonus) == 20) {
+                if (oldState < this.getState(isBonus) && this.getState(isBonus) == 20) {
                     MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
                     StringBuilder msg = new StringBuilder();
                     msg.append(player.getName()).append("使用").append(ii.getName(cubeId));
-                    String eqName = "{" + ii.getName(getItemId()) + "}";
+                    String eqName = "{" + ii.getName(this.getItemId()) + "}";
                     msg.append("將").append(eqName).append("的");
                     if (isBonus) {
                         msg.append("附加潛能");
@@ -1053,52 +1044,44 @@ public class Equip extends Item implements Serializable {
 
     public boolean magnify() {
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        int reqLevel = ii.getReqLevel(getItemId()) / 10;
-        final List<List<StructItemOption>> pots = new LinkedList<>(ii.getAllPotentialInfo().values());
-        final boolean isBonus = !(getState(false) < 17 && getState(false) > 0);
-
+        int reqLevel = ii.getReqLevel(this.getItemId()) / 10;
+        LinkedList<List<StructItemOption>> pots = new LinkedList<List<StructItemOption>>(ii.getAllPotentialInfo().values());
+        boolean isBonus = this.getState(false) >= 17 || this.getState(false) <= 0;
         int lockedLine = 0;
-        int locked = Math.abs(getPotential(1, isBonus)) % 1000000;
+        int locked = Math.abs(this.getPotential(1, isBonus)) % 1000000;
         if (locked >= 100000) {
             lockedLine = locked / 100000;
             locked %= 100000;
         } else {
             locked = 0;
         }
-        final int lines = (getPotential(2, isBonus) != 0) ? 3 : 2;
-
-        // 鑒定潛能
-        int new_state = getState(isBonus) + 16;
+        int lines = this.getPotential(2, isBonus) != 0 ? 3 : 2;
+        int new_state = this.getState(isBonus) + 16;
         if (new_state > 20) {
             new_state = 20;
         } else if (new_state < 17) {
             new_state = 17;
         }
-        final int cubeType = Math.abs(getPotential(3, isBonus));
-        setPotential(0, 3, isBonus);
-        final boolean twins = ItemConstants.方塊.CubeType.前兩條相同.check(cubeType);
+        int cubeType = Math.abs(this.getPotential(3, isBonus));
+        this.setPotential(0, 3, isBonus);
+        boolean twins = ItemConstants.方塊.CubeType.前兩條相同.check(cubeType);
         for (int i = 1; i <= lines; ++i) {
+            StructItemOption pot;
             if (i == lockedLine) {
-                setPotential(locked, lockedLine, isBonus);
+                this.setPotential(locked, lockedLine, isBonus);
                 continue;
             }
-            while (true) {
-                if (reqLevel >= 20) {
-                    reqLevel = 19;
-                }
-                StructItemOption pot = pots.get(Randomizer.nextInt(pots.size())).get(reqLevel);
-                if (pot != null && pot.reqLevel / 10 <= reqLevel && ItemConstants.方塊.optionTypeFits(pot.optionType, getItemId()) && ItemConstants.方塊.potentialIDFits(pot.opID, new_state, ItemConstants.方塊.CubeType.對等.check(cubeType) ? 1 : i) && ItemConstants.方塊.isAllowedPotentialStat(this, pot.opID, isBonus, ItemConstants.方塊.CubeType.點商光環.check(cubeType)) && (!ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeType) || (ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeType) && !ItemConstants.方塊.isUselessPotential(pot)))) { // optionType
-                    if (i == 1 && twins) {
-                        setPotential(pot.opID, 2, isBonus);
-                    }
-                    if (i != 2 || !twins) {
-                        setPotential(pot.opID, i, isBonus);
-                    }
-                    break;
-                }
+            do {
+                if (reqLevel < 20) continue;
+                reqLevel = 19;
+            } while ((pot = (StructItemOption)((List)pots.get(Randomizer.nextInt(pots.size()))).get(reqLevel)) == null || pot.reqLevel / 10 > reqLevel || !ItemConstants.方塊.optionTypeFits((int)pot.optionType, (int)this.getItemId()) || !ItemConstants.方塊.potentialIDFits((int)pot.opID, (int)new_state, (int)(ItemConstants.方塊.CubeType.對等.check(cubeType) ? 1 : i)) || !ItemConstants.方塊.isAllowedPotentialStat((Equip)this, (int)pot.opID, (boolean)isBonus, (boolean)ItemConstants.方塊.CubeType.點商光環.check(cubeType)) || ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeType) && (!ItemConstants.方塊.CubeType.去掉無用潛能.check(cubeType) || ItemConstants.方塊.isUselessPotential((StructItemOption)pot)));
+            if (i == 1 && twins) {
+                this.setPotential(pot.opID, 2, isBonus);
             }
+            if (i == 2 && twins) continue;
+            this.setPotential(pot.opID, i, isBonus);
         }
-        initState(isBonus);
+        this.initState(isBonus);
         return true;
     }
 
@@ -1106,7 +1089,7 @@ public class Equip extends Item implements Serializable {
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         int level = ii.getReqLevel(this.getItemId()) / 10;
         level = level >= 20 ? 19 : level;
-        List<List<StructItemOption>> linkedList = new LinkedList<>(ii.getAllPotentialInfo().values());
+        LinkedList<List<StructItemOption>> linkedList = new LinkedList<List<StructItemOption>>(ii.getAllPotentialInfo().values());
         int state = this.getState(false) + 16;
         if (state > 20) {
             state = 20;
@@ -1114,20 +1097,12 @@ public class Equip extends Item implements Serializable {
             state = 17;
         }
         int n5 = Math.abs(this.getPotential(3, false));
-        List<StructItemOption> arrayList = new ArrayList<>(6);
+        ArrayList<StructItemOption> arrayList = new ArrayList<StructItemOption>(6);
         for (int i2 = 1; i2 <= size; ++i2) {
             boolean bl2 = false;
             while (!bl2) {
-                StructItemOption itemOption = linkedList.get(Randomizer.nextInt(linkedList.size())).get(level);
-                if (itemOption == null
-                        || GameConstants.isAboveA(itemOption.opID)
-                        || !GameConstants.optionTypeFits(itemOption.optionType, this.getItemId())
-                        || !GameConstants.isBlockedPotential(this, itemOption.opID, false, ItemConstants.方塊.CubeType.點商光環.check(n5))
-                        || !GameConstants.potentialIDFits(itemOption.opID, state, ItemConstants.方塊.CubeType.對等.check(n5) ? 1 : i2)
-                        || ItemConstants.方塊.CubeType.去掉無用潛能.check(n5)
-                        && (!ItemConstants.方塊.CubeType.去掉無用潛能.check(n5) || ItemConstants.方塊.isUselessPotential(itemOption))) {
-                    continue;
-                }
+                StructItemOption itemOption = (StructItemOption)((List)linkedList.get(Randomizer.nextInt(linkedList.size()))).get(level);
+                if (itemOption == null || GameConstants.isAboveA(itemOption.opID) || !GameConstants.optionTypeFits(itemOption.optionType, this.getItemId()) || !GameConstants.isBlockedPotential(this, itemOption.opID, false, ItemConstants.方塊.CubeType.點商光環.check(n5)) || !GameConstants.potentialIDFits(itemOption.opID, state, ItemConstants.方塊.CubeType.對等.check(n5) ? 1 : i2) || ItemConstants.方塊.CubeType.去掉無用潛能.check(n5) && (!ItemConstants.方塊.CubeType.去掉無用潛能.check(n5) || ItemConstants.方塊.isUselessPotential((StructItemOption)itemOption))) continue;
                 arrayList.add(itemOption);
                 bl2 = true;
             }
@@ -1136,235 +1111,223 @@ public class Equip extends Item implements Serializable {
     }
 
     public void renewPotential(int defaultRate, int flag, int lockSlot) {
-        int miracleRate = 1;//方塊雙倍時間
-        final boolean bonus = ItemConstants.方塊.CubeType.附加潛能.check(flag);
-        final boolean threeLine = this.getPotential(3, bonus) > 0;
-
-        int rank = (Randomizer.nextInt(1000000) < defaultRate * miracleRate) ? 1 : 0;
-        if (ItemConstants.方塊.CubeType.等級下降.check(flag) && rank == 0) {
-            rank = ((Randomizer.nextInt(1000000) < (defaultRate + 200000) * miracleRate) ? -1 : 0);
-        }
-
-        if (ItemConstants.方塊.CubeType.前兩條相同.check(flag)) {
-            flag -= ((Randomizer.nextInt(10) <= 5) ? ItemConstants.方塊.CubeType.前兩條相同.getValue() : 0);
-        }
-
-        if (this.getState(bonus) + rank < 17 || this.getState(bonus) + rank > (!ItemConstants.方塊.CubeType.傳說.check(flag) ? !ItemConstants.方塊.CubeType.罕見.check(flag) ? !ItemConstants.方塊.CubeType.稀有.check(flag) ? 17 : 18 : 19 : 20)) {
+        int rank;
+        boolean threeLine;
+        boolean bonus;
+        block13: {
+            block12: {
+                int miracleRate = 1;
+                bonus = ItemConstants.方塊.CubeType.附加潛能.check(flag);
+                threeLine = this.getPotential(3, bonus) > 0;
+                int n = rank = Randomizer.nextInt(1000000) < defaultRate * miracleRate ? 1 : 0;
+                if (ItemConstants.方塊.CubeType.等級下降.check(flag) && rank == 0) {
+                    int n2 = rank = Randomizer.nextInt(1000000) < (defaultRate + 200000) * miracleRate ? -1 : 0;
+                }
+                if (ItemConstants.方塊.CubeType.前兩條相同.check(flag)) {
+                    flag -= Randomizer.nextInt(10) <= 5 ? ItemConstants.方塊.CubeType.前兩條相同.getValue() : 0;
+                }
+                if (this.getState(bonus) + rank < 17) break block12;
+                if (this.getState(bonus) + rank <= (!ItemConstants.方塊.CubeType.傳說.check(flag) ? (!ItemConstants.方塊.CubeType.罕見.check(flag) ? (!ItemConstants.方塊.CubeType.稀有.check(flag) ? 17 : 18) : 19) : 20)) break block13;
+            }
             rank = 0;
         }
-
-        setState((byte) (this.getState(bonus) + rank - 16), bonus);
-
+        this.setState((byte)(this.getState(bonus) + rank - 16), bonus);
         if (lockSlot != 0 && lockSlot <= 3) {
             this.setPotential(-(lockSlot * 100000 + this.getPotential(lockSlot, bonus)), 1, bonus);
         } else {
-            this.setPotential(-getState(bonus), 1, bonus);
+            this.setPotential(-this.getState(bonus), 1, bonus);
         }
-
         if (ItemConstants.方塊.CubeType.調整潛能條數.check(flag)) {
-            this.setPotential((Randomizer.nextInt(10) <= 2) ? -getState(bonus) : 0, 2, bonus);
+            this.setPotential(Randomizer.nextInt(10) <= 2 ? -this.getState(bonus) : (byte)0, 2, bonus);
         } else if (threeLine) {
-            this.setPotential(-getState(bonus), 2, bonus);
+            this.setPotential(-this.getState(bonus), 2, bonus);
         } else {
             this.setPotential(0, 2, bonus);
         }
-        setPotential(-flag, 3, bonus);
-
+        this.setPotential(-flag, 3, bonus);
         if (ItemConstants.方塊.CubeType.洗後無法交易.check(flag)) {
-            addAttribute(ItemAttribute.TradeBlock.getValue());
+            this.addAttribute(ItemAttribute.TradeBlock.getValue());
         }
-
-        initState(bonus);
+        this.initState(bonus);
     }
 
     public void setNewArcInfo(int job) {
-        ARCLevel = 1;
-        ARCExp = 1;
-        recalcArcStat(job);
+        this.ARCLevel = 1;
+        this.ARCExp = 1;
+        this.recalcArcStat(job);
     }
 
     public void recalcArcStat(int job) {
-        int n = ARCLevel + 2;
-        ARC = (short) (10 * n);
+        int n = this.ARCLevel + 2;
+        this.ARC = (short)(10 * n);
         if (JobConstants.is惡魔復仇者(job)) {
-            hp = (short) (2100 * n);
+            this.hp = (short)(2100 * n);
         } else if (JobConstants.is傑諾(job)) {
-            str = (short) (48 * n);
-            dex = (short) (48 * n);
-            luk = (short) (48 * n);
+            this.str = (short)(48 * n);
+            this.dex = (short)(48 * n);
+            this.luk = (short)(48 * n);
         } else {
             switch (JobConstants.getJobBranch(job)) {
-                case 1:
-                    str = (short) (100 * n);
+                case 1: {
+                    this.str = (short)(100 * n);
                     break;
-                case 2:
-                    _int = (short) (100 * n);
+                }
+                case 2: {
+                    this._int = (short)(100 * n);
                     break;
-                case 3:
-                    dex = (short) (100 * n);
+                }
+                case 3: {
+                    this.dex = (short)(100 * n);
                     break;
-                case 4:
-                    luk = (short) (100 * n);
+                }
+                case 4: {
+                    this.luk = (short)(100 * n);
                     break;
-                case 5:
+                }
+                case 5: {
                     if (JobConstants.is拳霸(job) || JobConstants.is隱月(job) || JobConstants.is重砲指揮官(job) || JobConstants.is閃雷悍將(job) || JobConstants.is亞克(job)) {
-                        str = (short) (100 * n);
-                    } else {
-                        dex = (short) (100 * n);
+                        this.str = (short)(100 * n);
+                        break;
                     }
+                    this.dex = (short)(100 * n);
+                }
             }
         }
     }
 
     public void setNewAutInfo(int job) {
-        autLevel = 1;
-        autExp = 1;
-        recalcAutStat(job);
+        this.autLevel = 1;
+        this.autExp = 1;
+        this.recalcAutStat(job);
     }
 
     public void recalcAutStat(int job) {
-        int n = autLevel;
-        aut = (short) (10 * n);
+        short n = this.autLevel;
+        this.aut = (short)(10 * n);
         if (JobConstants.is惡魔復仇者(job)) {
-            hp = (short) (6300 + 4200 * n);
+            this.hp = (short)(6300 + 4200 * n);
         } else if (JobConstants.is傑諾(job)) {
-            str = (short) (144 + 96 * n);
-            dex = (short) (144 + 96 * n);
-            luk = (short) (144 + 96 * n);
+            this.str = (short)(144 + 96 * n);
+            this.dex = (short)(144 + 96 * n);
+            this.luk = (short)(144 + 96 * n);
         } else {
             switch (JobConstants.getJobBranch(job)) {
-                case 1:
-                    str = (short) (300 + 200 * n);
+                case 1: {
+                    this.str = (short)(300 + 200 * n);
                     break;
-                case 2:
-                    _int = (short) (300 + 200 * n);
+                }
+                case 2: {
+                    this._int = (short)(300 + 200 * n);
                     break;
-                case 3:
-                    dex = (short) (300 + 200 * n);
+                }
+                case 3: {
+                    this.dex = (short)(300 + 200 * n);
                     break;
-                case 4:
-                    luk = (short) (300 + 200 * n);
+                }
+                case 4: {
+                    this.luk = (short)(300 + 200 * n);
                     break;
-                case 5:
+                }
+                case 5: {
                     if (JobConstants.is拳霸(job) || JobConstants.is隱月(job) || JobConstants.is重砲指揮官(job) || JobConstants.is閃雷悍將(job) || JobConstants.is亞克(job)) {
-                        str = (short) (300 + 200 * n);
-                    } else {
-                        dex = (short) (300 + 200 * n);
+                        this.str = (short)(300 + 200 * n);
+                        break;
                     }
+                    this.dex = (short)(300 + 200 * n);
+                }
             }
         }
     }
 
-    /*
-     * 裝備技能
-     */
     public int getIncSkill() {
-        return incSkill;
+        return this.incSkill;
     }
 
     public void setIncSkill(int inc) {
         this.incSkill = inc;
     }
 
-    /*
-     * 裝備魅力經驗
-     */
     public short getCharmEXP() {
-        return charmExp;
+        return this.charmExp;
     }
 
     public void setCharmEXP(short s) {
         this.charmExp = s;
     }
 
-    /*
-     * 裝備大亂鬥攻擊力
-     */
     public short getPVPDamage() {
-        return pvpDamage;
+        return this.pvpDamage;
     }
 
     public void setPVPDamage(short p) {
         this.pvpDamage = p;
     }
 
-    /*
-     * 戒指
-     */
     public MapleRing getRing() {
-        if (!ItemConstants.類型.特效裝備(getItemId()) || getSN() <= 0) {
+        if (!ItemConstants.類型.特效裝備(this.getItemId()) || this.getSN() <= 0) {
             return null;
         }
-        if (ring == null) {
-            ring = MapleRing.loadFromDb(getSN(), getPosition() < 0);
+        if (this.ring == null) {
+            this.ring = MapleRing.loadFromDb((int)this.getSN(), (this.getPosition() < 0 ? 1 : 0) != 0);
         }
-        return ring;
+        return this.ring;
     }
 
     public void setRing(MapleRing ring) {
         this.ring = ring;
     }
 
-    /*
-     * 機器人
-     */
     public MapleAndroid getAndroid() {
-        if (getItemId() / 10000 != 166 || getSN() <= 0) {
+        if (this.getItemId() / 10000 != 166 || this.getSN() <= 0) {
             return null;
         }
-        if (android == null) {
-            android = MapleAndroid.loadFromDb(getItemId(), getSN());
+        if (this.android == null) {
+            this.android = MapleAndroid.loadFromDb(this.getItemId(), this.getSN());
         }
-        return android;
+        return this.android;
     }
 
     public void setAndroid(MapleAndroid android) {
         this.android = android;
-        if (android != null && getSN() != android.getUniqueId() && android.getUniqueId() > 0) {
-            setSN(android.getUniqueId());
+        if (android != null && this.getSN() != android.getUniqueId() && android.getUniqueId() > 0) {
+            this.setSN(android.getUniqueId());
         }
     }
 
-    /*
-     * 裝備插槽 可以鑲嵌寶石
-     * V.102新增功能
-     * 0x01 = 你可以在這件物品上鑲入星岩。
-     * 0x03 = 你可以在這件物品上鑲入星岩。 有個鑲嵌的孔 未鑲嵌
-     * 0x13 = 有1個插孔 已經鑲嵌東西
-     */
     public short getSocketState() {
+        boolean isSocketItem = false;
         short flag = 0;
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        boolean isSocketItem = ServerConfig.ALL_SOCKET ? !ii.isCash(getItemId()) : (ii.isActivatedSocketItem(getItemId()) || socket1 >= 0);
+        boolean bl = ServerConfig.ALL_SOCKET ? !ii.isCash(this.getItemId()) : (isSocketItem = ii.isActivatedSocketItem(this.getItemId()) || this.socket1 >= 0);
         if (isSocketItem) {
-            flag |= SocketFlag.可以鑲嵌.getValue();
-            if (socket1 == -1) {
-                setSocket1(0);
+            flag = (short)(flag | SocketFlag.可以鑲嵌.getValue());
+            if (this.socket1 == -1) {
+                this.setSocket1(0);
             }
-            if (socket1 != -1) {
-                flag |= SocketFlag.已打孔01.getValue();
+            if (this.socket1 != -1) {
+                flag = (short)(flag | SocketFlag.已打孔01.getValue());
             }
-            if (socket2 != -1) {
-                flag |= SocketFlag.已打孔02.getValue();
+            if (this.socket2 != -1) {
+                flag = (short)(flag | SocketFlag.已打孔02.getValue());
             }
-            if (socket3 != -1) {
-                flag |= SocketFlag.已打孔03.getValue();
+            if (this.socket3 != -1) {
+                flag = (short)(flag | SocketFlag.已打孔03.getValue());
             }
-            if (socket1 > 0) {
-                flag |= SocketFlag.已鑲嵌01.getValue();
+            if (this.socket1 > 0) {
+                flag = (short)(flag | SocketFlag.已鑲嵌01.getValue());
             }
-            if (socket2 > 0) {
-                flag |= SocketFlag.已鑲嵌02.getValue();
+            if (this.socket2 > 0) {
+                flag = (short)(flag | SocketFlag.已鑲嵌02.getValue());
             }
-            if (socket3 > 0) {
-                flag |= SocketFlag.已鑲嵌03.getValue();
+            if (this.socket3 > 0) {
+                flag = (short)(flag | SocketFlag.已鑲嵌03.getValue());
             }
         }
         return flag;
     }
 
     public int getSocket1() {
-        return socket1;
+        return this.socket1;
     }
 
     public void setSocket1(int socket) {
@@ -1372,7 +1335,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getSocket2() {
-        return socket2;
+        return this.socket2;
     }
 
     public void setSocket2(int socket) {
@@ -1380,29 +1343,23 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getSocket3() {
-        return socket3;
+        return this.socket3;
     }
 
     public void setSocket3(int socket) {
         this.socket3 = socket;
     }
 
-    /*
-     * 裝備合成後的外觀
-     */
     public int getItemSkin() {
-        return itemSkin;
+        return this.itemSkin;
     }
 
     public void setItemSkin(int id) {
         this.itemSkin = id;
     }
 
-    /*
-     * 新增的裝備屬性
-     */
     public short getEnchantBuff() {
-        return enchantBuff;
+        return this.enchantBuff;
     }
 
     public void setEnchantBuff(short enchantBuff) {
@@ -1413,14 +1370,14 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getReqLevel() {
-        if (reqLevel == -1) {
-            reqLevel = (short) MapleItemInformationProvider.getInstance().getReqLevel(getItemId());
+        if (this.reqLevel == -1) {
+            this.reqLevel = (short)MapleItemInformationProvider.getInstance().getReqLevel(this.getItemId());
         }
-        return reqLevel;
+        return this.reqLevel;
     }
 
     public short getTotalReqLevel() {
-        return (short) Math.max(1, getReqLevel() - nirvanaFlame.getReqLevel());
+        return (short)Math.max(1, this.getReqLevel() - this.nirvanaFlame.getReqLevel());
     }
 
     public void setReqLevel(short reqLevel) {
@@ -1431,15 +1388,15 @@ public class Equip extends Item implements Serializable {
     }
 
     public byte getDownLevel() {
-        return (byte) (MapleItemInformationProvider.getInstance().getReqLevel(getItemId()) - getReqLevel());
+        return (byte)(MapleItemInformationProvider.getInstance().getReqLevel(this.getItemId()) - this.getReqLevel());
     }
 
     public byte getTotalDownLevel() {
-        return (byte) (MapleItemInformationProvider.getInstance().getReqLevel(getItemId()) - getTotalReqLevel());
+        return (byte)(MapleItemInformationProvider.getInstance().getReqLevel(this.getItemId()) - this.getTotalReqLevel());
     }
 
     public short getYggdrasilWisdom() {
-        return yggdrasilWisdom;
+        return this.yggdrasilWisdom;
     }
 
     public void setYggdrasilWisdom(short yggdrasilWisdom) {
@@ -1450,7 +1407,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public boolean getFinalStrike() {
-        return finalStrike;
+        return this.finalStrike;
     }
 
     public void setFinalStrike(boolean finalStrike) {
@@ -1458,11 +1415,11 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalBossDamage() {
-        return (short) (bossDamage + starForce.getBossDamage() + nirvanaFlame.getBossDamage());
+        return (short)(this.bossDamage + this.starForce.getBossDamage() + this.nirvanaFlame.getBossDamage());
     }
 
     public short getBossDamage() {
-        return bossDamage;
+        return this.bossDamage;
     }
 
     public void setBossDamage(short bossDamage) {
@@ -1473,11 +1430,11 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalIgnorePDR() {
-        return (short) (ignorePDR + starForce.getIgnorePDR() + nirvanaFlame.getIgnorePDR());
+        return (short)(this.ignorePDR + this.starForce.getIgnorePDR() + this.nirvanaFlame.getIgnorePDR());
     }
 
     public short getIgnorePDR() {
-        return ignorePDR;
+        return this.ignorePDR;
     }
 
     public void setIgnorePDR(short ignorePDR) {
@@ -1487,15 +1444,12 @@ public class Equip extends Item implements Serializable {
         this.ignorePDR = ignorePDR;
     }
 
-    /*
-     * 新增的裝備特殊屬性
-     */
     public short getTotalTotalDamage() {
-        return (short) (totalDamage + starForce.getTotalDamage() + nirvanaFlame.getTotalDamage());
+        return (short)(this.totalDamage + this.starForce.getTotalDamage() + this.nirvanaFlame.getTotalDamage());
     }
 
     public short getTotalDamage() {
-        return totalDamage;
+        return this.totalDamage;
     }
 
     public void setTotalDamage(short totalDamage) {
@@ -1506,11 +1460,11 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getTotalAllStat() {
-        return (short) (allStat + starForce.getAllStat() + nirvanaFlame.getAllStat());
+        return (short)(this.allStat + this.starForce.getAllStat() + this.nirvanaFlame.getAllStat());
     }
 
     public short getAllStat() {
-        return allStat;
+        return this.allStat;
     }
 
     public void setAllStat(short allStat) {
@@ -1521,7 +1475,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getKarmaCount() {
-        return karmaCount;
+        return this.karmaCount;
     }
 
     public void setKarmaCount(short karmaCount) {
@@ -1529,310 +1483,297 @@ public class Equip extends Item implements Serializable {
     }
 
     public Map<EquipStats, Long> getStatsTest() {
-        return statsTest;
+        return this.statsTest;
     }
 
-    /*
-     * 裝備的總體狀態
-     */
     public int getEquipFlag() {
         int flag = 0;
-        if (getRestUpgradeCount() > 0) {
+        if (this.getRestUpgradeCount() > 0) {
             flag |= EquipStats.可使用捲軸次數.getValue();
         }
-        if (getCurrentUpgradeCount() > 0) {
+        if (this.getCurrentUpgradeCount() > 0) {
             flag |= EquipStats.捲軸強化次數.getValue();
         }
-        if (getTotalStr() > 0) {
+        if (this.getTotalStr() > 0) {
             flag |= EquipStats.力量.getValue();
         }
-        if (getTotalDex() > 0) {
+        if (this.getTotalDex() > 0) {
             flag |= EquipStats.敏捷.getValue();
         }
-        if (getTotalInt() > 0) {
+        if (this.getTotalInt() > 0) {
             flag |= EquipStats.智力.getValue();
         }
-        if (getTotalLuk() > 0) {
+        if (this.getTotalLuk() > 0) {
             flag |= EquipStats.幸運.getValue();
         }
-        if (getTotalHp() > 0) {
+        if (this.getTotalHp() > 0) {
             flag |= EquipStats.MaxHP.getValue();
         }
-        if (getTotalMp() > 0) {
+        if (this.getTotalMp() > 0) {
             flag |= EquipStats.MaxMP.getValue();
         }
-        if (getTotalPad() > 0) {
+        if (this.getTotalPad() > 0) {
             flag |= EquipStats.攻擊力.getValue();
         }
-        if (getTotalMad() > 0) {
+        if (this.getTotalMad() > 0) {
             flag |= EquipStats.魔力.getValue();
         }
-        if (getTotalPdd() > 0) {
+        if (this.getTotalPdd() > 0) {
             flag |= EquipStats.防禦力.getValue();
         }
-        if (getTotalHands() > 0) {
+        if (this.getTotalHands() > 0) {
             flag |= EquipStats.靈敏度.getValue();
         }
-        if (getTotalSpeed() > 0) {
+        if (this.getTotalSpeed() > 0) {
             flag |= EquipStats.移動速度.getValue();
         }
-        if (getTotalJump() > 0) {
+        if (this.getTotalJump() > 0) {
             flag |= EquipStats.跳躍力.getValue();
         }
-        if (getCAttribute() > 0) {
+        if (this.getCAttribute() > 0) {
             flag |= EquipStats.狀態.getValue();
         }
-        if (getIncSkill() > 0) {
+        if (this.getIncSkill() > 0) {
             flag |= EquipStats.裝備技能.getValue();
         }
-        if (isSealedEquip()) {
-            if (getSealedLevel() > 0) {
+        if (this.isSealedEquip()) {
+            if (this.getSealedLevel() > 0) {
                 flag |= EquipStats.裝備等級.getValue();
             }
-            if (getSealedExp() > 0) {
+            if (this.getSealedExp() > 0L) {
                 flag |= EquipStats.裝備經驗.getValue();
             }
         } else {
-            if (getEquipLevel() > 0) {
+            if (this.getEquipLevel() > 0) {
                 flag |= EquipStats.裝備等級.getValue();
             }
-            if (getExpPercentage() > 0) {
+            if (this.getExpPercentage() > 0L) {
                 flag |= EquipStats.裝備經驗.getValue();
             }
         }
-        if (getDurability() > 0) {
+        if (this.getDurability() > 0) {
             flag |= EquipStats.耐久度.getValue();
         }
-        if (getTotalHammer() > 0) {
+        if (this.getTotalHammer() > 0) {
             flag |= EquipStats.鎚子.getValue();
         }
-        if (getPVPDamage() > 0) {
+        if (this.getPVPDamage() > 0) {
             flag |= EquipStats.大亂鬥傷害.getValue();
         }
-        if (getDownLevel() > 0) {
+        if (this.getDownLevel() > 0) {
             flag |= EquipStats.套用等級減少.getValue();
         }
-        if (getEnchantBuff() > 0) {
+        if (this.getEnchantBuff() > 0) {
             flag |= EquipStats.ENHANCT_BUFF.getValue();
         }
-        if (getiIncReq() > 0) {
-            flag |= EquipStats.REQUIRED_LEVEL.getValue(); //穿戴裝備的等級要求提高
+        if (this.getiIncReq() > 0) {
+            flag |= EquipStats.REQUIRED_LEVEL.getValue();
         }
-        if (getYggdrasilWisdom() > 0) {
+        if (this.getYggdrasilWisdom() > 0) {
             flag |= EquipStats.YGGDRASIL_WISDOM.getValue();
         }
-        if (getFinalStrike()) {
-            flag |= EquipStats.FINAL_STRIKE.getValue(); //最終一擊卷軸成功
+        if (this.getFinalStrike()) {
+            flag |= EquipStats.FINAL_STRIKE.getValue();
         }
-        if (getTotalBossDamage() > 0) {
-            flag |= EquipStats.BOSS傷.getValue(); //BOSS傷害增加百分比
+        if (this.getTotalBossDamage() > 0) {
+            flag |= EquipStats.BOSS傷.getValue();
         }
-        if (getTotalIgnorePDR() > 0) {
-            flag |= EquipStats.無視防禦.getValue(); //無視怪物增加百分比
+        if (this.getTotalIgnorePDR() > 0) {
+            flag |= EquipStats.無視防禦.getValue();
         }
         return flag;
     }
 
-    /*
-     * 裝備的基礎屬性
-     */
     public int getEquipBaseFlag() {
         int flag = 0;
-        if (getStr() > 0) {
+        if (this.getStr() > 0) {
             flag |= EquipBaseStat.力量.getFlag();
         }
-        if (getDex() > 0) {
+        if (this.getDex() > 0) {
             flag |= EquipBaseStat.敏捷.getFlag();
         }
-        if (getInt() > 0) {
+        if (this.getInt() > 0) {
             flag |= EquipBaseStat.智力.getFlag();
         }
-        if (getLuk() > 0) {
+        if (this.getLuk() > 0) {
             flag |= EquipBaseStat.幸運.getFlag();
         }
-        if (getHp() > 0) {
+        if (this.getHp() > 0) {
             flag |= EquipBaseStat.MaxHP.getFlag();
         }
-        if (getMp() > 0) {
+        if (this.getMp() > 0) {
             flag |= EquipBaseStat.MaxMP.getFlag();
         }
-        if (getPad() > 0) {
+        if (this.getPad() > 0) {
             flag |= EquipBaseStat.攻擊力.getFlag();
         }
-        if (getMad() > 0) {
+        if (this.getMad() > 0) {
             flag |= EquipBaseStat.魔力.getFlag();
         }
-        if (getPdd() > 0) {
+        if (this.getPdd() > 0) {
             flag |= EquipBaseStat.防禦力.getFlag();
         }
-        if (getHands() > 0) {
+        if (this.getHands() > 0) {
             flag |= EquipBaseStat.靈敏度.getFlag();
         }
-        if (getSpeed() > 0) {
+        if (this.getSpeed() > 0) {
             flag |= EquipBaseStat.移動速度.getFlag();
         }
-        if (getJump() > 0) {
+        if (this.getJump() > 0) {
             flag |= EquipBaseStat.跳躍力.getFlag();
         }
         return flag;
     }
 
-    /*
-     * 裝備星力強化的基礎屬性
-     */
     public int getEquipSFBaseFlag() {
         int flag = 0;
-        if (getSF_Str() > 0) {
+        if (this.getSF_Str() > 0) {
             flag |= EquipBaseStat.力量.getFlag();
         }
-        if (getSF_Dex() > 0) {
+        if (this.getSF_Dex() > 0) {
             flag |= EquipBaseStat.敏捷.getFlag();
         }
-        if (getSF_Int() > 0) {
+        if (this.getSF_Int() > 0) {
             flag |= EquipBaseStat.智力.getFlag();
         }
-        if (getSF_Luk() > 0) {
+        if (this.getSF_Luk() > 0) {
             flag |= EquipBaseStat.幸運.getFlag();
         }
-        if (getSF_Hp() > 0) {
+        if (this.getSF_Hp() > 0) {
             flag |= EquipBaseStat.MaxHP.getFlag();
         }
-        if (getSF_Mp() > 0) {
+        if (this.getSF_Mp() > 0) {
             flag |= EquipBaseStat.MaxMP.getFlag();
         }
-        if (getSF_Pad() > 0) {
+        if (this.getSF_Pad() > 0) {
             flag |= EquipBaseStat.攻擊力.getFlag();
         }
-        if (getSF_Mad() > 0) {
+        if (this.getSF_Mad() > 0) {
             flag |= EquipBaseStat.魔力.getFlag();
         }
-        if (getSF_Pdd() > 0) {
+        if (this.getSF_Pdd() > 0) {
             flag |= EquipBaseStat.防禦力.getFlag();
         }
-        if (getSF_Hands() > 0) {
+        if (this.getSF_Hands() > 0) {
             flag |= EquipBaseStat.靈敏度.getFlag();
         }
-        if (getSF_Speed() > 0) {
+        if (this.getSF_Speed() > 0) {
             flag |= EquipBaseStat.移動速度.getFlag();
         }
-        if (getSF_Jump() > 0) {
+        if (this.getSF_Jump() > 0) {
             flag |= EquipBaseStat.跳躍力.getFlag();
         }
         return flag;
     }
 
-    /*
-     * 裝備的特殊狀態
-     */
     public int getEquipSpecialFlag() {
         int flag = 0;
-        if (getRestUpgradeCount() > 0) {
+        if (this.getRestUpgradeCount() > 0) {
             flag |= EquipSpecialStat.可使用捲軸次數.getFlag();
         }
-        if (getCurrentUpgradeCount() > 0) {
+        if (this.getCurrentUpgradeCount() > 0) {
             flag |= EquipSpecialStat.捲軸強化次數.getFlag();
         }
-        if (getCAttribute() > 0) {
+        if (this.getCAttribute() > 0) {
             flag |= EquipSpecialStat.狀態.getFlag();
         }
-        if (getIncSkill() > 0) {
+        if (this.getIncSkill() > 0) {
             flag |= EquipSpecialStat.裝備技能.getFlag();
         }
-        if (isSealedEquip()) {
-            if (getSealedLevel() > 0) {
+        if (this.isSealedEquip()) {
+            if (this.getSealedLevel() > 0) {
                 flag |= EquipSpecialStat.裝備等級.getFlag();
             }
-            if (getSealedExp() > 0) {
+            if (this.getSealedExp() > 0L) {
                 flag |= EquipSpecialStat.裝備經驗.getFlag();
             }
         } else {
-            if (getEquipLevel() > 0) {
+            if (this.getEquipLevel() > 0) {
                 flag |= EquipSpecialStat.裝備等級.getFlag();
             }
-            if (getExpPercentage() > 0) {
+            if (this.getExpPercentage() > 0L) {
                 flag |= EquipSpecialStat.裝備經驗.getFlag();
             }
         }
-        if (getDurability() > 0) {
+        if (this.getDurability() > 0) {
             flag |= EquipSpecialStat.耐久度.getFlag();
         }
-        if (getTotalHammer() > 0) {
+        if (this.getTotalHammer() > 0) {
             flag |= EquipSpecialStat.鎚子.getFlag();
         }
-        if (getDownLevel() > 0) {
+        if (this.getDownLevel() > 0) {
             flag |= EquipSpecialStat.套用等級減少.getFlag();
         }
-        if (getEnchantBuff() > 0) {
+        if (this.getEnchantBuff() > 0) {
             flag |= EquipSpecialStat.ENHANCT_BUFF.getFlag();
         }
-        if (getiIncReq() > 0) {
-            flag |= EquipSpecialStat.REQUIRED_LEVEL.getFlag(); //穿戴裝備的等級要求提高
+        if (this.getiIncReq() > 0) {
+            flag |= EquipSpecialStat.REQUIRED_LEVEL.getFlag();
         }
-        if (getYggdrasilWisdom() > 0) {
+        if (this.getYggdrasilWisdom() > 0) {
             flag |= EquipSpecialStat.YGGDRASIL_WISDOM.getFlag();
         }
-        if (getFinalStrike()) {
-            flag |= EquipSpecialStat.FINAL_STRIKE.getFlag(); //最終一擊卷軸成功
+        if (this.getFinalStrike()) {
+            flag |= EquipSpecialStat.FINAL_STRIKE.getFlag();
         }
-        if (getTotalBossDamage() > 0) {
-            flag |= EquipSpecialStat.BOSS傷.getFlag(); //BOSS傷害增加百分比
+        if (this.getTotalBossDamage() > 0) {
+            flag |= EquipSpecialStat.BOSS傷.getFlag();
         }
-        if (getTotalIgnorePDR() > 0) {
-            flag |= EquipSpecialStat.無視防禦.getFlag(); //無視怪物增加百分比
+        if (this.getTotalIgnorePDR() > 0) {
+            flag |= EquipSpecialStat.無視防禦.getFlag();
         }
-        if (getTotalTotalDamage() > 0) {
-            flag |= EquipSpecialStat.總傷害.getFlag(); //裝備總傷害百分比增加
+        if (this.getTotalTotalDamage() > 0) {
+            flag |= EquipSpecialStat.總傷害.getFlag();
         }
-        if (getTotalAllStat() > 0) {
-            flag |= EquipSpecialStat.全屬性.getFlag(); //裝備所有屬性百分比增加
+        if (this.getTotalAllStat() > 0) {
+            flag |= EquipSpecialStat.全屬性.getFlag();
         }
-        flag |= EquipSpecialStat.剪刀次數.getFlag(); //可以使用剪刀多少次 默認必須
-        if (getFlameFlag() != 0) {
+        flag |= EquipSpecialStat.剪刀次數.getFlag();
+        if (this.getFlameFlag() != 0L) {
             flag |= EquipSpecialStat.輪迴星火.getFlag();
         }
-        flag |= EquipSpecialStat.星力強化.getFlag();
-        return flag;
+        return flag |= EquipSpecialStat.星力強化.getFlag();
     }
 
     public void setLockPotential(int slot, short id) {
-        lockSlot = slot;
-        lockId = id;
+        this.lockSlot = slot;
+        this.lockId = id;
     }
 
     public int getLockSlot() {
-        return lockSlot;
+        return this.lockSlot;
     }
 
     public int getLockId() {
-        return lockId;
+        return this.lockId;
     }
 
     public boolean isSealedEquip() {
-        return GameConstants.isSealedEquip(getItemId());
+        return GameConstants.isSealedEquip(this.getItemId());
     }
 
     public byte getSealedLevel() {
-        return sealedLevel;
+        return this.sealedLevel;
     }
 
     public void setSealedLevel(byte level) {
-        sealedLevel = level;
+        this.sealedLevel = level;
     }
 
     public void gainSealedExp(long gain) {
-        sealedExp += gain;
+        this.sealedExp += gain;
     }
 
     public long getSealedExp() {
-        return sealedExp;
+        return this.sealedExp;
     }
 
     public void setSealedExp(long exp) {
-        sealedExp = exp;
+        this.sealedExp = exp;
     }
 
     public short getSoulOptionID() {
-        return soulOptionID;
+        return this.soulOptionID;
     }
 
     public void setSoulOptionID(short soulname) {
@@ -1840,7 +1781,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getSoulSocketID() {
-        return soulSocketID;
+        return this.soulSocketID;
     }
 
     public void setSoulSocketID(short soulenchanter) {
@@ -1848,7 +1789,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getSoulOption() {
-        return soulOption;
+        return this.soulOption;
     }
 
     public void setSoulOption(short soulpotential) {
@@ -1856,7 +1797,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getSoulSkill() {
-        return soulSkill;
+        return this.soulSkill;
     }
 
     public void setSoulSkill(int skillid) {
@@ -1864,11 +1805,11 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getiIncReq() {
-        return iIncReq;
+        return this.iIncReq;
     }
 
     public NirvanaFlame getNirvanaFlame() {
-        return nirvanaFlame;
+        return this.nirvanaFlame;
     }
 
     public void setNirvanaFlame(NirvanaFlame nirvanaFlame) {
@@ -1877,16 +1818,16 @@ public class Equip extends Item implements Serializable {
     }
 
     public long getFlameFlag() {
-        return nirvanaFlame.getFlag();
+        return this.nirvanaFlame.getFlag();
     }
 
     public void setFlameFlag(long flag) {
-        nirvanaFlame.setFlag(flag);
-        nirvanaFlame.resetEquipExStats(this);
+        this.nirvanaFlame.setFlag(flag);
+        this.nirvanaFlame.resetEquipExStats(this);
     }
 
     public StarForce getStarForce() {
-        return starForce;
+        return this.starForce;
     }
 
     public void setStarForce(StarForce starForce) {
@@ -1894,31 +1835,28 @@ public class Equip extends Item implements Serializable {
         starForce.resetEquipStats(this);
     }
 
-    /*
-     * 星級
-     */
     public byte getStarForceLevel() {
-        return starForce.getLevel();
+        return this.starForce.getLevel();
     }
 
     public void setStarForceLevel(byte level) {
-        if (starForce.getLevel() <= level) {
-            setFailCount(0);
+        if (this.starForce.getLevel() <= level) {
+            this.setFailCount(0);
         }
-        starForce.setLevel(level);
-        starForce.resetEquipStats(this);
+        this.starForce.setLevel(level);
+        this.starForce.resetEquipStats(this);
     }
 
     public byte getEnhance() {
-        return getStarForceLevel();
+        return this.getStarForceLevel();
     }
 
     public void setEnhance(byte level) {
-        setStarForceLevel(level);
+        this.setStarForceLevel(level);
     }
 
     public int getFailCount() {
-        return failCount;
+        return this.failCount;
     }
 
     public void setFailCount(int failCount) {
@@ -1926,7 +1864,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getARC() {
-        return ARC;
+        return this.ARC;
     }
 
     public void setARC(short ARC) {
@@ -1934,7 +1872,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getArcExp() {
-        return ARCExp;
+        return this.ARCExp;
     }
 
     public void setARCExp(int ARCExp) {
@@ -1942,7 +1880,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getARCLevel() {
-        return ARCLevel;
+        return this.ARCLevel;
     }
 
     public void setARCLevel(short ARCLevel) {
@@ -1950,19 +1888,19 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getReqJob() {
-        return MapleItemInformationProvider.getInstance().getReqJob(getItemId());
+        return MapleItemInformationProvider.getInstance().getReqJob(this.getItemId());
     }
 
     public int getReqSpecJob() {
-        return MapleItemInformationProvider.getInstance().getReqSpecJob(getItemId());
+        return MapleItemInformationProvider.getInstance().getReqSpecJob(this.getItemId());
     }
 
     public void transmit(int itemID) {
-        transmit(itemID, 0);
+        this.transmit(itemID, 0);
     }
 
     public void transmit(int itemID, int jobId) {
-        transmit(itemID, jobId, true);
+        this.transmit(itemID, jobId, true);
     }
 
     public void transmit(int itemID, int jobId, boolean resetStat) {
@@ -1970,260 +1908,253 @@ public class Equip extends Item implements Serializable {
             return;
         }
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        Equip normalEquip = ii.getEquipById(getItemId());
+        Equip normalEquip = ii.getEquipById(this.getItemId());
         if (normalEquip == null) {
             return;
         }
-        short addStr = (short) (str - normalEquip.str);
-        short addDex = (short) (dex - normalEquip.dex);
-        short addInt = (short) (_int - normalEquip._int);
-        short addLuk = (short) (luk - normalEquip.luk);
-        short addHp = (short) (hp - normalEquip.hp);
-        short addMp = (short) (mp - normalEquip.mp);
-        short addMad = (short) (mad - normalEquip.mad);
-        short addMdd = (short) (mdd - normalEquip.mdd);
-        short addPad = (short) (pad - normalEquip.pad);
-        short addPdd = (short) (pdd - normalEquip.pdd);
-        short addAcc = (short) (acc - normalEquip.acc);
-        short addAvoid = (short) (avoid - normalEquip.avoid);
-        short addHands = (short) (hands - normalEquip.hands);
-        short addSpeed = (short) (speed - normalEquip.speed);
-        short addJump = (short) (jump - normalEquip.jump);
+        short addStr = (short)(this.str - normalEquip.str);
+        short addDex = (short)(this.dex - normalEquip.dex);
+        short addInt = (short)(this._int - normalEquip._int);
+        short addLuk = (short)(this.luk - normalEquip.luk);
+        short addHp = (short)(this.hp - normalEquip.hp);
+        short addMp = (short)(this.mp - normalEquip.mp);
+        short addMad = (short)(this.mad - normalEquip.mad);
+        short addMdd = (short)(this.mdd - normalEquip.mdd);
+        short addPad = (short)(this.pad - normalEquip.pad);
+        short addPdd = (short)(this.pdd - normalEquip.pdd);
+        short addAcc = (short)(this.acc - normalEquip.acc);
+        short addAvoid = (short)(this.avoid - normalEquip.avoid);
+        short addHands = (short)(this.hands - normalEquip.hands);
+        short addSpeed = (short)(this.speed - normalEquip.speed);
+        short addJump = (short)(this.jump - normalEquip.jump);
         normalEquip = ii.getEquipById(itemID);
         if (normalEquip == null) {
             return;
         }
-        int srcReqJob = getReqJob();
-        setItemId(itemID);
+        int srcReqJob = this.getReqJob();
+        this.setItemId(itemID);
         int dstReqJob = normalEquip.getReqJob();
         if (srcReqJob != dstReqJob && srcReqJob > 0 && dstReqJob > 0) {
-            final int 劍士 = 0x1;
-            final int 法師 = 0x2;
-            final int 弓箭手 = 0x4;
-            final int 盜賊 = 0x8;
-            final int 海盜 = 0x10;
             short tempValue;
-            if ((srcReqJob & 法師) != (dstReqJob & 法師)) {
+            boolean 劍士2 = true;
+            int 法師2 = 2;
+            int 弓箭手2 = 4;
+            int 盜賊2 = 8;
+            int 海盜2 = 16;
+            if ((srcReqJob & 2) != (dstReqJob & 2)) {
                 tempValue = addPad;
                 addPad = addMad;
                 addMad = tempValue;
-                nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iPAD, NirvanaFlame.EquipExFlag.FLAGEx_iMAD);
-                int pot;
-                Map<String, Integer> data;
-                for (int i = 1; i <= 6; i++) {
-                    pot = getPotential(i > 3 ? i - 3 : i, i > 3);
-                    if (pot >= 60000 || pot <= 0) {
+                this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iPAD, NirvanaFlame.EquipExFlag.FLAGEx_iMAD);
+                for (int i = 1; i <= 6; ++i) {
+                    int pot = this.getPotential(i > 3 ? i - 3 : i, i > 3);
+                    if (pot >= 60000 || pot <= 0) continue;
+                    if (pot == 32051 || pot == 32052 || pot == 42051 || pot == 42052) {
+                        this.setPotential(pot + 2, i > 3 ? i - 3 : i, i > 3);
                         continue;
-                    } else if (pot == 32051 || pot == 32052 || pot == 42051 || pot == 42052) {
-                        setPotential(pot + 2, i > 3 ? i - 3 : i, i > 3);
-                    } else if (pot == 32053 || pot == 32054 || pot == 42053 || pot == 42054) {
-                        setPotential(pot - 2, i > 3 ? i - 3 : i, i > 3);
-                    } else {
-                        data = ii.getPotentialInfo(pot).get(0).data;
-                        if (data.containsKey("incPAD") || data.containsKey("incPADr") || data.containsKey("incPADlv")) {
-                            setPotential(pot + 1, i > 3 ? i - 3 : i, i > 3);
-                        } else if (data.containsKey("incMAD") || data.containsKey("incMADr") || data.containsKey("incMADlv")) {
-                            setPotential(pot - 1, i > 3 ? i - 3 : i, i > 3);
-                        }
                     }
+                    if (pot == 32053 || pot == 32054 || pot == 42053 || pot == 42054) {
+                        this.setPotential(pot - 2, i > 3 ? i - 3 : i, i > 3);
+                        continue;
+                    }
+                    Map<String, Integer> data = ii.getPotentialInfo((int)pot).get((int)0).data;
+                    if (data.containsKey("incPAD") || data.containsKey("incPADr") || data.containsKey("incPADlv")) {
+                        this.setPotential(pot + 1, i > 3 ? i - 3 : i, i > 3);
+                        continue;
+                    }
+                    if (!data.containsKey("incMAD") && !data.containsKey("incMADr") && !data.containsKey("incMADlv")) continue;
+                    this.setPotential(pot - 1, i > 3 ? i - 3 : i, i > 3);
                 }
             }
-            Pair<String[], String[]> statName = new Pair<>(null, null);
-            if ((srcReqJob & 劍士) != 0) {
+            Pair<Object, Object> statName = new Pair<Object, Object>(null, null);
+            if ((srcReqJob & 1) != 0) {
                 statName.left = new String[]{"STR", "DEX"};
-            } else if ((srcReqJob & 法師) != 0) {
+            } else if ((srcReqJob & 2) != 0) {
                 statName.left = new String[]{"INT", "LUK"};
-            } else if ((srcReqJob & 弓箭手) != 0) {
+            } else if ((srcReqJob & 4) != 0) {
                 statName.left = new String[]{"DEX", "STR"};
-            } else if ((srcReqJob & 盜賊) != 0) {
+            } else if ((srcReqJob & 8) != 0) {
                 statName.left = new String[]{"LUK", "DEX"};
-            } else if ((srcReqJob & 海盜) != 0) {
-                boolean isDexPirate = MapleWeapon.靈魂射手.check(getItemId()) || MapleWeapon.火槍.check(getItemId()) || JobConstants.isDexPirate(getReqSpecJob() * 100);
-                if (!isDexPirate && !ItemConstants.類型.武器(getItemId()) && !ItemConstants.類型.副手(getItemId())) {
+            } else if ((srcReqJob & 0x10) != 0) {
+                boolean isDexPirate;
+                boolean bl = isDexPirate = MapleWeapon.靈魂射手.check(this.getItemId()) || MapleWeapon.火槍.check(this.getItemId()) || JobConstants.isDexPirate(this.getReqSpecJob() * 100);
+                if (!(isDexPirate || ItemConstants.類型.武器(this.getItemId()) || ItemConstants.類型.副手(this.getItemId()))) {
                     isDexPirate = JobConstants.isDexPirate(jobId);
                 }
-                if (isDexPirate) {
-                    statName.left = new String[]{"DEX", "STR"};
-                } else {
-                    statName.left = new String[]{"STR", "DEX"};
-                }
+                statName.left = isDexPirate ? new String[]{"DEX", "STR"} : new String[]{"STR", "DEX"};
             }
-            if ((dstReqJob & 劍士) != 0) {
+            if ((dstReqJob & 1) != 0) {
                 statName.right = new String[]{"STR", "DEX"};
-            } else if ((dstReqJob & 法師) != 0) {
+            } else if ((dstReqJob & 2) != 0) {
                 statName.right = new String[]{"INT", "LUK"};
-            } else if ((dstReqJob & 弓箭手) != 0) {
+            } else if ((dstReqJob & 4) != 0) {
                 statName.right = new String[]{"DEX", "STR"};
-            } else if ((dstReqJob & 盜賊) != 0) {
+            } else if ((dstReqJob & 8) != 0) {
                 statName.right = new String[]{"LUK", "DEX"};
-            } else if ((dstReqJob & 海盜) != 0) {
-                boolean isDexPirate = MapleWeapon.靈魂射手.check(itemID) || MapleWeapon.火槍.check(itemID) || JobConstants.isDexPirate(normalEquip.getReqSpecJob() * 100);
-                if (!isDexPirate && !ItemConstants.類型.武器(itemID) && !ItemConstants.類型.副手(itemID)) {
+            } else if ((dstReqJob & 0x10) != 0) {
+                boolean isDexPirate;
+                boolean bl = isDexPirate = MapleWeapon.靈魂射手.check(itemID) || MapleWeapon.火槍.check(itemID) || JobConstants.isDexPirate(normalEquip.getReqSpecJob() * 100);
+                if (!(isDexPirate || ItemConstants.類型.武器(itemID) || ItemConstants.類型.副手(itemID))) {
                     isDexPirate = JobConstants.isDexPirate(jobId);
                 }
-                if (isDexPirate) {
-                    statName.right = new String[]{"DEX", "STR"};
-                } else {
-                    statName.right = new String[]{"STR", "DEX"};
-                }
+                statName.right = isDexPirate ? new String[]{"DEX", "STR"} : new String[]{"STR", "DEX"};
             }
-
-            if (statName.left != null && statName.right != null && !(statName.left[0].equals(statName.right[0]) && statName.left[1].equals(statName.right[1]))) {
-                if (("STR".equals(statName.left[0]) || "DEX".equals(statName.left[0])) && ("STR".equals(statName.right[0]) || "DEX".equals(statName.right[0]))) {
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
+            if (!(statName.left == null || statName.right == null || ((String[])statName.left)[0].equals(((String[])statName.right)[0]) && ((String[])statName.left)[1].equals(((String[])statName.right)[1]))) {
+                if (("STR".equals(((String[])statName.left)[0]) || "DEX".equals(((String[])statName.left)[0])) && ("STR".equals(((String[])statName.right)[0]) || "DEX".equals(((String[])statName.right)[0]))) {
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
                     tempValue = addStr;
                     addStr = addDex;
                     addDex = tempValue;
-                    statName.left[1] = null;
-                } else if (("STR".equals(statName.left[0]) || "INT".equals(statName.left[0])) && ("STR".equals(statName.right[0]) || "INT".equals(statName.right[0]))) {
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iINT);
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iDEX, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
+                    ((String[])statName.left)[1] = null;
+                } else if (("STR".equals(((String[])statName.left)[0]) || "INT".equals(((String[])statName.left)[0])) && ("STR".equals(((String[])statName.right)[0]) || "INT".equals(((String[])statName.right)[0]))) {
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iINT);
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iDEX, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
                     tempValue = addStr;
                     addStr = addInt;
                     addInt = tempValue;
                     tempValue = addDex;
                     addDex = addLuk;
                     addLuk = tempValue;
-                } else if (("STR".equals(statName.left[0]) || "LUK".equals(statName.left[0])) && ("STR".equals(statName.right[0]) || "LUK".equals(statName.right[0]))) {
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
+                } else if (("STR".equals(((String[])statName.left)[0]) || "LUK".equals(((String[])statName.left)[0])) && ("STR".equals(((String[])statName.right)[0]) || "LUK".equals(((String[])statName.right)[0]))) {
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
                     tempValue = addStr;
                     addStr = addLuk;
                     addLuk = tempValue;
-                    statName.left[1] = null;
-                } else if (("DEX".equals(statName.left[0]) || "INT".equals(statName.left[0])) && ("DEX".equals(statName.right[0]) || "INT".equals(statName.right[0]))) {
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iDEX, NirvanaFlame.EquipExFlag.FLAGEx_iINT);
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
+                    ((String[])statName.left)[1] = null;
+                } else if (("DEX".equals(((String[])statName.left)[0]) || "INT".equals(((String[])statName.left)[0])) && ("DEX".equals(((String[])statName.right)[0]) || "INT".equals(((String[])statName.right)[0]))) {
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iDEX, NirvanaFlame.EquipExFlag.FLAGEx_iINT);
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
                     tempValue = addDex;
                     addDex = addInt;
                     addInt = tempValue;
                     tempValue = addStr;
                     addStr = addLuk;
                     addLuk = tempValue;
-                } else if (("DEX".equals(statName.left[0]) || "LUK".equals(statName.left[0])) && ("DEX".equals(statName.right[0]) || "LUK".equals(statName.right[0]))) {
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iDEX, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
+                } else if (("DEX".equals(((String[])statName.left)[0]) || "LUK".equals(((String[])statName.left)[0])) && ("DEX".equals(((String[])statName.right)[0]) || "LUK".equals(((String[])statName.right)[0]))) {
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iDEX, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
                     tempValue = addDex;
                     addDex = addLuk;
                     addLuk = tempValue;
-                    if ("DEX".equals(statName.left[0])) {
-                        nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
+                    if ("DEX".equals(((String[])statName.left)[0])) {
+                        this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
                         tempValue = addStr;
                         addStr = addDex;
                         addDex = tempValue;
-                        statName.left[1] = "DEX";
+                        ((String[])statName.left)[1] = "DEX";
                     } else {
-                        nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
+                        this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iSTR, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
                         tempValue = addStr;
                         addStr = addLuk;
                         addLuk = tempValue;
-                        statName.left[1] = "LUK";
+                        ((String[])statName.left)[1] = "LUK";
                     }
-                    statName.right[1] = "STR";
-                } else if (("INT".equals(statName.left[0]) || "LUK".equals(statName.left[0])) && ("INT".equals(statName.right[0]) || "LUK".equals(statName.right[0]))) {
-                    nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iINT, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
+                    ((String[])statName.right)[1] = "STR";
+                } else if (("INT".equals(((String[])statName.left)[0]) || "LUK".equals(((String[])statName.left)[0])) && ("INT".equals(((String[])statName.right)[0]) || "LUK".equals(((String[])statName.right)[0]))) {
+                    this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iINT, NirvanaFlame.EquipExFlag.FLAGEx_iLUK);
                     tempValue = addInt;
                     addInt = addLuk;
                     addLuk = tempValue;
-                    if ("INT".equals(statName.left[0])) {
-                        nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iINT, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
+                    if ("INT".equals(((String[])statName.left)[0])) {
+                        this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iINT, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
                         tempValue = addInt;
                         addInt = addDex;
                         addDex = tempValue;
                     } else {
-                        nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iLUK, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
+                        this.nirvanaFlame.transmitStat(NirvanaFlame.EquipExFlag.FLAGEx_iLUK, NirvanaFlame.EquipExFlag.FLAGEx_iDEX);
                         tempValue = addLuk;
                         addLuk = addDex;
                         addDex = tempValue;
                     }
-                    statName.left[1] = statName.left[0];
-                    statName.right[1] = "DEX";
+                    ((String[])statName.left)[1] = ((String[])statName.left)[0];
+                    ((String[])statName.right)[1] = "DEX";
                 }
-                for (int i = 0; i < 2; i++) {
-                    if (statName.left[i] == null) {
-                        continue;
-                    }
+                for (int i = 0; i < 2; ++i) {
+                    if (((String[])statName.left)[i] == null) continue;
                     int moveValue = 0;
-                    switch (statName.left[i]) {
-                        case "STR":
+                    switch (((String[])statName.left)[i]) {
+                        case "STR": {
                             moveValue = 4;
                             break;
-                        case "DEX":
+                        }
+                        case "DEX": {
                             moveValue = 3;
                             break;
-                        case "INT":
+                        }
+                        case "INT": {
                             moveValue = 2;
                             break;
-                        case "LUK":
+                        }
+                        case "LUK": {
                             moveValue = 1;
-                            break;
+                        }
                     }
-                    switch (statName.right[i]) {
-                        case "STR":
+                    switch (((String[])statName.right)[i]) {
+                        case "STR": {
                             moveValue -= 4;
                             break;
-                        case "DEX":
+                        }
+                        case "DEX": {
                             moveValue -= 3;
                             break;
-                        case "INT":
+                        }
+                        case "INT": {
                             moveValue -= 2;
                             break;
-                        case "LUK":
-                            moveValue -= 1;
-                            break;
+                        }
+                        case "LUK": {
+                            --moveValue;
+                        }
                     }
-                    if (moveValue != 0) {
-                        int pot;
-                        Map<String, Integer> data;
-                        for (int j = 1; j <= 6; j++) {
-                            pot = getPotential(j > 3 ? j - 3 : j, j > 3);
-                            switch (pot) {
-                                case 30047: // STR +9%
-                                    pot = 30041; // STR +10%
-                                    break;
-                                case 30048: // INT +9%
-                                    pot = 30043; // INT +10%
-                                    break;
-                                case 40047: // DEX +12%
-                                    pot = 40042; // DEX +13%
-                                    break;
-                                case 40048: // LUK +12%
-                                    pot = 40044; // LUK +13%
-                                    break;
+                    if (moveValue == 0) continue;
+                    for (int j = 1; j <= 6; ++j) {
+                        int pot = this.getPotential(j > 3 ? j - 3 : j, j > 3);
+                        switch (pot) {
+                            case 30047: {
+                                pot = 30041;
+                                break;
                             }
-                            if (pot >= 70000 || pot <= 0) {
-                                continue;
-                            } else {
-                                data = ii.getPotentialInfo(pot).get(0).data;
-                                if (data.containsKey("inc" + statName.left[i]) || data.containsKey("inc" + statName.left[i] + "r") || data.containsKey("inc" + statName.left[i] + "lv")) {
-                                    setPotential(pot + moveValue, j > 3 ? j - 3 : j, j > 3);
-                                } else if (data.containsKey("inc" + statName.right[i]) || data.containsKey("inc" + statName.right[i] + "r") || data.containsKey("inc" + statName.right[i] + "lv")) {
-                                    setPotential(pot - moveValue, j > 3 ? j - 3 : j, j > 3);
-                                }
+                            case 30048: {
+                                pot = 30043;
+                                break;
+                            }
+                            case 40047: {
+                                pot = 40042;
+                                break;
+                            }
+                            case 40048: {
+                                pot = 40044;
                             }
                         }
+                        if (pot >= 70000 || pot <= 0) continue;
+                        Map<String, Integer> data = ii.getPotentialInfo((int)pot).get((int)0).data;
+                        if (data.containsKey("inc" + ((String[])statName.left)[i]) || data.containsKey("inc" + ((String[])statName.left)[i] + "r") || data.containsKey("inc" + ((String[])statName.left)[i] + "lv")) {
+                            this.setPotential(pot + moveValue, j > 3 ? j - 3 : j, j > 3);
+                            continue;
+                        }
+                        if (!data.containsKey("inc" + ((String[])statName.right)[i]) && !data.containsKey("inc" + ((String[])statName.right)[i] + "r") && !data.containsKey("inc" + ((String[])statName.right)[i] + "lv")) continue;
+                        this.setPotential(pot - moveValue, j > 3 ? j - 3 : j, j > 3);
                     }
                 }
             }
         }
-
-        str = (short) (normalEquip.str + addStr);
-        dex = (short) (normalEquip.dex + addDex);
-        _int = (short) (normalEquip._int + addInt);
-        luk = (short) (normalEquip.luk + addLuk);
-        hp = (short) (normalEquip.hp + addHp);
-        mp = (short) (normalEquip.mp + addMp);
-        mad = (short) (normalEquip.mad + addMad);
-        mdd = (short) (normalEquip.mdd + addMdd);
-        pad = (short) (normalEquip.pad + addPad);
-        pdd = (short) (normalEquip.pdd + addPdd);
-        acc = (short) (normalEquip.acc + addAcc);
-        avoid = (short) (normalEquip.avoid + addAvoid);
-        hands = (short) (normalEquip.hands + addHands);
-        speed = (short) (normalEquip.speed + addSpeed);
-        jump = (short) (normalEquip.jump + addJump);
-
+        this.str = (short)(normalEquip.str + addStr);
+        this.dex = (short)(normalEquip.dex + addDex);
+        this._int = (short)(normalEquip._int + addInt);
+        this.luk = (short)(normalEquip.luk + addLuk);
+        this.hp = (short)(normalEquip.hp + addHp);
+        this.mp = (short)(normalEquip.mp + addMp);
+        this.mad = (short)(normalEquip.mad + addMad);
+        this.mdd = (short)(normalEquip.mdd + addMdd);
+        this.pad = (short)(normalEquip.pad + addPad);
+        this.pdd = (short)(normalEquip.pdd + addPdd);
+        this.acc = (short)(normalEquip.acc + addAcc);
+        this.avoid = (short)(normalEquip.avoid + addAvoid);
+        this.hands = (short)(normalEquip.hands + addHands);
+        this.speed = (short)(normalEquip.speed + addSpeed);
+        this.jump = (short)(normalEquip.jump + addJump);
         if (resetStat) {
-            nirvanaFlame.resetEquipExStats(this);
-            starForce.resetEquipStats(this);
+            this.nirvanaFlame.resetEquipExStats(this);
+            this.starForce.resetEquipStats(this);
         }
     }
 
@@ -2232,7 +2163,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public boolean isMvpEquip() {
-        return isMvpEquip(true);
+        return this.isMvpEquip(true);
     }
 
     public boolean isMvpEquip(boolean checkPermission) {
@@ -2240,7 +2171,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getAut() {
-        return aut;
+        return this.aut;
     }
 
     public void setAut(short aut) {
@@ -2248,7 +2179,7 @@ public class Equip extends Item implements Serializable {
     }
 
     public int getAutExp() {
-        return autExp;
+        return this.autExp;
     }
 
     public void setAutExp(int autExp) {
@@ -2256,52 +2187,43 @@ public class Equip extends Item implements Serializable {
     }
 
     public short getAutLevel() {
-        return autLevel;
+        return this.autLevel;
     }
 
     public void setAutLevel(short autLevel) {
         this.autLevel = autLevel;
     }
 
-    public enum ScrollResult {
-
-        失敗, 成功, 消失
-    }
-
     @Override
     public void encode(OutPacket outPacket) {
+        int unkFlag;
+        int sfFlag;
+        int i;
         super.encode(outPacket);
         boolean hasUniqueId = this.encodeBaseRaw(outPacket);
         boolean isCashItem = MapleItemInformationProvider.getInstance().isCash(this.getItemId());
         outPacket.encodeByte(0);
         this.encodeEquipBase(outPacket);
         outPacket.encodeString(this.isMvpEquip() ? "ＭＶＰ" : this.getOwner(), 15);
-        outPacket.encodeByte(this.getState(true) > 0 && this.getState(true) < 17 ? this.getState(false) | 32 : this.getState(false));
+        outPacket.encodeByte(this.getState(true) > 0 && this.getState(true) < 17 ? this.getState(false) | 0x20 : this.getState(false));
         outPacket.encodeByte(this.getStarForceLevel());
-
-        int sfFlag;
-        for(sfFlag = 1; sfFlag <= 3; ++sfFlag) {
-            outPacket.encodeShort(this.getPotential(sfFlag, false) <= 0 ? 0 : this.getPotential(sfFlag, false));
+        for (i = 1; i <= 3; ++i) {
+            outPacket.encodeShort(this.getPotential(i, false) <= 0 ? 0 : this.getPotential(i, false));
         }
-
-        for(sfFlag = 1; sfFlag <= 3; ++sfFlag) {
-            outPacket.encodeShort(this.getState(true) > 0 && this.getState(true) < 17 ? (sfFlag == 1 ? this.getState(true) : 0) : this.getPotential(sfFlag, true));
+        for (int j = 1; j <= 3; ++j) {
+            outPacket.encodeShort(this.getState(true) > 0 && this.getState(true) < 17 ? (j == 1 ? (int)this.getState(true) : 0) : this.getPotential(j, true));
         }
-
         outPacket.encodeShort(isCashItem ? 0 : this.getItemSkin() % 10000);
         outPacket.encodeShort(this.getSocketState());
         if (!hasUniqueId) {
-            outPacket.encodeLong((long)this.getSN());
+            outPacket.encodeLong(this.getSN());
         }
-
         outPacket.encodeLong(0L);
-        outPacket.encodeFT(FileTime.fromType(Type.ZERO_TIME));
+        outPacket.encodeFT(FileTime.fromType(FileTime.Type.ZERO_TIME));
         outPacket.encodeInt(0);
-
-        for(sfFlag = 0; sfFlag < 3; ++sfFlag) {
+        for (i = 0; i < 3; ++i) {
             outPacket.encodeInt(0);
         }
-
         outPacket.encodeLong(0L);
         outPacket.encodeInt(0);
         outPacket.encodeInt(0);
@@ -2313,17 +2235,15 @@ public class Equip extends Item implements Serializable {
             outPacket.encodeInt(this.getArcExp());
             outPacket.encodeShort(this.getARCLevel());
         }
-
         if (ItemConstants.類型.真實符文(this.getItemId())) {
             outPacket.encodeShort(this.getAut());
             outPacket.encodeInt(this.getAutExp());
             outPacket.encodeShort(this.getAutLevel());
         }
-
         outPacket.encodeShort(-1);
-        outPacket.encodeFT(FileTime.fromType(Type.MAX_TIME));
-        outPacket.encodeFT(FileTime.fromType(Type.ZERO_TIME));
-        outPacket.encodeFT(FileTime.fromType(Type.MAX_TIME));
+        outPacket.encodeFT(FileTime.fromType(FileTime.Type.MAX_TIME));
+        outPacket.encodeFT(FileTime.fromType(FileTime.Type.ZERO_TIME));
+        outPacket.encodeFT(FileTime.fromType(FileTime.Type.MAX_TIME));
         outPacket.encodeInt(0);
         outPacket.encodeInt(0);
         outPacket.encodeInt(0);
@@ -2334,10 +2254,8 @@ public class Equip extends Item implements Serializable {
                 outPacket.encodeArr(new byte[28]);
             }
         }
-
         outPacket.encodeByte(0);
         outPacket.encodeByte(0);
-        byte unkFlag;
         if (this.getPosition() < 0 && EnhanceResultType.EQUIP_MARK.check(this.getEnchantBuff())) {
             sfFlag = 0;
             unkFlag = 0;
@@ -2345,156 +2263,145 @@ public class Equip extends Item implements Serializable {
             sfFlag = this.getEquipSFBaseFlag();
             unkFlag = 0;
         }
-
         this.encodeEquipCalcStat(outPacket, unkFlag, 2);
         outPacket.encodeByte(sfFlag > 0);
         if (sfFlag > 0) {
             this.encodeEquipCalcStat(outPacket, sfFlag, 1);
         }
-
         outPacket.encodeInt(isCashItem ? this.getItemSkin() : 0);
-        outPacket.encodeFT(FileTime.fromType(Type.ZERO_TIME));
+        outPacket.encodeFT(FileTime.fromType(FileTime.Type.ZERO_TIME));
         outPacket.encodeLong(1L);
         outPacket.encodeArr(new byte[80]);
         outPacket.encodeInt(6);
     }
 
     public void encodeEquipBase(OutPacket outPacket) {
-        // GW_ItemSlotEquipBase__Encode
-        int baseFlag;
         int exFlag;
-        if (getPosition() < 0 && EnhanceResultType.EQUIP_MARK.check(getEnchantBuff())) {
+        int baseFlag;
+        if (this.getPosition() < 0 && EnhanceResultType.EQUIP_MARK.check(this.getEnchantBuff())) {
             baseFlag = 0;
             exFlag = 0;
         } else {
-            baseFlag = getEquipBaseFlag();
-            exFlag = getEquipSpecialFlag();
+            baseFlag = this.getEquipBaseFlag();
+            exFlag = this.getEquipSpecialFlag();
         }
-
-        // 基礎屬性
-        encodeEquipCalcStat(outPacket, baseFlag, 0);
-
-        // 特殊裝備屬性
+        this.encodeEquipCalcStat(outPacket, baseFlag, 0);
         outPacket.encodeInt(exFlag);
         if (EquipSpecialStat.可使用捲軸次數.check(exFlag)) {
-            outPacket.encodeByte(getRestUpgradeCount());
+            outPacket.encodeByte(this.getRestUpgradeCount());
         }
         if (EquipSpecialStat.捲軸強化次數.check(exFlag)) {
-            outPacket.encodeByte(getCurrentUpgradeCount());
+            outPacket.encodeByte(this.getCurrentUpgradeCount());
         }
         if (EquipSpecialStat.狀態.check(exFlag)) {
-            outPacket.encodeInt(getCAttribute());
+            outPacket.encodeInt(this.getCAttribute());
         }
         if (EquipSpecialStat.裝備技能.check(exFlag)) {
-            outPacket.encodeByte(getIncSkill() > 0);
+            outPacket.encodeByte(this.getIncSkill() > 0);
         }
         if (EquipSpecialStat.裝備等級.check(exFlag)) {
-            if (isSealedEquip()) {
-                outPacket.encodeByte(getSealedLevel());
+            if (this.isSealedEquip()) {
+                outPacket.encodeByte(this.getSealedLevel());
             } else {
-                outPacket.encodeByte(Math.max(getBaseLevel(), getEquipLevel()));
+                outPacket.encodeByte(Math.max(this.getBaseLevel(), this.getEquipLevel()));
             }
         }
         if (EquipSpecialStat.裝備經驗.check(exFlag)) {
-            if (isSealedEquip()) {
-                outPacket.encodeLong(getSealedExp());
+            if (this.isSealedEquip()) {
+                outPacket.encodeLong(this.getSealedExp());
             } else {
-                outPacket.encodeLong(getExpPercentage() * 100000); // 10000000 = 100% 好像現在是20000是滿經驗 V.110修改 以前是Int
+                outPacket.encodeLong(this.getExpPercentage() * 100000L);
             }
         }
         if (EquipSpecialStat.耐久度.check(exFlag)) {
-            outPacket.encodeInt(getDurability());
+            outPacket.encodeInt(this.getDurability());
         }
         if (EquipSpecialStat.鎚子.check(exFlag)) {
-            outPacket.encodeShort(getViciousHammer()); // 黃金鐵鎚
-            outPacket.encodeShort(getPlatinumHammer()); // 白金鎚子
+            outPacket.encodeShort(this.getViciousHammer());
+            outPacket.encodeShort(this.getPlatinumHammer());
         }
-        /*if (EquipStats.大亂鬥傷害.check(exFlag)) {
-            outPacket.encodeShort(getPVPDamage());
-        }*/
         if (EquipSpecialStat.套用等級減少.check(exFlag)) {
-            outPacket.encodeByte(getDownLevel());
+            outPacket.encodeByte(this.getDownLevel());
         }
         if (EquipSpecialStat.ENHANCT_BUFF.check(exFlag)) {
-            outPacket.encodeShort(getEnchantBuff()); //強化效果
+            outPacket.encodeShort(this.getEnchantBuff());
         }
         if (EquipSpecialStat.DURABILITY_SPECIAL.check(exFlag)) {
             outPacket.encodeInt(0);
         }
         if (EquipSpecialStat.REQUIRED_LEVEL.check(exFlag)) {
-            outPacket.encodeByte(getiIncReq()); //穿戴裝備的等級要求提高多少級
+            outPacket.encodeByte(this.getiIncReq());
         }
         if (EquipSpecialStat.YGGDRASIL_WISDOM.check(exFlag)) {
-            outPacket.encodeByte(getYggdrasilWisdom());
+            outPacket.encodeByte(this.getYggdrasilWisdom());
         }
         if (EquipSpecialStat.FINAL_STRIKE.check(exFlag)) {
-            outPacket.encodeByte(getFinalStrike()); //最終一擊卷軸成功
+            outPacket.encodeByte(this.getFinalStrike());
         }
         if (EquipSpecialStat.BOSS傷.check(exFlag)) {
-            outPacket.encodeByte(getTotalBossDamage());
+            outPacket.encodeByte(this.getTotalBossDamage());
         }
         if (EquipSpecialStat.無視防禦.check(exFlag)) {
-            outPacket.encodeByte(getTotalIgnorePDR());
+            outPacket.encodeByte(this.getTotalIgnorePDR());
         }
         if (EquipSpecialStat.總傷害.check(exFlag)) {
-            outPacket.encodeByte(getTotalTotalDamage()); // 裝備總傷害百分比增加
+            outPacket.encodeByte(this.getTotalTotalDamage());
         }
         if (EquipSpecialStat.全屬性.check(exFlag)) {
-            outPacket.encodeByte(getTotalAllStat()); // 裝備所有屬性百分比增加
+            outPacket.encodeByte(this.getTotalAllStat());
         }
         if (EquipSpecialStat.剪刀次數.check(exFlag)) {
-            outPacket.encodeByte(-1); //可以使用剪刀多少次 默認-1 必須發送這個封包 0x0A = 宿命剪刀1次
+            outPacket.encodeByte(-1);
         }
         if (EquipSpecialStat.輪迴星火.check(exFlag)) {
-            outPacket.encodeLong(getFlameFlag());
+            outPacket.encodeLong(this.getFlameFlag());
         }
         if (EquipSpecialStat.星力強化.check(exFlag)) {
-            outPacket.encodeInt(256);
+            outPacket.encodeInt(255);
         }
     }
 
     public void encodeEquipCalcStat(OutPacket outPacket, int baseFlag, int type) {
-        // GW_ItemSlotEquipCalcStat_Encode
         outPacket.encodeInt(baseFlag);
         if (EquipBaseStat.力量.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getStr() : getSF_Str());
+            outPacket.encodeShort(type == 0 ? this.getStr() : this.getSF_Str());
         }
         if (EquipBaseStat.敏捷.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getDex() : getSF_Dex());
+            outPacket.encodeShort(type == 0 ? this.getDex() : this.getSF_Dex());
         }
         if (EquipBaseStat.智力.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getInt() : getSF_Int());
+            outPacket.encodeShort(type == 0 ? this.getInt() : this.getSF_Int());
         }
         if (EquipBaseStat.幸運.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getLuk() : getSF_Luk());
+            outPacket.encodeShort(type == 0 ? this.getLuk() : this.getSF_Luk());
         }
         if (EquipBaseStat.MaxHP.check(baseFlag)) {
-            outPacket.encodeShort(ItemConstants.類型.秘法符文(getItemId()) || ItemConstants.類型.真實符文(getItemId()) ? (getTotalHp() / 10) : (getTotalHp()));
+            outPacket.encodeShort(ItemConstants.類型.秘法符文(this.getItemId()) || ItemConstants.類型.真實符文(this.getItemId()) ? this.getTotalHp() / 10 : (int)this.getTotalHp());
         }
         if (EquipBaseStat.MaxMP.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getMp() : getSF_Mp());
+            outPacket.encodeShort(type == 0 ? this.getMp() : this.getSF_Mp());
         }
         if (EquipBaseStat.攻擊力.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getPad() : getSF_Pad());
+            outPacket.encodeShort(type == 0 ? this.getPad() : this.getSF_Pad());
         }
         if (EquipBaseStat.魔力.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getMad() : getSF_Mad());
+            outPacket.encodeShort(type == 0 ? this.getMad() : this.getSF_Mad());
         }
         if (EquipBaseStat.防禦力.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getPdd() : getSF_Pdd());
+            outPacket.encodeShort(type == 0 ? this.getPdd() : this.getSF_Pdd());
         }
         if (EquipBaseStat.魔法防禦力.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getMdd() : getSF_Mdd());
+            outPacket.encodeShort(type == 0 ? this.getMdd() : this.getSF_Mdd());
         }
         if (EquipBaseStat.靈敏度.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getHands() : getSF_Hands());
+            outPacket.encodeShort(type == 0 ? this.getHands() : this.getSF_Hands());
         }
         if (EquipBaseStat.移動速度.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getSpeed() : getSF_Speed());
+            outPacket.encodeShort(type == 0 ? this.getSpeed() : this.getSF_Speed());
         }
         if (EquipBaseStat.跳躍力.check(baseFlag)) {
-            outPacket.encodeShort(type == 0 ? getJump() : getSF_Jump());
+            outPacket.encodeShort(type == 0 ? this.getJump() : this.getSF_Jump());
         }
     }
-
 }
+

@@ -1,17 +1,8 @@
 /*
- * To change this license header,
-choose License Headers in Project Properties.
- * To change this template file,
-choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client.skills;
 
-/**
- * 技能信息(該信息和技能屬性有關)
- *
- * @author setosan
- */
 public enum SkillInfo {
     damagetoUndead,
     landingEffect,
@@ -114,10 +105,12 @@ public enum SkillInfo {
     splash,
     rectBasedOnTarget,
     piercingBouns,
-    skillOrigin, // V.149 new 152101000 古代水晶
-    attackAfter, // 80003047
+    skillOrigin,
+    attackAfter,
     rushToPoint,
     MainSkillID_WZ2,
     excl,
-    collabo // V264.1 ADD+
+    collabo;
+
 }
+

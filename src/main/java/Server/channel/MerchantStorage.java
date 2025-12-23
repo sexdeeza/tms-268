@@ -1,127 +1,157 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.shops.HiredMerchant
+ */
 package Server.channel;
 
 import Net.server.shops.HiredMerchant;
+import Server.channel.ChannelServer;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.*;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-
 public class MerchantStorage {
-
     private static final Logger log = LoggerFactory.getLogger(ChannelServer.class);
     private final int channel;
-    private final Map<Integer, HiredMerchant> merchants = new HashMap<>();
+    private final Map<Integer, HiredMerchant> merchants = new HashMap<Integer, HiredMerchant>();
     private int running_MerchantID = 0;
-    private ReentrantReadWriteLock merchLock = null; //僱傭商店多線程操作
-    private ReentrantReadWriteLock.ReadLock mcReadLock = null;  // 讀鎖
-    private ReentrantReadWriteLock.WriteLock mcWriteLock = null; // 寫鎖
+    private ReentrantReadWriteLock merchLock = null;
+    private ReentrantReadWriteLock.ReadLock mcReadLock = null;
+    private ReentrantReadWriteLock.WriteLock mcWriteLock = null;
 
     MerchantStorage(int channel) {
         this.channel = channel;
-        // 創建公平的可重入讀寫鎖
-        merchLock = new ReentrantReadWriteLock(true);
-        mcReadLock = merchLock.readLock();
-        mcWriteLock = merchLock.writeLock();
+        this.merchLock = new ReentrantReadWriteLock(true);
+        this.mcReadLock = this.merchLock.readLock();
+        this.mcWriteLock = this.merchLock.writeLock();
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public void closeAllMerchants() {
         int ret = 0;
-        long Start = System.currentTimeMillis();
-        mcWriteLock.lock();
+        long Start2 = System.currentTimeMillis();
+        this.mcWriteLock.lock();
         try {
-            Iterator<Map.Entry<Integer, HiredMerchant>> hmit = merchants.entrySet().iterator();
+            Iterator<Map.Entry<Integer, HiredMerchant>> hmit = this.merchants.entrySet().iterator();
             while (hmit.hasNext()) {
                 hmit.next().getValue().closeShop(true, false);
                 hmit.remove();
-                ret++;
+                ++ret;
             }
-        } catch (Exception e) {
-            log.error("關閉僱傭商店出現錯誤..." + e);
-        } finally {
-            mcWriteLock.unlock();
         }
-        log.info("頻道 " + channel + " 共保存僱傭商店: " + ret + " | 耗時: " + (System.currentTimeMillis() - Start) + " 毫秒.");
+        catch (Exception e) {
+            log.error("關閉僱傭商店出現錯誤..." + String.valueOf(e));
+        }
+        finally {
+            this.mcWriteLock.unlock();
+        }
+        log.info("頻道 " + this.channel + " 共保存僱傭商店: " + ret + " | 耗時: " + (System.currentTimeMillis() - Start2) + " 毫秒.");
     }
 
     public int addMerchant(HiredMerchant hMerchant) {
-        mcWriteLock.lock();
+        this.mcWriteLock.lock();
         try {
-            running_MerchantID++;
-            merchants.put(running_MerchantID, hMerchant);
-            return running_MerchantID;
-        } finally {
-            mcWriteLock.unlock();
+            ++this.running_MerchantID;
+            this.merchants.put(this.running_MerchantID, hMerchant);
+            int n = this.running_MerchantID;
+            return n;
+        }
+        finally {
+            this.mcWriteLock.unlock();
         }
     }
 
     public void removeMerchant(HiredMerchant hMerchant) {
-        mcWriteLock.lock();
+        this.mcWriteLock.lock();
         try {
-            merchants.remove(hMerchant.getStoreId());
-        } finally {
-            mcWriteLock.unlock();
+            this.merchants.remove(hMerchant.getStoreId());
+        }
+        finally {
+            this.mcWriteLock.unlock();
         }
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public boolean containsMerchant(int accId) {
         boolean contains = false;
-        mcReadLock.lock();
+        this.mcReadLock.lock();
         try {
-            for (HiredMerchant hm : merchants.values()) {
-                if (hm.getOwnerAccId() == accId) {
-                    contains = true;
-                    break;
-                }
+            for (HiredMerchant hm : this.merchants.values()) {
+                if (hm.getOwnerAccId() != accId) continue;
+                contains = true;
+                break;
             }
-        } finally {
-            mcReadLock.unlock();
+        }
+        finally {
+            this.mcReadLock.unlock();
         }
         return contains;
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public boolean containsMerchant(int accId, int chrId) {
         boolean contains = false;
-        mcReadLock.lock();
+        this.mcReadLock.lock();
         try {
-            for (HiredMerchant hm : merchants.values()) {
-                if (hm.getOwnerAccId() == accId && hm.getOwnerId() == chrId) {
-                    contains = true;
-                    break;
-                }
+            for (HiredMerchant hm : this.merchants.values()) {
+                if (hm.getOwnerAccId() != accId || hm.getOwnerId() != chrId) continue;
+                contains = true;
+                break;
             }
-        } finally {
-            mcReadLock.unlock();
+        }
+        finally {
+            this.mcReadLock.unlock();
         }
         return contains;
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public List<HiredMerchant> searchMerchant(int itemSearch) {
-        List<HiredMerchant> list = new LinkedList<>();
-        mcReadLock.lock();
+        LinkedList<HiredMerchant> list = new LinkedList<HiredMerchant>();
+        this.mcReadLock.lock();
         try {
-            for (HiredMerchant hm : merchants.values()) {
-                if (hm.searchItem(itemSearch).size() > 0) {
-                    list.add(hm);
-                }
+            for (HiredMerchant hm : this.merchants.values()) {
+                if (hm.searchItem(itemSearch).size() <= 0) continue;
+                list.add(hm);
             }
-        } finally {
-            mcReadLock.unlock();
+        }
+        finally {
+            this.mcReadLock.unlock();
         }
         return list;
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public HiredMerchant getHiredMerchants(int accId, int chrId) {
-        mcReadLock.lock();
+        this.mcReadLock.lock();
         try {
-            for (HiredMerchant hm : merchants.values()) {
-                if (hm.getOwnerAccId() == accId && hm.getOwnerId() == chrId) {
-                    return hm;
-                }
+            for (HiredMerchant hm : this.merchants.values()) {
+                if (hm.getOwnerAccId() != accId || hm.getOwnerId() != chrId) continue;
+                HiredMerchant hiredMerchant = hm;
+                return hiredMerchant;
             }
-        } finally {
-            mcReadLock.unlock();
+        }
+        finally {
+            this.mcReadLock.unlock();
         }
         return null;
     }
 }
+

@@ -2,7 +2,7 @@ package connection.packet;
 
 import Client.MapleCharacter;
 import Client.inventory.Item;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.PacketHelper;
 import connection.OutPacket;
 import SwordieX.enums.GroupMessageType;

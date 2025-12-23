@@ -1,13 +1,17 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
-import java.awt.*;
+import java.awt.Point;
 
-public class MapleFoothold implements Comparable<MapleFoothold> {
-
+public class MapleFoothold
+implements Comparable<MapleFoothold> {
     private final Point p1;
     private final Point p2;
     private final int id;
-    private short next, prev;
+    private short next;
+    private short prev;
 
     public MapleFoothold(Point p1, Point p2, int id) {
         this.p1 = p1;
@@ -16,58 +20,58 @@ public class MapleFoothold implements Comparable<MapleFoothold> {
     }
 
     public boolean isWall() {
-        return p1.x == p2.x;
+        return this.p1.x == this.p2.x;
     }
 
     public Point getPoint1() {
-        return p1;
+        return this.p1;
     }
 
     public Point getPoint2() {
-        return p2;
+        return this.p2;
     }
 
     public int getX1() {
-        return p1.x;
+        return this.p1.x;
     }
 
     public int getX2() {
-        return p2.x;
+        return this.p2.x;
     }
 
     public int getY1() {
-        return p1.y;
+        return this.p1.y;
     }
 
     public int getY2() {
-        return p2.y;
+        return this.p2.y;
     }
 
     @Override
     public int compareTo(MapleFoothold o) {
-        if (p2.y < o.getY1()) {
+        if (this.p2.y < o.getY1()) {
             return -1;
-        } else if (p1.y > o.getY2()) {
-            return 1;
-        } else {
-            return 0;
         }
+        if (this.p1.y > o.getY2()) {
+            return 1;
+        }
+        return 0;
     }
 
-    @Override
     public boolean equals(Object o) {
-        if (!(o instanceof MapleFoothold oth)) {
+        if (!(o instanceof MapleFoothold)) {
             return false;
         }
-        return oth.getY1() == p1.y && oth.getY2() == p2.y && oth.getX1() == p1.x && oth.getX2() == p2.x && id == oth.getId();
+        MapleFoothold oth = (MapleFoothold)o;
+        return oth.getY1() == this.p1.y && oth.getY2() == this.p2.y && oth.getX1() == this.p1.x && oth.getX2() == this.p2.x && this.id == oth.getId();
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public short getNext() {
-        return next;
+        return this.next;
     }
 
     public void setNext(short next) {
@@ -75,10 +79,11 @@ public class MapleFoothold implements Comparable<MapleFoothold> {
     }
 
     public short getPrev() {
-        return prev;
+        return this.prev;
     }
 
     public void setPrev(short prev) {
         this.prev = prev;
     }
 }
+

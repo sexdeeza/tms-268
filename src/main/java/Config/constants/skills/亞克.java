@@ -1,9 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 亞克 {
     public static final int 無我 = 150010241;
     public static final int 無我_傳授 = 80000514;
-
     public static final int 聯絡克拉班 = 150011074;
     public static final int 聯絡克拉班_尼亞 = 150011075;
     public static final int 聯絡克拉班_威伊 = 150011076;
@@ -11,8 +13,6 @@ public class 亞克 {
     public static final int 聯絡克拉班_馬爾 = 150011078;
     public static final int 魔法迴路 = 150010079;
     public static final int 獨創技能 = 150011005;
-
-
     public static final int 幽靈侵蝕 = 155000007;
     public static final int 精神力枯竭 = 155001008;
     public static final int 無法遺忘的噩夢 = 155001102;
@@ -26,8 +26,6 @@ public class 亞克 {
     public static final int 神秘跳躍_1 = 155001009;
     public static final int 浮游 = 155001205;
     public static final int 神秘動作精通 = 155000006;
-
-
     public static final int 侵蝕控制 = 155101006;
     public static final int 緋紅猛擊 = 155101100;
     public static final int 緋紅猛擊_3 = 155101101;
@@ -49,8 +47,6 @@ public class 亞克 {
     public static final int 指虎精通 = 155100007;
     public static final int 開始融合 = 155100010;
     public static final int 肉體強化 = 155100011;
-
-
     public static final int 回想起的噩夢 = 155110000;
     public static final int 回想起的凶夢 = 155110001;
     public static final int 迸發猛擊 = 155111102;
@@ -67,8 +63,6 @@ public class 亞克 {
     public static final int 神秘動作訓練 = 155110008;
     public static final int 本能動作訓練 = 155110009;
     public static final int 進行融合 = 155110010;
-
-
     public static final int 不會結束的噩夢 = 155120000;
     public static final int 不會結束的凶夢 = 155120001;
     public static final int 深淵猛擊 = 155121102;
@@ -88,8 +82,6 @@ public class 亞克 {
     public static final int 進階本能動作 = 155120012;
     public static final int 完成融合 = 155120013;
     public static final int 戰鬥狂亂 = 155120014;
-
-
     public static final int 戰鬥藝術_強化傷害 = 155120031;
     public static final int 戰鬥藝術_無視防禦 = 155120032;
     public static final int 戰鬥藝術_BOSS殺手 = 155120033;
@@ -109,18 +101,13 @@ public class 亞克 {
     public static final int 滲出的噩夢 = 400051047;
     public static final int 滲出的凶夢 = 400051048;
     public static final int 無限飢餓的猛獸 = 400051080;
-
-
-    /* HEXA主插槽 */
     public static final int HEXA_起源技能 = 80003365;
     public static final int HEXA_恆古凝視的深淵 = 155141500;
     public static final int HEXA_恆古凝視的深淵_延伸 = 155141501;
     public static final int HEXA_原始猛擊_VI = 155141000;
-
-    /* HEXA附帶強化效果插槽 */
     public static final int HEXA_強化根源的記憶 = 500004172;
     public static final int HEXA_強化無限技能 = 500004172;
     public static final int HEXA_強化滲出的噩夢_滲出的兇夢 = 500004173;
     public static final int HEXA_無限飢餓的猛獸 = 500004174;
-
 }
+

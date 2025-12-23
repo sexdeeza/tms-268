@@ -24,7 +24,7 @@ import Net.server.life.MobSkill;
 import Net.server.life.MobSkillFactory;
 import Net.server.maps.*;
 import Net.server.quest.MapleQuest;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Opcode.Opcode.EffectOpcode;
 import Packet.EffectPacket;
 import Packet.MaplePacketCreator;

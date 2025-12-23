@@ -7,7 +7,7 @@ import Net.server.fieldskill.FieldSkillFactory;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMist;
 import Net.server.maps.MapleNodes;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Server.channel.handler.AttackInfo;
 import tools.Randomizer;
 import tools.Triple;

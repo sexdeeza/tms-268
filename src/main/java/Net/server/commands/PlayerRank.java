@@ -1,14 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server.commands;
 
-/**
- * @author PlayDK
- */
 public enum PlayerRank {
-
     普通('@', 0, "Player"),
     MVP銅牌I('@', 1, "BronzeIMvp"),
     MVP銅牌II('@', 2, "BronzeIIMvp"),
@@ -28,12 +23,11 @@ public enum PlayerRank {
     private final int level;
     private final String folderName;
 
-    PlayerRank(char ch, int level, String folderName) {
+    private PlayerRank(char ch, int level, String folderName) {
         this(ch, null, level, folderName);
     }
 
-    PlayerRank(char ch, String fw, int level, String folderName) {
-
+    private PlayerRank(char ch, String fw, int level, String folderName) {
         this.commandPrefix = ch;
         this.fullWidthCommandPrefix = fw;
         this.level = level;
@@ -41,53 +35,51 @@ public enum PlayerRank {
     }
 
     public char getCommandPrefix() {
-        return commandPrefix;
+        return this.commandPrefix;
     }
 
     public String getFullWidthCommandPrefix() {
-        return fullWidthCommandPrefix;
+        return this.fullWidthCommandPrefix;
     }
 
     public int getLevel() {
-        return level;
+        return this.level;
     }
 
     public int getSpLevel() {
-        return isGm() ? level - 實習管理員.getLevel() + 1 : level;
+        return this.isGm() ? this.level - 實習管理員.getLevel() + 1 : this.level;
     }
 
     public boolean isGm() {
-        return level >= 實習管理員.getLevel();
+        return this.level >= 實習管理員.getLevel();
     }
 
     public String getFolderName() {
-        return folderName;
+        return this.folderName;
     }
 
     public static PlayerRank getByLevel(int level) {
         for (PlayerRank i : PlayerRank.values()) {
-            if (i.getLevel() == level) {
-                return i;
-            }
+            if (i.getLevel() != level) continue;
+            return i;
         }
-        return PlayerRank.普通;
+        return 普通;
     }
 
     public static PlayerRank getByFolderName(String name) {
         for (PlayerRank i : PlayerRank.values()) {
-            if (i.getFolderName().equalsIgnoreCase(name)) {
-                return i;
-            }
+            if (!i.getFolderName().equalsIgnoreCase(name)) continue;
+            return i;
         }
-        return PlayerRank.普通;
+        return 普通;
     }
 
     public static PlayerRank getByCommandPrefix(char ch) {
         for (PlayerRank i : PlayerRank.values()) {
-            if (i.getCommandPrefix() == ch || String.valueOf(ch).equals(i.getFullWidthCommandPrefix())) {
-                return i;
-            }
+            if (i.getCommandPrefix() != ch && !String.valueOf(ch).equals(i.getFullWidthCommandPrefix())) continue;
+            return i;
         }
         return null;
     }
 }
+

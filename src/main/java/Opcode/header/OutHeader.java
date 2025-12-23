@@ -1,9 +1,7 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
-package Opcode.Headler;
+/*
+ * Decompiled with CFR 0.152.
+ */
+package Opcode.header;
 
 import Server.ExternalCodeTableGetter;
 import java.io.File;
@@ -16,7 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.WritableIntValueHolder;
 
-public enum OutHeader implements WritableIntValueHolder {
+public enum OutHeader implements WritableIntValueHolder
+{
     LP_UserTrickOrTreatResult,
     LP_UNK_2114_V266,
     LP_SPIRT_WEAPON,
@@ -2036,16 +2035,15 @@ public enum OutHeader implements WritableIntValueHolder {
     UNKNOWN,
     LP_ChangeMapCheckingPacket;
 
-    private static final Logger log = LoggerFactory.getLogger(OutHeader.class);
-    private short code = -2;
-    private static long lastModifiedTime = 0L;
-
-    private OutHeader() {
-    }
+    private static final Logger log;
+    private short code = (short)-2;
+    private static long lastModifiedTime;
 
     public static void startCheck() {
         Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
+        timer.schedule(new TimerTask(){
+
+            @Override
             public void run() {
                 OutHeader.checkForChanges();
             }
@@ -2057,13 +2055,12 @@ public enum OutHeader implements WritableIntValueHolder {
             File file = new File("res/OutHeader.properties");
             long currentModifiedTime = file.lastModified();
             if (currentModifiedTime > lastModifiedTime) {
-                reloadValues();
+                OutHeader.reloadValues();
                 log.info("[OutHeader]已套用新的資訊。");
                 lastModifiedTime = currentModifiedTime;
             }
-
-        } catch (Exception var3) {
-            Exception e = var3;
+        }
+        catch (Exception e) {
             throw new RuntimeException("Failed to load OutHeader", e);
         }
     }
@@ -2078,40 +2075,44 @@ public enum OutHeader implements WritableIntValueHolder {
 
     public static final void reloadValues() {
         try {
-            ExternalCodeTableGetter.populateValues(getDefaultProperties(), values());
-        } catch (IOException var1) {
-            IOException e = var1;
+            ExternalCodeTableGetter.populateValues((Properties)OutHeader.getDefaultProperties(), (Enum[])OutHeader.values());
+        }
+        catch (IOException e) {
             throw new RuntimeException("Failed to load OutHeader", e);
         }
     }
 
     public static String getOpcodeName(int value) {
-        OutHeader[] var1 = values();
-        int var2 = var1.length;
-
-        for(int var3 = 0; var3 < var2; ++var3) {
-            OutHeader opcode = var1[var3];
-            if (opcode.getValue() == value) {
-                return opcode.name();
-            }
+        for (OutHeader opcode : OutHeader.values()) {
+            if (opcode.getValue() != value) continue;
+            return opcode.name();
         }
-
         return "UNKNOWN";
     }
 
+    @Override
     public final short getValue() {
         return this.code;
     }
 
+    @Override
     public short getCode() {
         return 0;
     }
 
+    @Override
     public void setValue(short code) {
         this.code = code;
     }
 
+    @Override
     public void setValue(Short code) {
         this.code = code;
     }
+
+    static {
+        log = LoggerFactory.getLogger(OutHeader.class);
+        lastModifiedTime = 0L;
+    }
 }
+

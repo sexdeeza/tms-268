@@ -2,7 +2,7 @@ package Packet;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Server.auction.AuctionItem;
 import tools.data.MaplePacketLittleEndianWriter;
 

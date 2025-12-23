@@ -1,50 +1,50 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Client.CalcDamage$1
+ */
 package Client;
 
+import Client.CalcDamage;
+import Client.MapleCharacter;
+import Client.MonsterEffectHolder;
+import Client.SecondaryStat;
 import Client.skills.Skill;
 import Client.skills.SkillFactory;
 import Client.stat.PlayerStats;
 import Client.status.MonsterStatus;
 import Config.constants.JobConstants;
 import Config.constants.SkillConstants;
-import Config.constants.skills.*;
-import Config.constants.skills.冒險家_技能群組.type_劍士.英雄;
-import Config.constants.skills.冒險家_技能群組.type_劍士.黑騎士;
-import Config.constants.skills.冒險家_技能群組.type_法師.冰雷;
-import Config.constants.skills.冒險家_技能群組.type_法師.火毒;
-import Config.constants.skills.冒險家_技能群組.夜使者;
-import Config.constants.skills.冒險家_技能群組.箭神;
-import Config.constants.skills.皇家騎士團_技能群組.米哈逸;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.Element;
 import Net.server.life.ElementalEffectiveness;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMapObjectType;
 import Server.channel.handler.AttackInfo;
-import tools.newCRand32;
-import tools.Randomizer;
-
 import java.math.BigInteger;
 import java.util.Collections;
 import java.util.Objects;
+import tools.Randomizer;
+import tools.newCRand32;
 
 public class CalcDamage {
-
     private final newCRand32 rand = new newCRand32();
 
     public final void setSeed(int s1, int s2, int s3) {
         this.rand.seed(s1, s2, s3);
     }
 
-    public static double randomInRange(final long randomNum, long max, long min) {
-        final double newRandNum = randomNum - (new BigInteger(String.valueOf(randomNum)).multiply(new BigInteger("1801439851")).shiftRight(32).longValue() >>> 22) * 1.0E7;
+    public static double randomInRange(long randomNum, long max, long min) {
         double value;
+        double newRandNum = (double)randomNum - (double)(new BigInteger(String.valueOf(randomNum)).multiply(new BigInteger("1801439851")).shiftRight(32).longValue() >>> 22) * 1.0E7;
         if (min != max) {
             if (min > max) {
-                final long temp = max;
+                long temp = max;
                 max = min;
                 min = temp;
             }
-            value = (max - min) * newRandNum / 9999999.0 + min;
+            value = (double)(max - min) * newRandNum / 9999999.0 + (double)min;
         } else {
             value = max;
         }
@@ -56,279 +56,269 @@ public class CalcDamage {
     }
 
     public final long getRandomDamage(MapleCharacter chr, boolean crit) {
-        final long[] array = new long[11];
+        long[] array = new long[11];
         for (int i = 0; i < 11; ++i) {
             array[i] = this.rand.random();
         }
-        final boolean cr2 = randomInRange(array[Randomizer.nextInt(11)], 100L, 0L) < chr.getStat().critRate;
-        double damage = randomInRange(array[Randomizer.nextInt(11)], chr.getStat().getCurrentMaxBaseDamage(), chr.getStat().getCurrentMinBaseDamage());
+        boolean cr2 = CalcDamage.randomInRange(array[Randomizer.nextInt(11)], 100L, 0L) < (double)chr.getStat().critRate;
+        double damage = CalcDamage.randomInRange(array[Randomizer.nextInt(11)], chr.getStat().getCurrentMaxBaseDamage(), chr.getStat().getCurrentMinBaseDamage());
         if (crit || cr2) {
-            damage += damage * (randomInRange(array[Randomizer.nextInt(11)], 20L, 50L) + chr.getStat().criticalDamage) / 100.0;
+            damage += damage * (CalcDamage.randomInRange(array[Randomizer.nextInt(11)], 20L, 50L) + chr.getStat().criticalDamage) / 100.0;
         }
-        return (long) Math.min(damage, 10000000000L);
+        return (long)Math.min(damage, 1.0E10);
     }
 
-    public final double calcDamage(final MapleCharacter chr, final AttackInfo ai, final int idx, final MapleMonster monster, final boolean isBoss) {
+    public final double calcDamage(MapleCharacter chr, AttackInfo ai, int idx, MapleMonster monster, boolean isBoss) {
         return this.calcDamage(chr, ai, idx, chr.getStat().getCurrentMaxBaseDamage(), monster, isBoss, false);
     }
 
-    public final double calcDamage(final MapleCharacter chr, final AttackInfo ai, final int idx, double maxBaseDamage, final MapleMonster monster, final boolean isBoss, final boolean isCritical) {
+    public final double calcDamage(MapleCharacter chr, AttackInfo ai, int idx, double maxBaseDamage, MapleMonster monster, boolean isBoss, boolean isCritical) {
+        MonsterEffectHolder holder;
+        Skill skill;
+        MapleStatEffect effect;
         long limitBreak = 10000000000L;
         double elementDamR = 1.0;
-        final PlayerStats stat = chr.getStat();
+        PlayerStats stat = chr.getStat();
         if (ai.skillId > 0) {
-            final int skillLevel = chr.getSkillLevel(SkillConstants.getLinkedAttackSkill(ai.skillId));
-            final Skill skill = SkillFactory.getSkill(ai.skillId);
-            assert skill != null;
-            limitBreak = Math.max(limitBreak, skill.getMaxDamageOver());
-            MapleStatEffect effect = skill.getEffect(skillLevel);
-            final Element element = skill.getElement();
+            int skillLevel = chr.getSkillLevel(SkillConstants.getLinkedAttackSkill(ai.skillId));
+            Skill skill2 = SkillFactory.getSkill(ai.skillId);
+            assert (skill2 != null);
+            limitBreak = Math.max(limitBreak, (long)skill2.getMaxDamageOver());
+            MapleStatEffect effect2 = skill2.getEffect(skillLevel);
+            Element element = skill2.getElement();
             if (element != null) {
-                final ElementalEffectiveness effectiveness = monster.getStats().getEffectiveness(element);
+                ElementalEffectiveness effectiveness = monster.getStats().getEffectiveness(element);
                 if (Objects.requireNonNull(effectiveness) == ElementalEffectiveness.免疫) {
-                    elementDamR = (1.0 + chr.getStat().ignoreElement) / 100.0;
+                    elementDamR = (1.0 + (double)chr.getStat().ignoreElement) / 100.0;
                 } else {
                     double eiValue = effectiveness.getValue();
-                    eiValue += eiValue * chr.getStat().ignoreElement / 100.0;
-                    switch (element) {
-                        case 火: {
-                            elementDamR = eiValue * (stat.getElementFire() + stat.getElementBoost(element)) / 100.0;
+                    eiValue += eiValue * (double)chr.getStat().ignoreElement / 100.0;
+                    switch (element.getValue()) {
+                        case 1: {
+                            elementDamR = eiValue * (double)(stat.getElementFire() + stat.getElementBoost(element)) / 100.0;
                             break;
                         }
-                        case 冰: {
-                            elementDamR = eiValue * (stat.getElementIce() + stat.getElementBoost(element)) / 100.0;
+                        case 2: {
+                            elementDamR = eiValue * (double)(stat.getElementIce() + stat.getElementBoost(element)) / 100.0;
                             break;
                         }
-                        case 雷: {
-                            elementDamR = eiValue * (stat.getElementLight() + stat.getElementBoost(element)) / 100.0;
+                        case 3: {
+                            elementDamR = eiValue * (double)(stat.getElementLight() + stat.getElementBoost(element)) / 100.0;
                             break;
                         }
-                        case 毒: {
-                            elementDamR = eiValue * (stat.getElementPsn() + stat.getElementBoost(element)) / 100.0;
+                        case 4: {
+                            elementDamR = eiValue * (double)(stat.getElementPsn() + stat.getElementBoost(element)) / 100.0;
                             break;
                         }
                         default: {
-                            elementDamR = eiValue * (stat.getElementDef() + stat.getElementBoost(element)) / 100.0;
-                            break;
+                            elementDamR = eiValue * (double)(stat.getElementDef() + stat.getElementBoost(element)) / 100.0;
                         }
                     }
                 }
             }
-            if (effect != null) {
-                double skillDamR = effect.getDamage() + effect.getDamage() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
+            if (effect2 != null) {
+                double skillDamR = (double)effect2.getDamage() + (double)(effect2.getDamage() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
                 switch (ai.skillId) {
-                    case 黑騎士.拉曼查之槍: {
-                        if (ai.unInt1 > 0) {
-                            skillDamR = effect.getY();
-                            break;
-                        }
+                    case 1311011: {
+                        if (ai.unInt1 <= 0) break;
+                        skillDamR = effect2.getY();
                         break;
                     }
-                    case 神射手.光速神弩: {
-                        skillDamR += effect.getDamage() * (idx * 20.0) / 100.0;
+                    case 3201011: {
+                        skillDamR += (double)effect2.getDamage() * ((double)idx * 20.0) / 100.0;
                         break;
                     }
-                    case 夜使者.刺客刻印_飛鏢:
-                    case 夜使者.夜使者的標記: {
-                        skillDamR += effect.getX() * chr.getLevel();
+                    case 4100012: 
+                    case 0x3EDDD3: {
+                        skillDamR += (double)(effect2.getX() * chr.getLevel());
                         break;
                     }
-                    case 箭神.疾風箭矢: {
-                        skillDamR = effect.getX();
+                    case 3101005: {
+                        skillDamR = effect2.getX();
                         break;
                     }
-                    case 龍魔導士.魔法殘骸:
-                    case 龍魔導士.強化的魔法殘骸: {
-                        skillDamR += skillDamR * effect.getW() * 3.0 / 100.0;
+                    case 22141017: 
+                    case 22170070: {
+                        skillDamR += skillDamR * (double)effect2.getW() * 3.0 / 100.0;
                         break;
                     }
-                    case 狂豹獵人.召喚美洲豹_銀灰:
-                    case 狂豹獵人.召喚美洲豹_暗黃:
-                    case 狂豹獵人.召喚美洲豹_血紅:
-                    case 狂豹獵人.召喚美洲豹_紫光:
-                    case 狂豹獵人.召喚美洲豹_深藍:
-                    case 狂豹獵人.召喚美洲豹_傑拉:
-                    case 狂豹獵人.召喚美洲豹_白雪:
-                    case 狂豹獵人.召喚美洲豹_歐尼斯:
-                    case 狂豹獵人.召喚美洲豹_地獄裝甲:
-                    case 狂豹獵人.爪攻擊:
-                    case 狂豹獵人.歧路:
-                    case 狂豹獵人.音暴:
-                    case 狂豹獵人.美洲豹靈魂:
-                    case 狂豹獵人.閃光雨:
-                    case 狂豹獵人.狂豹之怒: {
-                        skillDamR = effect.getY() + Math.min(chr.getLevel(), 180) * effect.getDamage();
+                    case 33001007: 
+                    case 33001008: 
+                    case 33001009: 
+                    case 33001010: 
+                    case 33001011: 
+                    case 33001012: 
+                    case 33001013: 
+                    case 33001014: 
+                    case 33001015: 
+                    case 33001016: 
+                    case 33101115: 
+                    case 33111015: 
+                    case 33121017: 
+                    case 33121155: 
+                    case 33121255: {
+                        skillDamR = effect2.getY() + Math.min(chr.getLevel(), 180) * effect2.getDamage();
                         break;
                     }
-                    case 狂豹獵人.另一個咬擊: {
-                        skillDamR = effect.getY() + Math.min(chr.getLevel(), 180) * effect.getDamage();
+                    case 33000036: {
+                        skillDamR = effect2.getY() + Math.min(chr.getLevel(), 180) * effect2.getDamage();
                         break;
                     }
-                    case 機甲戰神.戰鬥機器_巨人錘: {
+                    case 35121003: {
                         if (ai.attackType == AttackInfo.AttackType.BodyAttack) {
-                            skillDamR = effect.getY() + effect.getY() * stat.getSkillDamageIncrease(ai.skillId) * 1.2 / 100.0;
+                            skillDamR = (double)effect2.getY() + (double)(effect2.getY() * stat.getSkillDamageIncrease(ai.skillId)) * 1.2 / 100.0;
                             break;
                         }
-                        if (ai.attackType == AttackInfo.AttackType.SummonedAttack) {
-                            skillDamR *= 2.0;
-                            break;
-                        }
-                        break;
-                    }
-                    case 機甲戰神.機器人工廠_RM1: {
-                        if (chr.getSkillEffect(ai.skillId) != null) {
-                            effect = chr.getSkillEffect(ai.skillId);
-                        }
-                        skillDamR = effect.getSelfDestruction() + effect.getSelfDestruction() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
-                        break;
-                    }
-                    case 傑諾.追縱火箭: {
+                        if (ai.attackType != AttackInfo.AttackType.SummonedAttack) break;
                         skillDamR *= 2.0;
                         break;
                     }
-                    case 傑諾.能量領域_貫通: {
+                    case 35121009: {
                         if (chr.getSkillEffect(ai.skillId) != null) {
-                            effect = chr.getSkillEffect(ai.skillId);
+                            effect2 = chr.getSkillEffect(ai.skillId);
                         }
-                        skillDamR = effect.getDamage() + effect.getDamage() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
+                        skillDamR = (double)effect2.getSelfDestruction() + (double)(effect2.getSelfDestruction() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
                         break;
                     }
-                    case 米哈逸.皇家之盾_6:
-                    case 米哈逸.皇家之盾_7:
-                    case 米哈逸.皇家之盾_8:
-                    case 米哈逸.皇家之盾_9:
-                    case 米哈逸.皇家之盾_10:
-                    case 皮卡啾.皮卡啾攻擊:
-                    case 皮卡啾.咕嚕咕嚕:
-                    case 皮卡啾.皮卡啾攻擊_4:
-                    case 皮卡啾.皮卡啾攻擊_5:
-                    case 皮卡啾.皮卡啾攻擊_6:
-                    case 皮卡啾.咕嚕咕嚕_1:
-                    case 皮卡啾.天空豆豆地上: {
-                        skillDamR = (effect = skill.getEffect(chr.getLevel())).getDamage() + effect.getDamage() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
-                        break;
-                    }
-                    case 皮卡啾.皮卡啾的品格: {
-                        skillDamR = (effect = SkillFactory.getSkill(皮卡啾.皮卡啾的品格傷害).getEffect(chr.getLevel())).getDamage() + effect.getDamage() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
-                        break;
-                    }
-                    case 惡魔殺手.惡魔覺醒_1:
-                    case 惡魔殺手.惡魔覺醒_2:
-                    case 惡魔殺手.惡魔覺醒_3:
-                    case 惡魔殺手.惡魔覺醒_4: {
+                    case 36001005: {
                         skillDamR *= 2.0;
                         break;
                     }
-                    case 機甲戰神.多重屬性_M_FL:
-                    case 機甲戰神.多重屬性_M_FL_1: {
+                    case 36121002: {
+                        if (chr.getSkillEffect(ai.skillId) != null) {
+                            effect2 = chr.getSkillEffect(ai.skillId);
+                        }
+                        skillDamR = (double)effect2.getDamage() + (double)(effect2.getDamage() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
+                        break;
+                    }
+                    case 51001011: 
+                    case 51001012: 
+                    case 51001013: 
+                    case 51111011: 
+                    case 51111012: 
+                    case 131001000: 
+                    case 131001004: 
+                    case 131001101: 
+                    case 131001102: 
+                    case 131001103: 
+                    case 131001104: 
+                    case 131001208: {
+                        effect2 = skill2.getEffect(chr.getLevel());
+                        skillDamR = (double)effect2.getDamage() + (double)(effect2.getDamage() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
+                        break;
+                    }
+                    case 131000016: {
+                        effect2 = SkillFactory.getSkill(131002016).getEffect(chr.getLevel());
+                        skillDamR = (double)effect2.getDamage() + (double)(effect2.getDamage() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
+                        break;
+                    }
+                    case 400011007: 
+                    case 400011008: 
+                    case 400011009: 
+                    case 400011018: {
+                        skillDamR *= 2.0;
+                        break;
+                    }
+                    case 400051009: 
+                    case 400051012: {
                         skillDamR *= 1.5;
                         break;
                     }
-                    case 陰陽師.雪女招喚: {
-                        skillDamR = (effect = SkillFactory.getSkill(陰陽師.雪女招喚_1).getEffect(chr.getLevel())).getDamage() + effect.getDamage() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
+                    case 400021017: {
+                        effect2 = SkillFactory.getSkill(400021018).getEffect(chr.getLevel());
+                        skillDamR = (double)effect2.getDamage() + (double)(effect2.getDamage() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
                         break;
                     }
-                    case 凱撒.超新星守護者: {
-                        skillDamR = (effect = SkillFactory.getSkill(ai.skillId).getEffect(chr.getLevel())).getDamage() + effect.getDamage() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
+                    case 400011012: {
+                        effect2 = SkillFactory.getSkill(ai.skillId).getEffect(chr.getLevel());
+                        skillDamR = (double)effect2.getDamage() + (double)(effect2.getDamage() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
                         break;
                     }
-                    case 隱月.鬼武陣:
-                    case 隱月.鬼武陣_1: {
-                        skillDamR = effect.getV();
+                    case 400051022: 
+                    case 400051023: {
+                        skillDamR = effect2.getV();
                         break;
                     }
-                    case 爆拳槍神.錘之碎擊_1: {
-                        skillDamR = effect.getQ2() + effect.getQ2() * stat.getSkillDamageIncrease(ai.skillId) / 100.0;
-                        break;
+                    case 37110001: {
+                        skillDamR = (double)effect2.getQ2() + (double)(effect2.getQ2() * stat.getSkillDamageIncrease(ai.skillId)) / 100.0;
                     }
                 }
-                final MapleStatEffect skillEffect;
-                //if (JobConstants.is神之子(chr.getJob()) && chr.isBeta() && (skillEffect = chr.getSkillEffect(神之子.琉之力)) != null && ai.mobCount < effect.getMobCount(chr)) {
-                //    skillDamR += (effect.getMobCount(chr) - ai.mobCount) * skillEffect.getMobCountDamage();
-                //}
                 if (JobConstants.is卡蒂娜(chr.getJob())) {
-                    final Integer buffedValue = chr.getBuffedValue(SecondaryStat.WeaponVariety);
-                    final MapleStatEffect effecForBuffStat = chr.getEffectForBuffStat(SecondaryStat.WeaponVariety);
+                    Integer buffedValue = chr.getBuffedValue(SecondaryStat.WeaponVariety);
+                    MapleStatEffect effecForBuffStat = chr.getEffectForBuffStat(SecondaryStat.WeaponVariety);
                     if (buffedValue != null && effecForBuffStat != null) {
-                        skillDamR *= skillDamR * effecForBuffStat.getX() / 100.0;
+                        skillDamR *= skillDamR * (double)effecForBuffStat.getX() / 100.0;
                     }
                 }
                 maxBaseDamage = maxBaseDamage * skillDamR / 100.0;
             }
         }
-        Skill skill = SkillFactory.getSkill(英雄.伺機攻擊);
-        MapleStatEffect effect = skill.getEffect(chr.getSkillLevel(skill));
-        if (effect != null && (monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
-            maxBaseDamage *= (100.0 + effect.getX()) / 100.0;
+        if ((effect = (skill = SkillFactory.getSkill(1110009)).getEffect(chr.getSkillLevel(skill))) != null && (monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
+            maxBaseDamage *= (100.0 + (double)effect.getX()) / 100.0;
         }
         if (JobConstants.is冒險家法師(chr.getJob())) {
             if (chr.getJob() >= 211 && chr.getJob() <= 212) {
-                skill = SkillFactory.getSkill(火毒.終極魔法_火毒);
+                skill = SkillFactory.getSkill(0x203230);
             } else if (chr.getJob() >= 221 && chr.getJob() <= 222) {
-                skill = SkillFactory.getSkill(冰雷.終極魔法_雷冰);
+                skill = SkillFactory.getSkill(2210000);
             }
-            assert skill != null;
-            if ((effect = skill.getEffect(chr.getSkillLevel(skill))) != null && (monster.getEffectHolder(MonsterStatus.Burned) != null || monster.getEffectHolder(MonsterStatus.Speed) != null || monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
-                maxBaseDamage *= (100.0 + effect.getZ()) / 100.0;
+            assert (skill != null);
+            effect = skill.getEffect(chr.getSkillLevel(skill));
+            if (effect != null && (monster.getEffectHolder(MonsterStatus.Burned) != null || monster.getEffectHolder(MonsterStatus.Speed) != null || monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
+                maxBaseDamage *= (100.0 + (double)effect.getZ()) / 100.0;
             }
         }
-        if (JobConstants.is惡魔殺手(chr.getJob()) && (effect = chr.getSkillEffect(惡魔殺手.邪惡酷刑)) != null && (monster.getEffectHolder(MonsterStatus.Burned) != null || monster.getEffectHolder(MonsterStatus.Speed) != null || monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
-            maxBaseDamage *= (100.0 + effect.getX()) / 100.0;
+        if (JobConstants.is惡魔殺手(chr.getJob()) && (effect = chr.getSkillEffect(31110006)) != null && (monster.getEffectHolder(MonsterStatus.Burned) != null || monster.getEffectHolder(MonsterStatus.Speed) != null || monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
+            maxBaseDamage *= (100.0 + (double)effect.getX()) / 100.0;
         }
-        if (JobConstants.is米哈逸(chr.getJob()) && (effect = chr.getSkillEffect(米哈逸.靈魂重擊)) != null && (monster.getEffectHolder(MonsterStatus.Burned) != null || monster.getEffectHolder(MonsterStatus.Speed) != null || monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
-            maxBaseDamage *= (100.0 + effect.getX()) / 100.0;
+        if (JobConstants.is米哈逸(chr.getJob()) && (effect = chr.getSkillEffect(51000003)) != null && (monster.getEffectHolder(MonsterStatus.Burned) != null || monster.getEffectHolder(MonsterStatus.Speed) != null || monster.getEffectHolder(MonsterStatus.Stun) != null || monster.getEffectHolder(MonsterStatus.Darkness) != null || monster.getEffectHolder(MonsterStatus.Freeze) != null)) {
+            maxBaseDamage *= (100.0 + (double)effect.getX()) / 100.0;
         }
-        MonsterEffectHolder holder = monster.getEffectHolder(MonsterStatus.AddDamSkill2);
-        if (holder != null) {
-            maxBaseDamage += maxBaseDamage * holder.value / 100.0;
+        if ((holder = monster.getEffectHolder(MonsterStatus.AddDamSkill2)) != null) {
+            maxBaseDamage += maxBaseDamage * (double)holder.value / 100.0;
         }
         if ((holder = monster.getEffectHolder(MonsterStatus.TotalDamParty)) != null) {
-            maxBaseDamage += maxBaseDamage * holder.value / 100.0;
+            maxBaseDamage += maxBaseDamage * (double)holder.value / 100.0;
         }
         if ((effect = chr.getEffectForBuffStat(SecondaryStat.GuidedBullet)) != null) {
-            maxBaseDamage += maxBaseDamage * effect.getX() / 100.0;
+            maxBaseDamage += maxBaseDamage * (double)effect.getX() / 100.0;
         }
         if ((holder = monster.getEffectHolder(MonsterStatus.TotalDamParty)) != null) {
-            maxBaseDamage += maxBaseDamage * holder.value / 100.0;
+            maxBaseDamage += maxBaseDamage * (double)holder.value / 100.0;
         }
         if (JobConstants.is箭神(chr.getJob())) {
             effect = chr.getEffectForBuffStat(SecondaryStat.BowMasterMortalBlow);
-            final int buffedIntValue = chr.getBuffedIntValue(SecondaryStat.BowMasterMortalBlow);
+            int buffedIntValue = chr.getBuffedIntValue(SecondaryStat.BowMasterMortalBlow);
             if (effect != null && buffedIntValue >= effect.getX()) {
-                maxBaseDamage += maxBaseDamage * effect.getY() / 100.0;
+                maxBaseDamage += maxBaseDamage * (double)effect.getY() / 100.0;
             }
         } else if (JobConstants.is神射手(chr.getJob())) {
             double incFinalDam = 1.0;
-            if ((effect = chr.getSkillEffect(神射手.天降羽箭)) != null) {
+            effect = chr.getSkillEffect(3220015);
+            if (effect != null) {
                 double maxfd = effect.getDamR();
                 incFinalDam += incFinalDam * maxfd / 100.0;
             }
-            if ((effect = chr.getSkillEffect(神射手.永不屈服)) != null && chr.getMap().getMapObjectsInRange(monster.getPosition(), 80, Collections.singletonList(MapleMapObjectType.MONSTER)).size() <= 1) {
-                incFinalDam += incFinalDam * effect.getDamR() / 100.0;
+            if ((effect = chr.getSkillEffect(3220016)) != null && chr.getMap().getMapObjectsInRange(monster.getPosition(), 80.0, Collections.singletonList(MapleMapObjectType.MONSTER)).size() <= 1) {
+                incFinalDam += incFinalDam * (double)effect.getDamR() / 100.0;
             }
             maxBaseDamage += maxBaseDamage * incFinalDam;
         }
-        final double mobPDR = monster.getStats().getPDRate();
-        final double counteredDamR = Math.max(0, 100.0 - (mobPDR - mobPDR * chr.getStat().getIgnoreMobpdpR(ai.skillId) / 100.0));
-        final double crDam = 50 + stat.criticalDamage;
+        double mobPDR = monster.getStats().getPDRate();
+        double counteredDamR = Math.max(0.0, 100.0 - (mobPDR - mobPDR * chr.getStat().getIgnoreMobpdpR(ai.skillId) / 100.0));
+        double crDam = 50.0 + stat.criticalDamage;
         if (isCritical) {
             maxBaseDamage += maxBaseDamage * crDam / 100.0;
         }
         if (isBoss) {
-            maxBaseDamage += maxBaseDamage * stat.bossDamageR / (100.0 + stat.incDamR);
+            maxBaseDamage += maxBaseDamage * (double)stat.bossDamageR / (100.0 + stat.incDamR);
         }
         maxBaseDamage *= elementDamR;
-        maxBaseDamage += maxBaseDamage * stat.getSkillDamageIncrease_5th(SkillConstants.getLinkedAttackSkill(ai.skillId)) / 100.0;
-        maxBaseDamage = Math.max(1, maxBaseDamage * (counteredDamR / 100.0));
+        maxBaseDamage += maxBaseDamage * (double)stat.getSkillDamageIncrease_5th(SkillConstants.getLinkedAttackSkill(ai.skillId)) / 100.0;
+        maxBaseDamage = Math.max(1.0, maxBaseDamage * (counteredDamR / 100.0));
         int dl = chr.getLevel() - monster.getMobLevel();
-        if (dl > 20) {
-            maxBaseDamage *= 1.2;
-        } else if (dl < -20) {
-            maxBaseDamage *= 0.8;
-        } else {
-            maxBaseDamage += maxBaseDamage * (dl / 100.0);
-        }
-        return Math.min(Math.max(1, maxBaseDamage), limitBreak);
+        maxBaseDamage = dl > 20 ? (maxBaseDamage *= 1.2) : (dl < -20 ? (maxBaseDamage *= 0.8) : (maxBaseDamage += maxBaseDamage * ((double)dl / 100.0)));
+        return Math.min(Math.max(1.0, maxBaseDamage), (double)limitBreak);
     }
-
 }
+

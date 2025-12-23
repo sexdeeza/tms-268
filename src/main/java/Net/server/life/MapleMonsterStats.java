@@ -1,40 +1,102 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.life.MapleLifeFactory$loseItem
+ */
 package Net.server.life;
 
 import Config.constants.GameConstants;
-import Net.server.life.MapleLifeFactory.loseItem;
+import Net.server.life.BanishInfo;
+import Net.server.life.Element;
+import Net.server.life.ElementalEffectiveness;
+import Net.server.life.MapleLifeFactory;
+import Net.server.life.MobAttackInfo;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import tools.Pair;
 import tools.Triple;
 
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-
 public class MapleMonsterStats {
-
     private final int id;
-    private final EnumMap<Element, ElementalEffectiveness> resistance = new EnumMap<>(Element.class);
-    private final Map<String, Integer> animationTimes = new HashMap<>();
-    private final List<Triple<Integer, Integer, Integer>> skills = new ArrayList<>();
-    private final List<MobAttackInfo> mobAttacks = new ArrayList<>();
+    private final EnumMap<Element, ElementalEffectiveness> resistance = new EnumMap(Element.class);
+    private final Map<String, Integer> animationTimes = new HashMap<String, Integer>();
+    private final List<Triple<Integer, Integer, Integer>> skills = new ArrayList<Triple<Integer, Integer, Integer>>();
+    private final List<MobAttackInfo> mobAttacks = new ArrayList<MobAttackInfo>();
     private Pair<Integer, Integer> bodyDisease = null;
-    private byte cp, selfDestruction_action, tagColor, tagBgColor, rareItemDropLevel, HPDisplayType, summonType, category;
-    private short level, charismaEXP;
-    private long hp, finalMaxHP;
-    private int exp, mp, removeAfter, buffToGive, fixedDamage, selfDestruction_hp, dropItemPeriod, point, eva, acc,
-            userCount,
-            physicalAttack, magicAttack, speed, partyBonusR, pushed, link, weaponPoint, PDRate, MDRate, smartPhase,
-            patrolRange, patrolDetectX, patrolSenseX, rewardSprinkleCount, rewardSprinkleSpeed;
-    private boolean boss, undead, publicReward, firstAttack, isExplosiveReward, mobile, fly, onlyNormalAttack, friendly,
-            noDoom, invincible, partyBonusMob, changeable, escort, removeOnMiss, skeleton, patrol, ignoreMoveImpact,
-            rewardSprinkle, defenseMob;
-    private String name, mobType;
-    private Map<String, Integer> hitParts = new HashMap<>();
-    private List<Integer> revives = new ArrayList<>();
-    private List<Pair<Point, Point>> mobZone = new ArrayList<>();
+    private byte cp;
+    private byte selfDestruction_action;
+    private byte tagColor;
+    private byte tagBgColor;
+    private byte rareItemDropLevel;
+    private byte HPDisplayType;
+    private byte summonType;
+    private byte category;
+    private short level;
+    private short charismaEXP;
+    private long hp;
+    private long finalMaxHP;
+    private int exp;
+    private int mp;
+    private int removeAfter;
+    private int buffToGive;
+    private int fixedDamage;
+    private int selfDestruction_hp;
+    private int dropItemPeriod;
+    private int point;
+    private int eva;
+    private int acc;
+    private int userCount;
+    private int physicalAttack;
+    private int magicAttack;
+    private int speed;
+    private int partyBonusR;
+    private int pushed;
+    private int link;
+    private int weaponPoint;
+    private int PDRate;
+    private int MDRate;
+    private int smartPhase;
+    private int patrolRange;
+    private int patrolDetectX;
+    private int patrolSenseX;
+    private int rewardSprinkleCount;
+    private int rewardSprinkleSpeed;
+    private boolean boss;
+    private boolean undead;
+    private boolean publicReward;
+    private boolean firstAttack;
+    private boolean isExplosiveReward;
+    private boolean mobile;
+    private boolean fly;
+    private boolean onlyNormalAttack;
+    private boolean friendly;
+    private boolean noDoom;
+    private boolean invincible;
+    private boolean partyBonusMob;
+    private boolean changeable;
+    private boolean escort;
+    private boolean removeOnMiss;
+    private boolean skeleton;
+    private boolean patrol;
+    private boolean ignoreMoveImpact;
+    private boolean rewardSprinkle;
+    private boolean defenseMob;
+    private String name;
+    private String mobType;
+    private Map<String, Integer> hitParts = new HashMap<String, Integer>();
+    private List<Integer> revives = new ArrayList<Integer>();
+    private List<Pair<Point, Point>> mobZone = new ArrayList<Pair<Point, Point>>();
     private Pair<Integer, Integer> cool = null;
-    private List<loseItem> loseItem = null;
+    private List<MapleLifeFactory.loseItem> loseItem = null;
     private int HpLinkMob;
-    private final List<BanishInfo> banish = new ArrayList<>();
+    private final List<BanishInfo> banish = new ArrayList<BanishInfo>();
     private TransMobs transMobs;
 
     public MapleMonsterStats(int id) {
@@ -42,11 +104,11 @@ public class MapleMonsterStats {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public int getExp() {
-        return exp;
+        return this.exp;
     }
 
     public void setExp(int exp) {
@@ -54,7 +116,7 @@ public class MapleMonsterStats {
     }
 
     public long getHp() {
-        return hp;
+        return this.hp;
     }
 
     public void setHp(long hp) {
@@ -62,7 +124,7 @@ public class MapleMonsterStats {
     }
 
     public int getMp() {
-        return mp;
+        return this.mp;
     }
 
     public void setMp(int mp) {
@@ -70,7 +132,7 @@ public class MapleMonsterStats {
     }
 
     public short getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(short level) {
@@ -78,7 +140,7 @@ public class MapleMonsterStats {
     }
 
     public int getWeaponPoint() {
-        return weaponPoint;
+        return this.weaponPoint;
     }
 
     public void setWeaponPoint(int wp) {
@@ -86,7 +148,7 @@ public class MapleMonsterStats {
     }
 
     public short getCharismaEXP() {
-        return charismaEXP;
+        return this.charismaEXP;
     }
 
     public void setCharismaEXP(short leve) {
@@ -94,7 +156,7 @@ public class MapleMonsterStats {
     }
 
     public byte getSelfD() {
-        return selfDestruction_action;
+        return this.selfDestruction_action;
     }
 
     public void setSelfD(byte selfDestruction_action) {
@@ -106,11 +168,11 @@ public class MapleMonsterStats {
     }
 
     public int getSelfDHp() {
-        return selfDestruction_hp;
+        return this.selfDestruction_hp;
     }
 
     public int getFixedDamage() {
-        return fixedDamage;
+        return this.fixedDamage;
     }
 
     public void setFixedDamage(int damage) {
@@ -118,24 +180,23 @@ public class MapleMonsterStats {
     }
 
     public int getPushed() {
-        return pushed;
+        return this.pushed;
     }
 
     public void setPushed(int damage) {
         this.pushed = damage;
     }
 
-    // BossStatus.js -> mobD.getStats().getMagicAttack();
     public final int getUserCount() {
-        return userCount;
+        return this.userCount;
     }
 
-    public final void setUserCount(final int userCount) {
+    public final void setUserCount(int userCount) {
         this.userCount = userCount;
     }
 
     public int getPhysicalAttack() {
-        return physicalAttack;
+        return this.physicalAttack;
     }
 
     public void setPhysicalAttack(int PhysicalAttack) {
@@ -143,7 +204,7 @@ public class MapleMonsterStats {
     }
 
     public int getMagicAttack() {
-        return magicAttack;
+        return this.magicAttack;
     }
 
     public void setMagicAttack(int MagicAttack) {
@@ -151,7 +212,7 @@ public class MapleMonsterStats {
     }
 
     public int getEva() {
-        return eva;
+        return this.eva;
     }
 
     public void setEva(int eva) {
@@ -159,7 +220,7 @@ public class MapleMonsterStats {
     }
 
     public int getAcc() {
-        return acc;
+        return this.acc;
     }
 
     public void setAcc(int acc) {
@@ -167,7 +228,7 @@ public class MapleMonsterStats {
     }
 
     public int getSpeed() {
-        return speed;
+        return this.speed;
     }
 
     public void setSpeed(int speed) {
@@ -175,7 +236,7 @@ public class MapleMonsterStats {
     }
 
     public int getPartyBonusRate() {
-        return partyBonusR;
+        return this.partyBonusR;
     }
 
     public void setPartyBonusRate(int speed) {
@@ -187,11 +248,11 @@ public class MapleMonsterStats {
     }
 
     public boolean getOnlyNoramlAttack() {
-        return onlyNormalAttack;
+        return this.onlyNormalAttack;
     }
 
     public List<BanishInfo> getBanishInfo() {
-        return banish;
+        return this.banish;
     }
 
     public void addBanishInfo(BanishInfo banish) {
@@ -199,7 +260,7 @@ public class MapleMonsterStats {
     }
 
     public int getRemoveAfter() {
-        return removeAfter;
+        return this.removeAfter;
     }
 
     public void setRemoveAfter(int removeAfter) {
@@ -207,7 +268,7 @@ public class MapleMonsterStats {
     }
 
     public byte getrareItemDropLevel() {
-        return rareItemDropLevel;
+        return this.rareItemDropLevel;
     }
 
     public void setrareItemDropLevel(byte rareItemDropLevel) {
@@ -215,7 +276,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isBoss() {
-        return boss;
+        return this.boss;
     }
 
     public void setBoss(boolean boss) {
@@ -223,7 +284,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isPublicReward() {
-        return publicReward;
+        return this.publicReward;
     }
 
     public void setPublicReward(boolean publicReward) {
@@ -231,7 +292,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isEscort() {
-        return escort;
+        return this.escort;
     }
 
     public void setEscort(boolean ffaL) {
@@ -239,7 +300,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isExplosiveReward() {
-        return isExplosiveReward;
+        return this.isExplosiveReward;
     }
 
     public int getHpLinkMob() {
@@ -255,11 +316,11 @@ public class MapleMonsterStats {
     }
 
     public void setAnimationTime(String name, int delay) {
-        animationTimes.put(name, delay);
+        this.animationTimes.put(name, delay);
     }
 
     public int getAnimationTime(String name) {
-        Integer ret = animationTimes.get(name);
+        Integer ret = this.animationTimes.get(name);
         if (ret == null) {
             return 500;
         }
@@ -267,15 +328,15 @@ public class MapleMonsterStats {
     }
 
     public boolean isMobile() {
-        return animationTimes.containsKey("move") || animationTimes.containsKey("fly");
+        return this.animationTimes.containsKey("move") || this.animationTimes.containsKey("fly");
     }
 
     public boolean isFlyMobile() {
-        return animationTimes.containsKey("flyingMove") || animationTimes.containsKey("fly");
+        return this.animationTimes.containsKey("flyingMove") || this.animationTimes.containsKey("fly");
     }
 
     public boolean isFly() {
-        return fly;
+        return this.fly;
     }
 
     public void setFly(boolean fly) {
@@ -283,7 +344,7 @@ public class MapleMonsterStats {
     }
 
     public List<Integer> getRevives() {
-        return revives;
+        return this.revives;
     }
 
     public void setRevives(List<Integer> revives) {
@@ -291,7 +352,7 @@ public class MapleMonsterStats {
     }
 
     public boolean getUndead() {
-        return undead;
+        return this.undead;
     }
 
     public void setUndead(boolean undead) {
@@ -299,7 +360,7 @@ public class MapleMonsterStats {
     }
 
     public byte getSummonType() {
-        return summonType;
+        return this.summonType;
     }
 
     public void setSummonType(byte selfDestruction) {
@@ -307,7 +368,7 @@ public class MapleMonsterStats {
     }
 
     public byte getCategory() {
-        return category;
+        return this.category;
     }
 
     public void setCategory(byte selfDestruction) {
@@ -315,7 +376,7 @@ public class MapleMonsterStats {
     }
 
     public int getPDRate() {
-        return PDRate;
+        return this.PDRate;
     }
 
     public void setPDRate(int selfDestruction) {
@@ -323,7 +384,7 @@ public class MapleMonsterStats {
     }
 
     public int getMDRate() {
-        return MDRate;
+        return this.MDRate;
     }
 
     public void setMDRate(int selfDestruction) {
@@ -331,28 +392,27 @@ public class MapleMonsterStats {
     }
 
     public EnumMap<Element, ElementalEffectiveness> getElements() {
-        return resistance;
+        return this.resistance;
     }
 
     public void setEffectiveness(Element e, ElementalEffectiveness ee) {
-        resistance.put(e, ee);
+        this.resistance.put(e, ee);
     }
 
     public void removeEffectiveness(Element e) {
-        resistance.remove(e);
+        this.resistance.remove((Object)e);
     }
 
     public ElementalEffectiveness getEffectiveness(Element e) {
-        ElementalEffectiveness elementalEffectiveness = resistance.get(e);
+        ElementalEffectiveness elementalEffectiveness = this.resistance.get((Object)e);
         if (elementalEffectiveness == null) {
             return ElementalEffectiveness.正常;
-        } else {
-            return elementalEffectiveness;
         }
+        return elementalEffectiveness;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -360,7 +420,7 @@ public class MapleMonsterStats {
     }
 
     public String getType() {
-        return mobType;
+        return this.mobType;
     }
 
     public void setType(String mobt) {
@@ -368,7 +428,7 @@ public class MapleMonsterStats {
     }
 
     public Map<String, Integer> getHitParts() {
-        return hitParts;
+        return this.hitParts;
     }
 
     public void setHitParts(Map<String, Integer> hitParts) {
@@ -376,19 +436,19 @@ public class MapleMonsterStats {
     }
 
     public byte getTagColor() {
-        return tagColor;
+        return this.tagColor;
     }
 
     public void setTagColor(int tagColor) {
-        this.tagColor = (byte) tagColor;
+        this.tagColor = (byte)tagColor;
     }
 
     public byte getTagBgColor() {
-        return tagBgColor;
+        return this.tagBgColor;
     }
 
     public void setTagBgColor(int tagBgColor) {
-        this.tagBgColor = (byte) tagBgColor;
+        this.tagBgColor = (byte)tagBgColor;
     }
 
     public List<Triple<Integer, Integer, Integer>> getSkills() {
@@ -397,25 +457,24 @@ public class MapleMonsterStats {
 
     public void setSkills(List<Triple<Integer, Integer, Integer>> skill_) {
         for (Triple<Integer, Integer, Integer> skill : skill_) {
-            skills.add(skill);
+            this.skills.add(skill);
         }
     }
 
     public int getSkillSize() {
-        return skills.size();
+        return this.skills.size();
     }
 
     public boolean hasSkill(int skillId, int level) {
-        for (Triple<Integer, Integer, Integer> skill : skills) {
-            if (skill.getLeft() == skillId && skill.getMid() == level) {
-                return true;
-            }
+        for (Triple<Integer, Integer, Integer> skill : this.skills) {
+            if (skill.getLeft() != skillId || skill.getMid() != level) continue;
+            return true;
         }
         return false;
     }
 
     public boolean isFirstAttack() {
-        return firstAttack;
+        return this.firstAttack;
     }
 
     public void setFirstAttack(boolean firstAttack) {
@@ -423,7 +482,7 @@ public class MapleMonsterStats {
     }
 
     public byte getCP() {
-        return cp;
+        return this.cp;
     }
 
     public void setCP(byte cp) {
@@ -431,7 +490,7 @@ public class MapleMonsterStats {
     }
 
     public int getPoint() {
-        return point;
+        return this.point;
     }
 
     public void setPoint(int cp) {
@@ -439,7 +498,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isFriendly() {
-        return friendly;
+        return this.friendly;
     }
 
     public void setFriendly(boolean friendly) {
@@ -447,7 +506,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isInvincible() {
-        return invincible;
+        return this.invincible;
     }
 
     public void setInvincible(boolean invin) {
@@ -455,7 +514,7 @@ public class MapleMonsterStats {
     }
 
     public int isSmartPhase() {
-        return smartPhase;
+        return this.smartPhase;
     }
 
     public void setSmartPhase(int smartPhase) {
@@ -467,11 +526,11 @@ public class MapleMonsterStats {
     }
 
     public boolean isChangeable() {
-        return changeable;
+        return this.changeable;
     }
 
     public boolean isPartyBonus() {
-        return partyBonusMob;
+        return this.partyBonusMob;
     }
 
     public void setPartyBonus(boolean invin) {
@@ -479,7 +538,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isNoDoom() {
-        return noDoom;
+        return this.noDoom;
     }
 
     public void setNoDoom(boolean doom) {
@@ -487,7 +546,7 @@ public class MapleMonsterStats {
     }
 
     public int getBuffToGive() {
-        return buffToGive;
+        return this.buffToGive;
     }
 
     public void setBuffToGive(int buff) {
@@ -495,7 +554,7 @@ public class MapleMonsterStats {
     }
 
     public int getLink() {
-        return link;
+        return this.link;
     }
 
     public void setLink(int link) {
@@ -503,7 +562,7 @@ public class MapleMonsterStats {
     }
 
     public byte getHPDisplayType() {
-        return HPDisplayType;
+        return this.HPDisplayType;
     }
 
     public void setHPDisplayType(byte HPDisplayType) {
@@ -511,7 +570,7 @@ public class MapleMonsterStats {
     }
 
     public int getDropItemPeriod() {
-        return dropItemPeriod;
+        return this.dropItemPeriod;
     }
 
     public void setDropItemPeriod(int d) {
@@ -523,11 +582,11 @@ public class MapleMonsterStats {
     }
 
     public boolean removeOnMiss() {
-        return removeOnMiss;
+        return this.removeOnMiss;
     }
 
     public Pair<Integer, Integer> getCool() {
-        return cool;
+        return this.cool;
     }
 
     public void setCool(Pair<Integer, Integer> cool) {
@@ -535,7 +594,7 @@ public class MapleMonsterStats {
     }
 
     public List<Pair<Point, Point>> getMobZone() {
-        return mobZone;
+        return this.mobZone;
     }
 
     public void setMobZone(List<Pair<Point, Point>> mobZone) {
@@ -543,22 +602,22 @@ public class MapleMonsterStats {
     }
 
     public boolean isSkeleton() {
-        return skeleton;
+        return this.skeleton;
     }
 
     public void setSkeleton(boolean skeleton) {
         this.skeleton = skeleton;
     }
 
-    public List<loseItem> loseItem() {
-        return loseItem;
+    public List<MapleLifeFactory.loseItem> loseItem() {
+        return this.loseItem;
     }
 
-    public void addLoseItem(loseItem li) {
-        if (loseItem == null) {
-            loseItem = new LinkedList<>();
+    public void addLoseItem(MapleLifeFactory.loseItem li) {
+        if (this.loseItem == null) {
+            this.loseItem = new LinkedList<MapleLifeFactory.loseItem>();
         }
-        loseItem.add(li);
+        this.loseItem.add(li);
     }
 
     public void addMobAttack(MobAttackInfo ma) {
@@ -577,32 +636,32 @@ public class MapleMonsterStats {
     }
 
     public void setBodyDisease(Pair<Integer, Integer> disease) {
-        bodyDisease = disease;
+        this.bodyDisease = disease;
     }
 
     public Pair<Integer, Integer> getBodyDisease() {
-        return bodyDisease;
+        return this.bodyDisease;
     }
 
     public int dropsMesoCount() {
-        if (getRemoveAfter() != 0 || isInvincible() || getOnlyNoramlAttack() || getDropItemPeriod() > 0 || getCP() > 0 || getPoint() > 0 || getFixedDamage() > 0 || getSelfD() != -1 || getPDRate() <= 0 || getMDRate() <= 0) {
+        if (this.getRemoveAfter() != 0 || this.isInvincible() || this.getOnlyNoramlAttack() || this.getDropItemPeriod() > 0 || this.getCP() > 0 || this.getPoint() > 0 || this.getFixedDamage() > 0 || this.getSelfD() != -1 || this.getPDRate() <= 0 || this.getMDRate() <= 0) {
             return 0;
         }
-        int mobId = getId() / 100000;
-        if (GameConstants.getPartyPlayHP(getId()) > 0 || mobId == 97 || mobId == 95 || mobId == 93 || mobId == 91 || mobId == 90) {
+        int mobId = this.getId() / 100000;
+        if (GameConstants.getPartyPlayHP(this.getId()) > 0 || mobId == 97 || mobId == 95 || mobId == 93 || mobId == 91 || mobId == 90) {
             return 0;
         }
-        if (isExplosiveReward()) {
+        if (this.isExplosiveReward()) {
             return 7;
         }
-        if (isBoss()) {
+        if (this.isBoss()) {
             return 2;
         }
         return 1;
     }
 
     public TransMobs getTransMobs() {
-        return transMobs;
+        return this.transMobs;
     }
 
     public void setTransMobs(TransMobs transMobs) {
@@ -614,7 +673,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isPatrol() {
-        return patrol;
+        return this.patrol;
     }
 
     public void setPatrolRange(int patrolRange) {
@@ -622,7 +681,7 @@ public class MapleMonsterStats {
     }
 
     public int getPatrolRange() {
-        return patrolRange;
+        return this.patrolRange;
     }
 
     public void setPatrolDetectX(int patrolDetectX) {
@@ -630,7 +689,7 @@ public class MapleMonsterStats {
     }
 
     public int getPatrolDetectX() {
-        return patrolDetectX;
+        return this.patrolDetectX;
     }
 
     public void setPatrolSenseX(int patrolSenseX) {
@@ -638,7 +697,7 @@ public class MapleMonsterStats {
     }
 
     public int getPatrolSenseX() {
-        return patrolSenseX;
+        return this.patrolSenseX;
     }
 
     public void setIgnoreMoveImpact(boolean ignoreMoveImpact) {
@@ -646,7 +705,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isIgnoreMoveImpact() {
-        return ignoreMoveImpact;
+        return this.ignoreMoveImpact;
     }
 
     public void setFinalMaxHP(long finalMaxHP) {
@@ -654,31 +713,31 @@ public class MapleMonsterStats {
     }
 
     public long getFinalMaxHP() {
-        return finalMaxHP;
+        return this.finalMaxHP;
     }
 
     public boolean isRewardSprinkle() {
-        return rewardSprinkle;
+        return this.rewardSprinkle;
     }
 
     public void setRewardSprinkle(boolean b) {
-        rewardSprinkle = b;
+        this.rewardSprinkle = b;
     }
 
     public int getRewardSprinkleCount() {
-        return rewardSprinkleCount;
+        return this.rewardSprinkleCount;
     }
 
     public void setRewardSprinkleCount(int count) {
-        rewardSprinkleCount = count;
+        this.rewardSprinkleCount = count;
     }
 
     public int getRewardSprinkleSpeed() {
-        return rewardSprinkleSpeed;
+        return this.rewardSprinkleSpeed;
     }
 
     public void setRewardSprinkleSpeed(int speed) {
-        rewardSprinkleSpeed = speed;
+        this.rewardSprinkleSpeed = speed;
     }
 
     public void setDefenseMob(boolean b) {
@@ -686,7 +745,7 @@ public class MapleMonsterStats {
     }
 
     public boolean isDefenseMob() {
-        return defenseMob;
+        return this.defenseMob;
     }
 
     public static class TransMobs {
@@ -709,31 +768,32 @@ public class MapleMonsterStats {
         }
 
         public List<Integer> getMobids() {
-            return mobids;
+            return this.mobids;
         }
 
         public List<Pair<Integer, Integer>> getSkills() {
-            return skills;
+            return this.skills;
         }
 
         public int getTime() {
-            return time;
+            return this.time;
         }
 
         public int getCooltime() {
-            return cooltime;
+            return this.cooltime;
         }
 
         public int getHpTriggerOn() {
-            return hpTriggerOn;
+            return this.hpTriggerOn;
         }
 
         public int getHpTriggerOff() {
-            return hpTriggerOff;
+            return this.hpTriggerOff;
         }
 
         public int getWithMob() {
-            return withMob;
+            return this.withMob;
         }
     }
 }
+

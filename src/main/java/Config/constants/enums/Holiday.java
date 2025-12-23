@@ -1,43 +1,47 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.enums;
 
 public enum Holiday {
     None,
     ChineseNewYear(1, 1, true),
-    Halloween(10, 31, false),
-    ;
+    Halloween(10, 31, false);
 
-    private int _month, _dayOfMonth;
+    private int _month;
+    private int _dayOfMonth;
     private final boolean _isLunar;
 
-    Holiday() {
-        _month = 0;
-        _dayOfMonth = 0;
-        _isLunar = false;
+    private Holiday() {
+        this._month = 0;
+        this._dayOfMonth = 0;
+        this._isLunar = false;
     }
 
-    Holiday(int month, int dayOfMonth, boolean isLunar) {
-        _month = month;
-        _dayOfMonth = dayOfMonth;
-        _isLunar = isLunar;
+    private Holiday(int month, int dayOfMonth, boolean isLunar) {
+        this._month = month;
+        this._dayOfMonth = dayOfMonth;
+        this._isLunar = isLunar;
     }
 
     public int getMonth() {
-        return _month;
+        return this._month;
     }
 
     public int getDayOfMonth() {
-        return _dayOfMonth;
+        return this._dayOfMonth;
     }
 
     public boolean isLunar() {
-        return _isLunar;
+        return this._isLunar;
     }
 
     public void setMonth(int month) {
-        _month = month;
+        this._month = month;
     }
 
     public void setDayOfMonth(int dayOfMonth) {
-        _dayOfMonth = dayOfMonth;
+        this._dayOfMonth = dayOfMonth;
     }
 }
+

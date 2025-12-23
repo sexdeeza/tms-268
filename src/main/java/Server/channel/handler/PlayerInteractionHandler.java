@@ -17,7 +17,7 @@ import Net.server.maps.FieldLimitType;
 import Net.server.maps.MapleMapObject;
 import Net.server.maps.MapleMapObjectType;
 import Net.server.shops.*;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MaplePacketCreator;
 import Packet.PlayerShopPacket;
 import Server.world.WorldBroadcastService;

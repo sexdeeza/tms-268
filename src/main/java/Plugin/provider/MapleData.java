@@ -1,16 +1,21 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider;
 
+import Plugin.provider.MapleDataEntity;
+import Plugin.provider.MapleDataType;
 import java.util.List;
 
-public interface MapleData extends MapleDataEntity, Iterable<MapleData> {
+public interface MapleData
+extends MapleDataEntity,
+Iterable<MapleData> {
+    public MapleData getChildByPath(String var1);
 
-    String getName();
+    public List<MapleData> getChildren();
 
-    MapleData getChildByPath(String path);
+    public Object getData();
 
-    List<MapleData> getChildren();
-
-    Object getData();
-
-    MapleDataType getType();
+    public MapleDataType getType();
 }
+

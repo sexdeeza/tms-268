@@ -3,7 +3,7 @@ package Server.BossEventHandler;
 import Client.MapleCharacter;
 import Client.MapleClient;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.Randomizer;
 import tools.data.MaplePacketLittleEndianWriter;
 

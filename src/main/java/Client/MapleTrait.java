@@ -1,18 +1,22 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
+import Client.MapleCharacter;
+import Client.MapleTraitType;
 import Config.configs.ServerConfig;
 import Config.constants.GameConstants;
 import Packet.MaplePacketCreator;
 
 public class MapleTrait {
-
     private MapleTraitType type;
-    private int totalExp = 0, localTotalExp = 0;
+    private int totalExp = 0;
+    private int localTotalExp = 0;
     private short exp = 0;
     private byte level = 0;
 
     public MapleTrait() {
-
     }
 
     public MapleTrait(MapleTraitType traitTyp) {
@@ -23,9 +27,9 @@ public class MapleTrait {
         if (exp >= 0) {
             this.totalExp = exp;
             this.localTotalExp = exp;
-            chr.updateSingleStat(type.getStat(), totalExp);
-            chr.send(MaplePacketCreator.showTraitGain(type, exp));
-            recalcLevel();
+            chr.updateSingleStat(this.type.getStat(), this.totalExp);
+            chr.send(MaplePacketCreator.showTraitGain(this.type, exp));
+            this.recalcLevel();
         }
     }
 
@@ -33,76 +37,73 @@ public class MapleTrait {
         this.totalExp += exp;
         this.localTotalExp += exp;
         if (exp != 0) {
-            recalcLevel();
+            this.recalcLevel();
         }
     }
 
     public void addExp(int exp, MapleCharacter chr) {
-        addTrueExp(exp * ServerConfig.CHANNEL_RATE_TRAIT, chr);
+        this.addTrueExp(exp * ServerConfig.CHANNEL_RATE_TRAIT, chr);
     }
 
     public void addTrueExp(int exp, MapleCharacter chr) {
         if (exp != 0) {
             this.totalExp += exp;
             this.localTotalExp += exp;
-            chr.updateSingleStat(type.getStat(), totalExp);
-            chr.send(MaplePacketCreator.showTraitGain(type, exp));
-            recalcLevel();
+            chr.updateSingleStat(this.type.getStat(), this.totalExp);
+            chr.send(MaplePacketCreator.showTraitGain(this.type, exp));
+            this.recalcLevel();
         }
     }
 
     public boolean recalcLevel() {
-        if (totalExp < 0) {
-            totalExp = 0;
-            localTotalExp = 0;
-            level = 0;
-            exp = 0;
+        if (this.totalExp < 0) {
+            this.totalExp = 0;
+            this.localTotalExp = 0;
+            this.level = 0;
+            this.exp = 0;
             return false;
         }
-        int oldLevel = level;
-        for (byte i = 0; i < 100; i++) {
-            if (GameConstants.getTraitExpNeededForLevel(i) > localTotalExp) {
-                exp = (short) (GameConstants.getTraitExpNeededForLevel(i) - localTotalExp);
-                level = (byte) (i - 1);
-                return level > oldLevel;
-            }
+        byte oldLevel = this.level;
+        for (int i = 0; i < 100; i = (int)((byte)(i + 1))) {
+            if (GameConstants.getTraitExpNeededForLevel(i) <= this.localTotalExp) continue;
+            this.exp = (short)(GameConstants.getTraitExpNeededForLevel(i) - this.localTotalExp);
+            this.level = (byte)(i - 1);
+            return this.level > oldLevel;
         }
-        exp = 0;
-        level = 100;
-        totalExp = GameConstants.getTraitExpNeededForLevel(level);
-        localTotalExp = totalExp;
-        return level > oldLevel;
+        this.exp = 0;
+        this.level = (byte)100;
+        this.localTotalExp = this.totalExp = GameConstants.getTraitExpNeededForLevel(this.level);
+        return this.level > oldLevel;
     }
 
     public int getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(int newLevel, MapleCharacter chr) {
-        if (newLevel <= level) {
+        if (newLevel <= this.level) {
             return;
         }
-        totalExp = GameConstants.getTraitExpNeededForLevel(newLevel);
-        localTotalExp = totalExp;
-        recalcLevel();
+        this.localTotalExp = this.totalExp = GameConstants.getTraitExpNeededForLevel(newLevel);
+        this.recalcLevel();
     }
 
     public int getExp() {
-        return exp;
+        return this.exp;
     }
 
     public void setExp(int exp) {
         this.totalExp = exp;
         this.localTotalExp = exp;
-        recalcLevel();
+        this.recalcLevel();
     }
 
     public int getTotalExp() {
-        return totalExp;
+        return this.totalExp;
     }
 
     public int getLocalTotalExp() {
-        return localTotalExp;
+        return this.localTotalExp;
     }
 
     public void addLocalExp(int exp) {
@@ -110,10 +111,11 @@ public class MapleTrait {
     }
 
     public void clearLocalExp() {
-        this.localTotalExp = totalExp;
+        this.localTotalExp = this.totalExp;
     }
 
     public MapleTraitType getType() {
-        return type;
+        return this.type;
     }
 }
+

@@ -1,8 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider.loaders.msData;
 
 public class SkillStringInfo {
-
-    private String name, desc, h;
+    private String name;
+    private String desc;
+    private String h;
 
     public SkillStringInfo(String name, String desc, String h) {
         this.name = name;
@@ -11,13 +15,13 @@ public class SkillStringInfo {
     }
 
     public SkillStringInfo() {
-        name = "";
-        desc = "";
-        h = "";
+        this.name = "";
+        this.desc = "";
+        this.h = "";
     }
 
     public String getName() {
-        return name == null ? "" : name;
+        return this.name == null ? "" : this.name;
     }
 
     public void setName(String name) {
@@ -25,7 +29,7 @@ public class SkillStringInfo {
     }
 
     public String getDesc() {
-        return desc == null ? "" : desc;
+        return this.desc == null ? "" : this.desc;
     }
 
     public void setDesc(String desc) {
@@ -33,15 +37,15 @@ public class SkillStringInfo {
     }
 
     public String getH() {
-        return h == null ? "" : h;
+        return this.h == null ? "" : this.h;
     }
 
     public void setH(String h) {
         this.h = h;
     }
 
-    @Override
     public String toString() {
-        return "Name: " + name + ", Desc: " + desc + ", H: " + h;
+        return "Name: " + this.name + ", Desc: " + this.desc + ", H: " + this.h;
     }
 }
+

@@ -1,34 +1,30 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client;
 
-import Database.DatabaseLoader.DatabaseConnectionEx;
-
+import Database.DatabaseLoader;
+import com.alibaba.druid.pool.DruidPooledConnection;
 import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-/**
- * @author PlayDK
- */
-public class MaplePvpStats implements Serializable {
-
+public class MaplePvpStats
+implements Serializable {
     private static final long serialVersionUID = -639523813413728519L;
-    private int watk; //物理攻擊力
-    private int matk; //魔法攻擊力
-    private int wdef; //物理防禦
-    private int mdef; //魔法防禦
-    private int acc; //命中率
-    private int avoid; //迴避率
-    private int wdef_rate; //物理防禦增加x%
-    private int mdef_rate; //魔法防禦增加x%
-    private int ignore_def; //無視x%防禦
-    private int damage_rate; //傷害增加x%
-    private int ignore_damage; //傷害減少x%
+    private int watk;
+    private int matk;
+    private int wdef;
+    private int mdef;
+    private int acc;
+    private int avoid;
+    private int wdef_rate;
+    private int mdef_rate;
+    private int ignore_def;
+    private int damage_rate;
+    private int ignore_damage;
 
     public MaplePvpStats() {
     }
@@ -49,7 +45,7 @@ public class MaplePvpStats implements Serializable {
 
     public static MaplePvpStats loadOrCreateFromDB(int accountId) {
         MaplePvpStats ret = null;
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection()) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
             PreparedStatement ps = con.prepareStatement("SELECT * FROM pvpstats WHERE accountid = ?");
             ps.setInt(1, accountId);
             ResultSet rs = ps.executeQuery();
@@ -58,25 +54,26 @@ public class MaplePvpStats implements Serializable {
             } else {
                 PreparedStatement psu = con.prepareStatement("INSERT INTO pvpstats (accountid, watk, matk, wdef, mdef, acc, avoid, wdef_rate, mdef_rate, ignore_def, damage_rate, ignore_damage) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
                 psu.setInt(1, accountId);
-                psu.setInt(2, 0); //watk 物理攻擊力
-                psu.setInt(3, 0); //matk 魔法攻擊力
-                psu.setInt(4, 0); //wdef 物理防禦
-                psu.setInt(5, 0); //mdef 魔法防禦
-                psu.setInt(6, 100); //acc 命中率
-                psu.setInt(7, 0); //avoid 迴避率
-                psu.setInt(8, 0); //wdef_rate 物理防禦增加x%
-                psu.setInt(9, 0); //mdef_rate 魔法防禦增加x%
-                psu.setInt(10, 0); //ignore_def 無視x%防禦
-                psu.setInt(11, 0); //damage_rate 傷害增加x%
-                psu.setInt(12, 0); //ignore_damage 傷害減少x%
+                psu.setInt(2, 0);
+                psu.setInt(3, 0);
+                psu.setInt(4, 0);
+                psu.setInt(5, 0);
+                psu.setInt(6, 100);
+                psu.setInt(7, 0);
+                psu.setInt(8, 0);
+                psu.setInt(9, 0);
+                psu.setInt(10, 0);
+                psu.setInt(11, 0);
+                psu.setInt(12, 0);
                 psu.executeUpdate();
                 psu.close();
                 ret = new MaplePvpStats(0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0);
             }
             rs.close();
             ps.close();
-        } catch (SQLException ex) {
-            System.err.println("加載角色 Pvp 屬性出現錯誤." + ex);
+        }
+        catch (SQLException ex) {
+            System.err.println("加載角色 Pvp 屬性出現錯誤." + String.valueOf(ex));
         }
         return ret;
     }
@@ -85,29 +82,27 @@ public class MaplePvpStats implements Serializable {
         try {
             PreparedStatement ps = con.prepareStatement("UPDATE pvpstats SET watk = ?, matk = ?, wdef = ?, mdef = ?, acc = ?, avoid = ?, wdef_rate = ?, mdef_rate = ?, ignore_def = ?, damage_rate = ?, ignore_damage = ? WHERE accountId = ?");
             ps.setInt(1, accountId);
-            ps.setInt(2, watk); //物理攻擊力
-            ps.setInt(3, matk); //魔法攻擊力
-            ps.setInt(4, wdef); //物理防禦
-            ps.setInt(5, mdef); //魔法防禦
-            ps.setInt(6, acc); //命中率
-            ps.setInt(7, avoid); //迴避率
-            ps.setInt(8, wdef_rate); //物理防禦增加x%
-            ps.setInt(9, mdef_rate); //魔法防禦增加x%
-            ps.setInt(10, ignore_def); //無視x%防禦
-            ps.setInt(11, damage_rate); //傷害增加x%
-            ps.setInt(12, ignore_damage); //傷害減少x%
+            ps.setInt(2, this.watk);
+            ps.setInt(3, this.matk);
+            ps.setInt(4, this.wdef);
+            ps.setInt(5, this.mdef);
+            ps.setInt(6, this.acc);
+            ps.setInt(7, this.avoid);
+            ps.setInt(8, this.wdef_rate);
+            ps.setInt(9, this.mdef_rate);
+            ps.setInt(10, this.ignore_def);
+            ps.setInt(11, this.damage_rate);
+            ps.setInt(12, this.ignore_damage);
             ps.executeUpdate();
             ps.close();
-        } catch (SQLException ex) {
-            System.err.println("保存角色 Pvp 屬性出現錯誤." + ex);
+        }
+        catch (SQLException ex) {
+            System.err.println("保存角色 Pvp 屬性出現錯誤." + String.valueOf(ex));
         }
     }
 
-    /*
-     * 物理攻擊力
-     */
     public int getWatk() {
-        return watk;
+        return this.watk;
     }
 
     public void setWatk(int gain) {
@@ -118,11 +113,8 @@ public class MaplePvpStats implements Serializable {
         this.watk += gain;
     }
 
-    /*
-     * 魔法攻擊力
-     */
     public int getMatk() {
-        return matk;
+        return this.matk;
     }
 
     public void setMatk(int gain) {
@@ -133,11 +125,8 @@ public class MaplePvpStats implements Serializable {
         this.matk += gain;
     }
 
-    /*
-     * 物理防禦
-     */
     public int getWdef() {
-        return wdef;
+        return this.wdef;
     }
 
     public void setWdef(int gain) {
@@ -148,11 +137,8 @@ public class MaplePvpStats implements Serializable {
         this.wdef += gain;
     }
 
-    /*
-     * 魔法防禦
-     */
     public int getMdef() {
-        return mdef;
+        return this.mdef;
     }
 
     public void setMdef(int gain) {
@@ -163,11 +149,8 @@ public class MaplePvpStats implements Serializable {
         this.mdef += gain;
     }
 
-    /*
-     * 命中率
-     */
     public int getAcc() {
-        return acc;
+        return this.acc;
     }
 
     public void setAcc(int gain) {
@@ -178,11 +161,8 @@ public class MaplePvpStats implements Serializable {
         this.acc += gain;
     }
 
-    /*
-     * 迴避率
-     */
     public int getAvoid() {
-        return avoid;
+        return this.avoid;
     }
 
     public void setAvoid(int gain) {
@@ -193,11 +173,8 @@ public class MaplePvpStats implements Serializable {
         this.avoid += gain;
     }
 
-    /*
-     * 物理防禦增加x%
-     */
     public int getWdefRate() {
-        return wdef_rate;
+        return this.wdef_rate;
     }
 
     public void setWdefRate(int gain) {
@@ -208,11 +185,8 @@ public class MaplePvpStats implements Serializable {
         this.wdef_rate += gain;
     }
 
-    /*
-     * 魔法防禦增加x%
-     */
     public int getMdefRate() {
-        return mdef_rate;
+        return this.mdef_rate;
     }
 
     public void setMdefRate(int gain) {
@@ -223,11 +197,8 @@ public class MaplePvpStats implements Serializable {
         this.mdef_rate += gain;
     }
 
-    /*
-     * 無視x%防禦
-     */
     public int getIgnoreDef() {
-        return ignore_def;
+        return this.ignore_def;
     }
 
     public void setIgnoreDef(int gain) {
@@ -238,11 +209,8 @@ public class MaplePvpStats implements Serializable {
         this.ignore_def += gain;
     }
 
-    /*
-     * 傷害增加x%
-     */
     public int getDamageRate() {
-        return damage_rate;
+        return this.damage_rate;
     }
 
     public void setDamageRate(int gain) {
@@ -253,11 +221,8 @@ public class MaplePvpStats implements Serializable {
         this.damage_rate += gain;
     }
 
-    /*
-     * 傷害增加x%
-     */
     public int getIgnoreDamage() {
-        return ignore_damage;
+        return this.ignore_damage;
     }
 
     public void setIgnoreDamage(int gain) {
@@ -268,3 +233,4 @@ public class MaplePvpStats implements Serializable {
         this.ignore_damage += gain;
     }
 }
+

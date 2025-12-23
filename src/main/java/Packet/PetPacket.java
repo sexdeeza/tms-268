@@ -4,7 +4,7 @@ import Client.MapleCharacter;
 import Client.MapleStat;
 import Client.inventory.MaplePet;
 import Net.server.movement.LifeMovementFragment;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Opcode.Opcode.EffectOpcode;
 import tools.data.MaplePacketLittleEndianWriter;
 

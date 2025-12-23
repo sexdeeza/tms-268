@@ -1,7 +1,7 @@
 package connection.packet;
 
 import Client.MapleCharacter;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import SwordieX.client.party.Party;
 import SwordieX.client.party.PartyMember;
 import SwordieX.client.party.PartyResult;

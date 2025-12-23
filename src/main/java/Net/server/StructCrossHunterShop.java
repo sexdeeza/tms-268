@@ -1,16 +1,9 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server;
 
-/**
- * 十字獵人系統
- *
- * @author PlayDK
- */
 public class StructCrossHunterShop {
-
     private final int itemId;
     private final int tokenPrice;
     private final int potentialGrade;
@@ -22,14 +15,15 @@ public class StructCrossHunterShop {
     }
 
     public int getItemId() {
-        return itemId;
+        return this.itemId;
     }
 
     public int getTokenPrice() {
-        return tokenPrice;
+        return this.tokenPrice;
     }
 
     public int getPotentialGrade() {
-        return potentialGrade;
+        return this.potentialGrade;
     }
 }
+

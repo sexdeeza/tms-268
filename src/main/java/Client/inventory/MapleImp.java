@@ -1,16 +1,20 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
 import java.io.Serializable;
 
-public class MapleImp implements Serializable {
-
+public class MapleImp
+implements Serializable {
     private static final long serialVersionUID = 91795493413738569L;
     private int itemid;
-    private short fullness = 0, closeness = 0;
-    private byte state = 1, level = 1;
+    private short fullness = 0;
+    private short closeness = 0;
+    private byte state = 1;
+    private byte level = 1;
 
     public MapleImp() {
-
     }
 
     public MapleImp(int itemid) {
@@ -18,38 +22,39 @@ public class MapleImp implements Serializable {
     }
 
     public int getItemId() {
-        return itemid;
+        return this.itemid;
     }
 
     public byte getState() {
-        return state;
+        return this.state;
     }
 
     public void setState(int state) {
-        this.state = (byte) state;
+        this.state = (byte)state;
     }
 
     public byte getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(int level) {
-        this.level = (byte) level;
+        this.level = (byte)level;
     }
 
     public short getCloseness() {
-        return closeness;
+        return this.closeness;
     }
 
     public void setCloseness(int closeness) {
-        this.closeness = (short) Math.min(100, closeness);
+        this.closeness = (short)Math.min(100, closeness);
     }
 
     public short getFullness() {
-        return fullness;
+        return this.fullness;
     }
 
     public void setFullness(int fullness) {
-        this.fullness = (short) Math.min(1000, fullness);
+        this.fullness = (short)Math.min(1000, fullness);
     }
 }
+

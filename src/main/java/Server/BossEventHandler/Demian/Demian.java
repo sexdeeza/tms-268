@@ -2,7 +2,7 @@ package Server.BossEventHandler.Demian;
 
 import Client.MapleCharacter;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.Randomizer;
 import tools.data.MaplePacketLittleEndianWriter;
 import tools.data.MaplePacketReader;

@@ -1,22 +1,18 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server.maps;
 
 import Client.MapleClient;
 import Config.constants.GameConstants;
-import Opcode.Headler.OutHeader;
+import Net.server.maps.AnimatedMapleMapObject;
+import Net.server.maps.MapleMapObjectType;
+import Opcode.header.OutHeader;
+import java.util.concurrent.ScheduledFuture;
 import tools.data.MaplePacketLittleEndianWriter;
 
-import java.util.concurrent.ScheduledFuture;
-
-/**
- * @author ODINMR
- */
-public final class MapleFieldAttackObj extends AnimatedMapleMapObject {
-
+public final class MapleFieldAttackObj
+extends AnimatedMapleMapObject {
     private final int ownerid;
     private boolean side;
     private ScheduledFuture<?> schedule = null;
@@ -57,15 +53,15 @@ public final class MapleFieldAttackObj extends AnimatedMapleMapObject {
     }
 
     public int getDuration() {
-        return duration;
+        return this.duration;
     }
 
     public int getState() {
-        return state;
+        return this.state;
     }
 
     public void setState(int value) {
-        state = value;
+        this.state = value;
     }
 
     @Override
@@ -81,27 +77,24 @@ public final class MapleFieldAttackObj extends AnimatedMapleMapObject {
     @Override
     public void sendSpawnData(MapleClient client) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_FIELDATTACKOBJ_CREATE.getValue());
-        mplew.writeInt(getObjectId());
-        mplew.writeInt(state);
-        mplew.writeInt(ownerid);
+        mplew.writeInt(this.getObjectId());
+        mplew.writeInt(this.state);
+        mplew.writeInt(this.ownerid);
         mplew.writeInt(0);
-        mplew.writeBool(false);//V.160 new
-        mplew.writePosInt(getPosition());
-        mplew.writeBool(side);
-
+        mplew.writeBool(false);
+        mplew.writePosInt(this.getPosition());
+        mplew.writeBool(this.side);
         client.announce(mplew.getPacket());
     }
 
     @Override
     public void sendDestroyData(MapleClient client) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_FIELDATTACKOBJ_REMOVE_BYLIST.getValue());
         mplew.writeInt(1);
-        mplew.writeInt(getObjectId());
-
+        mplew.writeInt(this.getObjectId());
         client.announce(mplew.getPacket());
     }
 }
+

@@ -1,6 +1,6 @@
 package connection.packet;
 
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import connection.OutPacket;
 
 public class UserLocal {

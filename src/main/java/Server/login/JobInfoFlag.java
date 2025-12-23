@@ -1,32 +1,35 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Server.login;
 
 public enum JobInfoFlag {
+    臉型(1),
+    髮型(2),
+    臉飾(4),
+    耳朵(8),
+    尾巴(16),
+    帽子(32),
+    衣服(64),
+    褲裙(128),
+    披風(256),
+    鞋子(512),
+    手套(1024),
+    武器(2048),
+    副手(4096);
 
-    臉型(0x1),
-    髮型(0x2),
-    臉飾(0x4),
-    耳朵(0x8),
-    尾巴(0x10),
-    帽子(0x20),
-    衣服(0x40),
-    褲裙(0x80),
-    披風(0x100),
-    鞋子(0x200),
-    手套(0x400),
-    武器(0x800),
-    副手(0x1000),
-    ;
     private final int value;
 
-    JobInfoFlag(int value) {
+    private JobInfoFlag(int value) {
         this.value = value;
     }
 
     public int getVelue() {
-        return value;
+        return this.value;
     }
 
     public boolean check(int x) {
-        return (value & x) != 0;
+        return (this.value & x) != 0;
     }
 }
+

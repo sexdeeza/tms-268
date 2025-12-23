@@ -9,7 +9,7 @@ import Client.MapleClient;
 import Client.inventory.Item;
 import Config.constants.enums.MiniRoomOptType;
 import Net.server.MapleTrade;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.MaplePacketLittleEndianWriter;

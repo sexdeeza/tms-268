@@ -1,33 +1,36 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Config.constants.enums.ActionBarResultType
+ */
 package Net.server.maps.field;
 
 import Client.MapleCharacter;
 import Config.constants.enums.ActionBarResultType;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Plugin.provider.MapleData;
 import Plugin.provider.MapleDataProviderFactory;
 import Plugin.provider.MapleDataTool;
-import tools.data.MaplePacketLittleEndianWriter;
-
 import java.util.HashMap;
 import java.util.Map;
+import tools.data.MaplePacketLittleEndianWriter;
 
-public class ActionBarField extends MapleMap {
-
+public class ActionBarField
+extends MapleMap {
     public static void init() {
-        for (final MapleData zj : MapleDataProviderFactory.getEtc().getData("ActionBar.img").getChildByPath("ActionBar")) {
-            if (!"info".equals(zj.getName())) {
-                final int b = MapleDataTool.getInt("info/fieldType", zj, 0);
-                final int int1 = Integer.parseInt(zj.getName());
-                final MapleFieldActionBar akq = new MapleFieldActionBar(int1, b);
-                for (final MapleData zj6 : zj) {
-                    if (!"info".equals(zj6.getName())) {
-                        final int int2 = Integer.parseInt(zj6.getName());
-                        akq.getSkills().put(int2, new AKR(int2, MapleDataTool.getInt("id", zj6, 0), MapleDataTool.getString("type", zj6, "event"), MapleDataTool.getInt("useOnce", zj6, 0) > 0, MapleDataTool.getInt("usableCount", zj6, -1)));
-                    }
-                }
-                MapleFieldActionBar.infos.put(int1, akq);
+        for (MapleData zj : MapleDataProviderFactory.getEtc().getData("ActionBar.img").getChildByPath("ActionBar")) {
+            if ("info".equals(zj.getName())) continue;
+            int b = MapleDataTool.getInt("info/fieldType", zj, 0);
+            int int1 = Integer.parseInt(zj.getName());
+            MapleFieldActionBar akq = new MapleFieldActionBar(int1, b);
+            for (MapleData zj6 : zj) {
+                if ("info".equals(zj6.getName())) continue;
+                int int2 = Integer.parseInt(zj6.getName());
+                akq.getSkills().put(int2, new AKR(int2, MapleDataTool.getInt("id", zj6, 0), MapleDataTool.getString("type", zj6, "event"), MapleDataTool.getInt("useOnce", zj6, 0) > 0, MapleDataTool.getInt("usableCount", zj6, -1)));
             }
+            MapleFieldActionBar.infos.put(int1, akq);
         }
     }
 
@@ -38,11 +41,11 @@ public class ActionBarField extends MapleMap {
     @Override
     public void userEnterField(MapleCharacter chr) {
         super.userEnterField(chr);
-        final MapleFieldActionBar bm;
-        if ((bm = MapleFieldActionBar.createActionBar(22)) != null) {
+        MapleFieldActionBar bm = MapleFieldActionBar.createActionBar(22);
+        if (bm != null) {
             chr.setActionBar(bm);
-            final MaplePacketLittleEndianWriter hh;
-            (hh = new MaplePacketLittleEndianWriter()).writeOpcode(OutHeader.LP_ActionBarResult);
+            MaplePacketLittleEndianWriter hh = new MaplePacketLittleEndianWriter();
+            hh.writeOpcode(OutHeader.LP_ActionBarResult);
             hh.writeInt(ActionBarResultType.Create_Result.getValue());
             hh.writeInt(chr.getActionBar().pq);
             chr.send(hh.getPacket());
@@ -52,8 +55,8 @@ public class ActionBarField extends MapleMap {
     @Override
     public void userLeaveField(MapleCharacter chr) {
         super.userLeaveField(chr);
-        final MaplePacketLittleEndianWriter hh;
-        (hh = new MaplePacketLittleEndianWriter()).writeOpcode(OutHeader.LP_ActionBarResult);
+        MaplePacketLittleEndianWriter hh = new MaplePacketLittleEndianWriter();
+        hh.writeOpcode(OutHeader.LP_ActionBarResult);
         hh.writeInt(ActionBarResultType.Remove_Result.getValue());
         hh.writeInt(chr.getActionBar().pq);
         chr.send(hh.getPacket());
@@ -61,22 +64,22 @@ public class ActionBarField extends MapleMap {
     }
 
     public static final class MapleFieldActionBar {
-        public static final Map<Integer, MapleFieldActionBar> infos = new HashMap<>();
+        public static final Map<Integer, MapleFieldActionBar> infos = new HashMap<Integer, MapleFieldActionBar>();
         public final int pq;
         private final int amt;
-        private final Map<Integer, AKR> skills = new HashMap<>();
+        private final Map<Integer, AKR> skills = new HashMap<Integer, AKR>();
 
-        public MapleFieldActionBar(final int pq, final int amt) {
+        public MapleFieldActionBar(int pq, int amt) {
             this.pq = pq;
             this.amt = amt;
         }
 
-        public static MapleFieldActionBar createActionBar(final int n) {
+        public static MapleFieldActionBar createActionBar(int n) {
             MapleFieldActionBar res = null;
-            final MapleFieldActionBar actionBar = MapleFieldActionBar.infos.get(n);
+            MapleFieldActionBar actionBar = infos.get(n);
             if (actionBar != null) {
-                final MapleFieldActionBar akq4 = new MapleFieldActionBar(actionBar.pq, actionBar.amt);
-                actionBar.skills.forEach((n2, akr) -> akq4.skills.put(n2, new AKR(akr.index, akr.id, akr.type, akr.useOnce, akr.usableCount)));
+                MapleFieldActionBar akq4 = new MapleFieldActionBar(actionBar.pq, actionBar.amt);
+                actionBar.skills.forEach((n2, akr) -> akq4.skills.put((Integer)n2, new AKR(akr.index, akr.id, akr.type, akr.useOnce, akr.usableCount)));
                 res = akq4;
             }
             return res;
@@ -94,7 +97,7 @@ public class ActionBarField extends MapleMap {
         final boolean useOnce;
         int usableCount;
 
-        public AKR(final int index, final int pq, final String type, final boolean amv, final int amw) {
+        public AKR(int index, int pq, String type, boolean amv, int amw) {
             this.index = index;
             this.id = pq;
             this.type = type;
@@ -102,5 +105,5 @@ public class ActionBarField extends MapleMap {
             this.usableCount = amw;
         }
     }
-
 }
+

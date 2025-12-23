@@ -1,30 +1,34 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
 public enum SavedLocationType {
-
-    FREE_MARKET(0), //自由市場
-    MULUNG_TC(1), //次元門
-    WORLDTOUR(2), //旅遊中心
+    FREE_MARKET(0),
+    MULUNG_TC(1),
+    WORLDTOUR(2),
     FLORINA(3),
-    FISHING(4), //釣魚
+    FISHING(4),
     RICHIE(5),
-    EVENT(6), //任務地圖
-    AMORIA(7), //結婚地圖
-    CHRISTMAS(8), //聖誕地圖?
-    TURNEGG(9), //轉蛋機
+    EVENT(6),
+    AMORIA(7),
+    CHRISTMAS(8),
+    TURNEGG(9),
     BPReturn(10),
     CRYSTALGARDEN(11);
+
     private final int index;
 
-    SavedLocationType(int index) {
+    private SavedLocationType(int index) {
         this.index = index;
     }
 
     public static SavedLocationType fromString(String Str) {
-        return valueOf(Str);
+        return SavedLocationType.valueOf(Str);
     }
 
     public int getValue() {
-        return index;
+        return this.index;
     }
 }
+

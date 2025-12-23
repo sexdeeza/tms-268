@@ -1,9 +1,34 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Client.MaplePartTimeJob
+ *  Client.inventory.MaplePotionPot
+ *  Client.inventory.MapleRing
+ *  Net.server.shop.BuyLimitData
+ *  Net.server.shop.NpcShopBuyLimit
+ *  Net.server.shops.AbstractPlayerStore
+ *  Net.server.shops.MapleMiniGame
+ */
 package Packet;
 
-import Client.*;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleCoolDownValueHolder;
+import Client.MaplePartTimeJob;
+import Client.MapleQuestStatus;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Client.hexa.MapleHexaSkill;
 import Client.hexa.MapleHexaStat;
-import Client.inventory.*;
+import Client.inventory.Equip;
+import Client.inventory.Item;
+import Client.inventory.MapleAndroid;
+import Client.inventory.MapleInventory;
+import Client.inventory.MapleInventoryType;
+import Client.inventory.MaplePet;
+import Client.inventory.MaplePotionPot;
+import Client.inventory.MapleRing;
 import Client.skills.InnerSkillEntry;
 import Client.skills.Skill;
 import Client.skills.SkillEntry;
@@ -13,41 +38,51 @@ import Config.configs.ServerConfig;
 import Config.constants.GameConstants;
 import Config.constants.ItemConstants;
 import Config.constants.JobConstants;
-import Config.constants.skills.凱撒;
-import Config.constants.skills.幻影俠盜;
-import Config.constants.skills.陰陽師;
 import Net.server.MapleItemInformationProvider;
 import Net.server.movement.LifeMovementFragment;
 import Net.server.quest.MapleQuest;
-import Net.server.shop.*;
+import Net.server.shop.BuyLimitData;
+import Net.server.shop.MapleShop;
+import Net.server.shop.MapleShopFactory;
+import Net.server.shop.MapleShopItem;
+import Net.server.shop.NpcShopBuyLimit;
 import Net.server.shops.AbstractPlayerStore;
 import Net.server.shops.IMaplePlayerShop;
 import Net.server.shops.MapleMiniGame;
+import Packet.VCorePacket;
 import connection.OutPacket;
-import tools.*;
+import java.awt.Point;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import tools.DateUtil;
+import tools.Pair;
+import tools.Randomizer;
+import tools.StringUtil;
+import tools.Triple;
 import tools.data.MaplePacketLittleEndianWriter;
 
-import java.awt.*;
-import java.util.List;
-import java.util.*;
-import java.util.Map.Entry;
-
 public class PacketHelper {
-
-    public static final long MAX_TIME = 150842304000000000L; //00 80 05 BB 46 E6 17 02
-    public static final long ZERO_TIME = 94354848000000000L; //00 40 E0 FD 3B 37 4F 01
-    public static final long PERMANENT = 150841440000000000L; //00 C0 9B 90 7D E5 17 02
+    public static final long MAX_TIME = 150842304000000000L;
+    public static final long ZERO_TIME = 94354848000000000L;
+    public static final long PERMANENT = 150841440000000000L;
 
     public static long getKoreanTimestamp(long realTimestamp) {
-        return realTimestamp * 10000 + 116445060000000000L;
+        return realTimestamp * 10000L + 116445060000000000L;
     }
 
     public static final long getTime(long realTimestamp) {
         if (realTimestamp == -1L) {
-            return 150842304000000000L; // 00 80 05 BB 46 E6 17 02
+            return 150842304000000000L;
         }
         if (realTimestamp == -2L) {
-            return 94354848000000000L; // 00 40 E0 FD 3B 37 4F 01
+            return 94354848000000000L;
         }
         if (realTimestamp == -3L) {
             return 94354848000000000L;
@@ -58,26 +93,22 @@ public class PacketHelper {
         return realTimestamp * 10000L + 116445060000000000L;
     }
 
-    /*
-     * 藥劑罐信息
-     */
     public static void addPotionPotInfo(MaplePacketLittleEndianWriter mplew, MaplePotionPot potionPot) {
         mplew.writeInt(potionPot.getItmeId());
         mplew.writeInt(potionPot.getChrId());
         mplew.writeInt(potionPot.getMaxValue());
         mplew.writeInt(potionPot.getHp());
         mplew.writeInt(potionPot.getMp());
-        mplew.writeLong(getTime(potionPot.getStartDate()));
-        mplew.writeLong(getTime(potionPot.getEndDate()));
+        mplew.writeLong(PacketHelper.getTime(potionPot.getStartDate()));
+        mplew.writeLong(PacketHelper.getTime(potionPot.getEndDate()));
     }
-
 
     public static void writeBuffMask(MaplePacketLittleEndianWriter mplew, Collection<Pair<SecondaryStat, Pair<Integer, Integer>>> statups) {
         int[] mask = new int[31];
         for (Pair<SecondaryStat, Pair<Integer, Integer>> statup : statups) {
-            mask[statup.left.getPosition() - 1] = mask[statup.left.getPosition() - 1] | statup.left.getValue();
+            mask[((SecondaryStat)statup.left).getPosition() - 1] = mask[((SecondaryStat)statup.left).getPosition() - 1] | ((SecondaryStat)statup.left).getValue();
         }
-        for (int i = mask.length; i >= 1; i--) {
+        for (int i = mask.length; i >= 1; --i) {
             mplew.writeInt(mask[i - 1]);
         }
     }
@@ -85,17 +116,17 @@ public class PacketHelper {
     public static List<Pair<SecondaryStat, List<SecondaryStatValueHolder>>> sortIndieBuffStats(Map<SecondaryStat, List<SecondaryStatValueHolder>> statups) {
         boolean changed;
         List<Pair<SecondaryStat, List<SecondaryStatValueHolder>>> statvals = new ArrayList<>();
-        for (Entry<SecondaryStat, List<SecondaryStatValueHolder>> stat : statups.entrySet()) {
-            statvals.add(new Pair<>(stat.getKey(), stat.getValue()));
+        for (Map.Entry<SecondaryStat, List<SecondaryStatValueHolder>> stat : statups.entrySet()) {
+            statvals.add(new Pair<SecondaryStat, List<SecondaryStatValueHolder>>(stat.getKey(), stat.getValue()));
         }
         do {
             changed = false;
             int i = 0;
             int k = 1;
-            for (int iter = 0; iter < statvals.size() - 1; iter++) {
+            for (int iter = 0; iter < statvals.size() - 1; ++iter) {
                 Pair<SecondaryStat, List<SecondaryStatValueHolder>> a = statvals.get(i);
                 Pair<SecondaryStat, List<SecondaryStatValueHolder>> b = statvals.get(k);
-                if (a != null && b != null && a.left.getFlag() > b.left.getFlag()) {
+                if (a != null && b != null && ((SecondaryStat)a.left).getFlag() > ((SecondaryStat)b.left).getFlag()) {
                     Pair<SecondaryStat, List<SecondaryStatValueHolder>> swap = new Pair<>(a.left, a.right);
                     statvals.remove(i);
                     statvals.add(i, b);
@@ -103,28 +134,26 @@ public class PacketHelper {
                     statvals.add(k, swap);
                     changed = true;
                 }
-                i++;
-                k++;
+                ++i;
+                ++k;
             }
-        }
-        while (changed);
+        } while (changed);
         return statvals;
     }
 
     public static void addPartTimeJob(MaplePacketLittleEndianWriter mplew, MaplePartTimeJob parttime) {
         mplew.write(parttime.getJob());
         if (parttime.getJob() > 0 && parttime.getJob() <= 5) {
-            //mplew.writeHexString("6B E2 D0 01 30 C0 D4 DD");
             mplew.writeReversedLong(parttime.getTime());
         } else {
-            mplew.writeReversedLong(getTime(-2));
+            mplew.writeReversedLong(PacketHelper.getTime(-2L));
         }
         mplew.writeInt(parttime.getReward());
         mplew.writeBool(parttime.getReward() > 0);
     }
 
     public static void addExpirationTime(MaplePacketLittleEndianWriter mplew, long time) {
-        mplew.writeLong(getTime(time));
+        mplew.writeLong(PacketHelper.getTime(time));
     }
 
     public static void addItemPosition(MaplePacketLittleEndianWriter mplew, Item item, boolean trade, boolean bagSlot) {
@@ -133,14 +162,11 @@ public class PacketHelper {
             pos = 0;
         } else {
             pos = item.getPosition();
-            if (pos < 0) {
-                pos = (short) Math.abs(pos);
-                if (pos > 100 && pos < 1000) {
-                    pos -= 100;
-                }
+            if (pos < 0 && (pos = (short)Math.abs(pos)) > 100 && pos < 1000) {
+                pos = (short)(pos - 100);
             }
             if (bagSlot) {
-                pos = (short) ((pos % 100) - 1);
+                pos = (short)(pos % 100 - 1);
             }
         }
         if (bagSlot) {
@@ -158,7 +184,6 @@ public class PacketHelper {
         }
         OutPacket outPacket = new OutPacket();
         item.encode(outPacket);
-
         mplew.write(outPacket.getData());
     }
 
@@ -167,7 +192,7 @@ public class PacketHelper {
         mplew.writeInt(nVal1);
         mplew.writePos(mPos);
         mplew.writePos(oPos);
-        if (moves == null) { // from mobMove and idk why null
+        if (moves == null) {
             mplew.writeShort(0);
         } else {
             mplew.writeShort(moves.size());
@@ -175,9 +200,7 @@ public class PacketHelper {
                 move.serialize(mplew);
             }
         }
-
         if (arrays != null) {
-            // Changed from mplew.write(arrays.length);
             mplew.writeShort(arrays.length);
             for (int nVal : arrays) {
                 mplew.writeInt(nVal); // Assuming nVal should be written as an integer
@@ -185,10 +208,9 @@ public class PacketHelper {
         }
     }
 
-
     public static void addAnnounceBox(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
         if (chr.getPlayerShop() != null && chr.getPlayerShop().isOwner(chr) && chr.getPlayerShop().getShopType() != 1 && chr.getPlayerShop().isAvailable()) {
-            addInteraction(mplew, chr.getPlayerShop());
+            PacketHelper.addInteraction(mplew, chr.getPlayerShop());
         } else {
             mplew.write(0);
         }
@@ -196,100 +218,88 @@ public class PacketHelper {
 
     public static void addInteraction(MaplePacketLittleEndianWriter mplew, IMaplePlayerShop shop) {
         mplew.write(shop.getGameType());
-        mplew.writeInt(((AbstractPlayerStore) shop).getObjectId());
+        mplew.writeInt(((AbstractPlayerStore)shop).getObjectId());
         mplew.writeMapleAsciiString(shop.getDescription());
         if (shop.getShopType() != 1) {
-            mplew.write(shop.getPassword().length() > 0 ? 1 : 0); //password = false
+            mplew.write(shop.getPassword().length() > 0 ? 1 : 0);
         }
         int id = shop.getItemId() % 100;
-        if (shop instanceof MapleMiniGame mini) {
+        if (shop instanceof MapleMiniGame) {
+            MapleMiniGame mini = (MapleMiniGame)shop;
             id = mini.getPieceType();
         } else if (shop.getShopType() == 75) {
             id = 0;
         }
-        mplew.write(id); //應該是商店的外觀 以前是: shop.getItem() % 10   shop.getItem() - 5030000
-        mplew.write(shop.getShopType() != 75 ? shop.getSize() : 0); //current size
-        mplew.write(shop.getMaxSize()); //full slots... 4 = 4-1=3 = has slots, 1-1=0 = no slots
+        mplew.write(id);
+        mplew.write(shop.getShopType() != 75 ? shop.getSize() : 0);
+        mplew.write(shop.getMaxSize());
         if (shop.getShopType() != 1) {
             mplew.write(shop.isOpen() ? 0 : 1);
         }
         PacketHelper.addChaterName(mplew, "", "");
     }
 
-    /**
-     * 添加角色相關數據：屬性、道具、任務、技能等
-     *
-     * @param mplew
-     * @param chr
-     * @param flag
+    /*
+     * WARNING - void declaration
      */
     public static void addCharacterInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr, long flag) {
-
-        for(int i = 0; i < 100; ++i) {
+        int var25_116 = 0;
+        long date;
+        int itemId;
+        MapleInventoryType eiv;
+        ArrayList<Item> items;
+        int i;
+        for (i = 0; i < 100; ++i) {
             mplew.write(1);
         }
-
         mplew.write(0);
-
-        for(int i = 0; i < 3; ++i) {
-            mplew.writeInt(!JobConstants.is皇家騎士團(chr.getJob()) && !JobConstants.is米哈逸(chr.getJob()) ? -1 : -6);
+        for (i = 0; i < 3; ++i) {
+            mplew.writeInt(JobConstants.is皇家騎士團(chr.getJob()) || JobConstants.is米哈逸(chr.getJob()) ? -6 : -1);
         }
-
         mplew.write(0);
         mplew.writeInt(0);
         mplew.write(0);
         if ((flag & 1L) != 0L) {
+            MapleQuestStatus ultExplorer;
             chr.getCharacterStat().encode(mplew);
             mplew.write(chr.getBuddylist().getCapacity());
             mplew.write(chr.getBlessOfFairyOrigin() != null);
             if (chr.getBlessOfFairyOrigin() != null) {
                 mplew.writeMapleAsciiString(chr.getBlessOfFairyOrigin());
             }
-
             mplew.write(chr.getBlessOfEmpressOrigin() != null);
             if (chr.getBlessOfEmpressOrigin() != null) {
                 mplew.writeMapleAsciiString(chr.getBlessOfEmpressOrigin());
             }
-
-            MapleQuestStatus ultExplorer = chr.getQuestNoAdd(MapleQuest.getInstance(111111));
-            mplew.write(ultExplorer != null && ultExplorer.getCustomData() != null);
+            mplew.write((ultExplorer = chr.getQuestNoAdd(MapleQuest.getInstance(111111))) != null && ultExplorer.getCustomData() != null);
             if (ultExplorer != null && ultExplorer.getCustomData() != null) {
                 mplew.writeMapleAsciiString(ultExplorer.getCustomData());
             }
-
             mplew.writeLong(133709900400000000L);
             mplew.writeHexString("00 40 E0 FD 3B 37 4F 01");
             int v7 = 2;
-
-            do {
+            block2: do {
                 mplew.writeInt(0);
-
-                while(true) {
+                while (true) {
                     int res = -1;
                     mplew.write(res);
-                    if (res == -1) {
-                        v7 += 36;
-                        break;
-                    }
-
+                    if (res == -1) continue block2;
                     mplew.writeInt(0);
                 }
-            } while(v7 < 74);
+            } while ((v7 += 36) < 74);
         }
-
         mplew.writeShort(0);
-        mplew.writeLong(getTime(-2L));
+        mplew.writeLong(PacketHelper.getTime(-2L));
         String questInfo = chr.getOneInfo(56829, "count");
         mplew.writeInt(questInfo == null ? ServerConfig.defaultDamageSkinSlot : Integer.valueOf(questInfo));
-        addDamageSkinInfo(mplew, chr);
+        PacketHelper.addDamageSkinInfo(mplew, chr);
         if ((flag & 2L) != 0L) {
             mplew.writeLong(chr.getMeso());
             mplew.writeInt(chr.getId());
             mplew.writeInt(chr.getBeans());
             mplew.writeInt(chr.getCSPoints(2));
         }
-
-        if ((flag & 64L) != 0L) {
+        if ((flag & 0x40L) != 0L) {
             mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIPPED).getSlotLimit());
             mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIP).getSlotLimit());
             mplew.writeInt(chr.getInventory(MapleInventoryType.USE).getSlotLimit());
@@ -298,1969 +308,798 @@ public class PacketHelper {
             mplew.writeInt(chr.getInventory(MapleInventoryType.CASH).getSlotLimit());
             mplew.writeInt(chr.getInventory(MapleInventoryType.DECORATION).getSlotLimit());
         }
-
         MapleInventory iv = chr.getInventory(MapleInventoryType.EQUIPPED);
         List<Item> equippedList = iv.newList();
         Collections.sort(equippedList);
-        List<Item> equipped = new ArrayList();
-        List<Item> equippedCash = new ArrayList();
-        List<Item> equippedDragon = new ArrayList();
-        List<Item> equippedMechanic = new ArrayList();
-        List<Item> equippedAndroid = new ArrayList();
-        List<Item> equippedLolitaCash = new ArrayList();
-        List<Item> equippedBit = new ArrayList();
-        List<Item> equippedZeroBetaCash = new ArrayList();
-        List<Item> equippedArcane = new ArrayList();
-        List<Item> equippedAuthenticSymbol = new ArrayList();
-        List<Item> equippedTotem = new ArrayList();
-        List<Item> equippedMonsterEqp = new ArrayList<>(); // 獸魔裝備
-        List<Item> equippedHakuFan = new ArrayList();
-        List<Item> equippedUnknown = new ArrayList();
-        List<Item> equippedCashPreset = new ArrayList();
-        Iterator equppedIterator = equippedList.iterator();
-
-        while(true) {
-            while(equppedIterator.hasNext()) {
-                Item item = (Item)equppedIterator.next();
-                if (item.getPosition() < 0 && item.getPosition() > -100) {
-                    equipped.add(item);
-                } else if (item.getPosition() <= -1000 && item.getPosition() > -1100) {
-                    equippedDragon.add(item);
-                } else if (item.getPosition() <= -1100 && item.getPosition() > -1200) {
-                    equippedMechanic.add(item);
-                } else if (item.getPosition() <= -1400 && item.getPosition() > -1500) {
-                    equippedBit.add(item);
-                } else if (item.getPosition() <= -5000 && item.getPosition() >= -5002) {
-                    equippedTotem.add(item);
-                } else if (item.getPosition() <= -1600 && item.getPosition() > -1700) {
-                    equippedArcane.add(item);
-                } else if (item.getPosition() <= -1700 && item.getPosition() > -1800) {
-                    equippedAuthenticSymbol.add(item);
-                } else if (item.getPosition() <= -1200 && item.getPosition() > -1300) {
-                    equippedAndroid.add(item);
-                } else if (item.getPosition() <= -1300 && item.getPosition() > -1400) {
-                    equippedLolitaCash.add(item);
-                } else if (item.getPosition() <= -1500 && item.getPosition() > -1600) {
-                    equippedZeroBetaCash.add(item);
-                } else if (item.getPosition() <= -100 && item.getPosition() > -1000) {
-                    equippedCash.add(item);
-                } else if (item.getPosition() > 10000 && item.getPosition() < 10200) {
-                    chr.getSkillSkin().put(MapleItemInformationProvider.getInstance().getSkillSkinFormSkillId(item.getItemId()), item.getItemId());
-                    equippedUnknown.add(item);
-                }
+        ArrayList<Item> equipped = new ArrayList<Item>();
+        ArrayList<Item> equippedCash = new ArrayList<Item>();
+        ArrayList<Item> equippedDragon = new ArrayList<Item>();
+        ArrayList<Item> equippedMechanic = new ArrayList<Item>();
+        ArrayList<Item> equippedAndroid = new ArrayList<Item>();
+        ArrayList<Item> equippedLolitaCash = new ArrayList<Item>();
+        ArrayList<Item> equippedBit = new ArrayList<Item>();
+        ArrayList<Item> equippedZeroBetaCash = new ArrayList<Item>();
+        ArrayList<Item> equippedArcane = new ArrayList<Item>();
+        ArrayList<Item> equippedAuthenticSymbol = new ArrayList<Item>();
+        ArrayList<Item> equippedTotem = new ArrayList<Item>();
+        ArrayList equippedMonsterEqp = new ArrayList();
+        ArrayList<Item> equippedHakuFan = new ArrayList<Item>();
+        ArrayList<Item> equippedUnknown = new ArrayList<Item>();
+        ArrayList<Item> equippedCashPreset = new ArrayList<Item>();
+        for (Item item2 : equippedList) {
+            if (item2.getPosition() < 0 && item2.getPosition() > -100) {
+                equipped.add(item2);
+                continue;
             }
-
-//            Iterator var26;
-//            ArrayList items;
-            if ((flag & 128L) != 0L) {
-                mplew.writeBool(false);
-                iv = chr.getInventory(MapleInventoryType.EQUIP);
-                List<MapleAndroid> androids = new LinkedList<>();
-                List<Item> items = new ArrayList();
-
-                List<Item> items20000 = new ArrayList<>();
-                List<Item> items21000 = new ArrayList<>();
-                List<Item> equip = new ArrayList<>();
-                for (Item item : iv.list()) {
-                    if (((Equip) item).getAndroid() != null) {
-                        androids.add(((Equip) item).getAndroid());
-                    }
-                    if (item.getPosition() >= 21000) {
-                        items21000.add(item);
-                    } else if (item.getPosition() >= 20000) {
-                        items20000.add(item);
-                    } else {
-                        equip.add(item);
-                    }
-                }
-
-                mplew.writeShort(0);
-                encodeInventory(mplew, equipped, chr);
-                encodeInventory(mplew, equip, chr);
-                encodeInventory(mplew, equippedDragon, chr);
-                encodeInventory(mplew, equippedMechanic, chr);
-                encodeInventory(mplew, equippedBit, chr);
-                encodeInventory(mplew, equippedTotem, chr);
-                encodeInventory(mplew, equippedArcane, chr);
-                encodeInventory(mplew, equippedAuthenticSymbol, chr);
-                encodeInventory(mplew, equippedHakuFan, chr);
-                mplew.writeShort(0);
-                mplew.writeShort(0);
-                mplew.writeShort(0);
-                mplew.writeShort(0);
-                mplew.writeShort(0);
-                encodeInventory(mplew, equippedTotem, chr);
-                encodeInventory(mplew, equippedUnknown, chr);
-                encodeInventory(mplew, items, chr);
-                encodeInventory(mplew, items21000, chr);
+            if (item2.getPosition() <= -1000 && item2.getPosition() > -1100) {
+                equippedDragon.add(item2);
+                continue;
             }
-
-            if ((flag & 16L) != 0L) {
-                encodeInventory(mplew, Collections.emptyList(), chr);
-                encodeInventory(mplew, Collections.emptyList(), chr);
+            if (item2.getPosition() <= -1100 && item2.getPosition() > -1200) {
+                equippedMechanic.add(item2);
+                continue;
             }
-
-            Item item;
-            if ((flag & 8192L) != 0L) {
-                mplew.writeBool(false);
-                encodeInventory(mplew, equippedCash, chr);
-                iv = chr.getInventory(MapleInventoryType.DECORATION);
-                List pets = new ArrayList();
-                Iterator decorationIterator = iv.list().iterator();
-
-                while(decorationIterator.hasNext()) {
-                    item = (Item)decorationIterator.next();
-                    if (item.getPosition() < 129) {
-                        pets.add(item);
-                    }
-                }
-
-                encodeInventory(mplew, pets, chr);
-                encodeInventory(mplew, equippedAndroid, chr);
-                encodeInventory(mplew, equippedLolitaCash, chr);
-                encodeInventory(mplew, equippedZeroBetaCash, chr);
-                encodeInventory(mplew, equippedCashPreset, chr);
-                mplew.writeShort(0);
-                mplew.writeShort(0);
+            if (item2.getPosition() <= -1400 && item2.getPosition() > -1500) {
+                equippedBit.add(item2);
+                continue;
             }
-
-            if ((flag & 8L) != 0L) {
-                iv = chr.getInventory(MapleInventoryType.USE);
-                List pets = new ArrayList();
-                Iterator useIterator = iv.list().iterator();
-
-                while(useIterator.hasNext()) {
-                    item = (Item)useIterator.next();
-                    if (item.getPosition() < 129) {
-                        pets.add(item);
-                    }
-                }
-
-                encodeInventory(mplew, pets, chr);
+            if (item2.getPosition() <= -5000 && item2.getPosition() >= -5002) {
+                equippedTotem.add(item2);
+                continue;
             }
-
-            if ((flag & 16L) != 0L) {
-                iv = chr.getInventory(MapleInventoryType.SETUP);
-                List pets = new ArrayList();
-                Iterator setUpIterator = iv.list().iterator();
-
-                while(setUpIterator.hasNext()) {
-                    item = (Item)setUpIterator.next();
-                    if (item.getPosition() < 129) {
-                        pets.add(item);
-                    }
-                }
-
-                encodeInventory(mplew, pets, chr);
+            if (item2.getPosition() <= -1600 && item2.getPosition() > -1700) {
+                equippedArcane.add(item2);
+                continue;
             }
-
-            if ((flag & 128L) != 0L) {
-                iv = chr.getInventory(MapleInventoryType.ETC);
-                List etcList = new ArrayList();
-                Iterator etcIterator = iv.list().iterator();
-
-                while(etcIterator.hasNext()) {
-                    item = (Item)etcIterator.next();
-                    if (item.getPosition() < 129) {
-                        etcList.add(item);
-                    }
-                }
-
-                encodeInventory(mplew, etcList, chr);
+            if (item2.getPosition() <= -1700 && item2.getPosition() > -1800) {
+                equippedAuthenticSymbol.add(item2);
+                continue;
             }
-
-
-            List<MaplePet>pets = new ArrayList();
-            Iterator var47;
-            if ((flag & 64L) != 0L) {
-                iv = chr.getInventory(MapleInventoryType.CASH);
-                List<Item>items = new ArrayList();
-                var47 = iv.list().iterator();
-
-                while(var47.hasNext()) {
-                    Item cashItem = (Item)var47.next();
-                    items.add(cashItem);
-                    if (cashItem.getPet() != null) {
-                        pets.add(cashItem.getPet());
-                    }
-                }
-
-                encodeInventory(mplew, items, chr);
+            if (item2.getPosition() <= -1200 && item2.getPosition() > -1300) {
+                equippedAndroid.add(item2);
+                continue;
             }
-
-            // 加载扩展背包
-            MapleInventoryType eiv;
-            if ((flag & 32L) != 0L) {
-                eiv = MapleInventoryType.USE;
-                List<Item> started = chr.getExtendedSlots(eiv.getType());
-                mplew.writeInt(started.size());
-                Iterator itemIterator = started.iterator();
-
-                while(itemIterator.hasNext()) {
-                    Item useItem = (Item)itemIterator.next();
-                    mplew.writeInt(useItem.getExtendSlot());
-                    mplew.writeInt(useItem.getItemId());
-                    chr.getInventory(eiv).list().stream().filter((itemx) -> {
-                        return itemx.getPosition() > useItem.getExtendSlot() * 100 + 10100 && itemx.getPosition() < useItem.getExtendSlot() * 100 + 10200;
-                    }).forEach((itemx) -> {
-                        addItemPosition(mplew, itemx, false, true);
-                        GW_ItemSlotBase_Encode(mplew, itemx);
-                    });
-                    mplew.writeInt(-1);
-                }
+            if (item2.getPosition() <= -1300 && item2.getPosition() > -1400) {
+                equippedLolitaCash.add(item2);
+                continue;
             }
-
-            if ((flag & 48L) != 0L) {
-                eiv = MapleInventoryType.SETUP;
-                List<Item> started = chr.getExtendedSlots(eiv.getType());
-                mplew.writeInt(started.size());
-                Iterator setupIterator = started.iterator();
-
-                while(setupIterator.hasNext()) {
-                    Item setupItem = (Item)setupIterator.next();
-                    mplew.writeInt(setupItem.getExtendSlot());
-                    mplew.writeInt(setupItem.getItemId());
-                    chr.getInventory(eiv).list().stream().filter((itemx) -> {
-                        return itemx.getPosition() > setupItem.getExtendSlot() * 100 + 10100 && itemx.getPosition() < setupItem.getExtendSlot() * 100 + 10200;
-                    }).forEach((itemx) -> {
-                        addItemPosition(mplew, itemx, false, true);
-                        GW_ItemSlotBase_Encode(mplew, itemx);
-                    });
-                    mplew.writeInt(-1);
-                }
+            if (item2.getPosition() <= -1500 && item2.getPosition() > -1600) {
+                equippedZeroBetaCash.add(item2);
+                continue;
             }
-
-            if ((flag & 64L) != 0L) {
-                eiv = MapleInventoryType.ETC;
-                List<Item> started = chr.getExtendedSlots(eiv.getType());
-                mplew.writeInt(started.size());
-                Iterator etcIterator = started.iterator();
-
-                while(etcIterator.hasNext()) {
-                    Item etcItem = (Item)etcIterator.next();
-                    mplew.writeInt(etcItem.getExtendSlot());
-                    mplew.writeInt(etcItem.getItemId());
-                    chr.getInventory(eiv).list().stream().filter((itemx) -> {
-                        return itemx.getPosition() > etcItem.getExtendSlot() * 100 + 10100 && itemx.getPosition() < etcItem.getExtendSlot() * 100 + 10200;
-                    }).forEach((itemx) -> {
-                        addItemPosition(mplew, itemx, false, true);
-                        GW_ItemSlotBase_Encode(mplew, itemx);
-                    });
-                    mplew.writeInt(-1);
-                }
+            if (item2.getPosition() <= -100 && item2.getPosition() > -1000) {
+                equippedCash.add(item2);
+                continue;
             }
-
-            if ((flag & 16777216L) != 0L) {
-                mplew.writeInt(0);
-            }
-
-            if ((flag & 1073741824L) != 0L) {
-                mplew.writeInt(0);
-            }
-
-            if ((flag & 8388608L) != 0L) {
-                mplew.write(0);
-            }
-
-            Map.Entry entry;
-            if ((flag & 256L) != 0L) {
-                Map<Integer, SkillEntry> skills = chr.getSkills(true);
-                mplew.write(1);
-                mplew.writeShort(skills.size());
-                Iterator<Entry<Integer, SkillEntry>> skillIterator = skills.entrySet().iterator();
-
-                label955:
-                while(true) {
-                    Skill skill;
-                    do {
-                        if (!skillIterator.hasNext()) {
-                            Map<Integer, SkillEntry> teachList = chr.getLinkSkills();
-                            mplew.writeShort(teachList.size());
-                            Iterator<Entry<Integer, SkillEntry>> teachIterator = teachList.entrySet().iterator();
-
-                            while(teachIterator.hasNext()) {
-                                Map.Entry<Integer, SkillEntry> skillEntry = (Map.Entry)teachIterator.next();
-                                mplew.writeInt((Integer)skillEntry.getKey());
-                                mplew.writeShort(((SkillEntry)skillEntry.getValue()).skillevel - 1);
-                            }
-
-                            Map<Integer, Pair<Integer, SkillEntry>> sonOfLinkedSkills = chr.getSonOfLinkedSkills();
-                            mplew.writeInt(sonOfLinkedSkills.size());
-                            Iterator<Entry<Integer, Pair<Integer, SkillEntry>>> linkSkilliterator = sonOfLinkedSkills.entrySet().iterator();
-
-                            while(linkSkilliterator.hasNext()) {
-                                Map.Entry<Integer, Pair<Integer, SkillEntry>> linkEntry = (Map.Entry)linkSkilliterator.next();
-                                writeSonOfLinkedSkill(mplew, (Integer)linkEntry.getKey(), (Pair)linkEntry.getValue());
-                            }
-
-                            mplew.write((int)chr.getInfoQuestValueWithKey(2498, "hyperstats"));
-
-                            for(int buffId = 0; buffId <= 2; ++buffId) {
-                                mplew.writeInt(chr.loadHyperStats(buffId).size());
-                                for (MapleHyperStats mhsz : chr.loadHyperStats(buffId)) {
-                                    mplew.writeInt(mhsz.getPosition());
-                                    mplew.writeInt(mhsz.getSkillid());
-                                    mplew.writeInt(mhsz.getSkillLevel());
-                                }
-                            }
-                            break label955;
-                        }
-
-                        entry = skillIterator.next();
-                        skill = SkillFactory.getSkill((Integer)entry.getKey());
-                        mplew.writeInt(skill.getId());
-                        if (skill.isLinkSkills()) {
-                            mplew.writeInt(((SkillEntry)entry.getValue()).teachId);
-                        } else if (skill.isTeachSkills()) {
-                            mplew.writeInt(((SkillEntry)entry.getValue()).teachId > 0 ? ((SkillEntry)entry.getValue()).teachId : chr.getId());
-                        } else {
-                            mplew.writeInt(((SkillEntry)entry.getValue()).skillevel);
-                        }
-
-                        addExpirationTime(mplew, ((SkillEntry)entry.getValue()).expiration);
-                        if (skill.isFourthJob()) {
-                            mplew.writeInt(((SkillEntry)entry.getValue()).masterlevel);
-                        }
-                    } while(skill.getId() != 40020002 && skill.getId() != 80000004);
-
-                    mplew.writeInt(((SkillEntry)entry.getValue()).masterlevel);
-                }
-            }
-
-            if ((flag & 32768L) != 0L) {
-                List<MapleCoolDownValueHolder> cooldowns = chr.getCooldowns();
-                mplew.writeShort(cooldowns.size());
-                for (MapleCoolDownValueHolder cooling : cooldowns) {
-                    mplew.writeInt(cooling.skillId);
-                    int timeLeft = (int)((long)cooling.length + cooling.startTime - System.currentTimeMillis());
-                    mplew.writeInt(timeLeft / 1000);
-                }
-            }
-
-            int j;
-            if ((flag & 1L) != 0L) {
-                for(j = 0; j < 6; ++j) {
-                    mplew.writeInt(0);
-                }
-
-                for(j = 0; j < 6; ++j) {
-                    mplew.write(0);
-                }
-            }
-
-            int kills;
-            MapleQuestStatus q;
-            Iterator var70;
-            if ((flag & 512L) != 0L) {
-                List<MapleQuestStatus> started = chr.getStartedQuests();
-                boolean bUnk = true;
-                mplew.write(bUnk);
-                mplew.writeShort(started.size());
-                Iterator<MapleQuestStatus> questIterator = started.iterator();
-
-                while(true) {
-                    while(questIterator.hasNext()) {
-                        q = (MapleQuestStatus)questIterator.next();
-                        mplew.writeInt(q.getQuest().getId());
-                        if (q.hasMobKills()) {
-                            StringBuilder sb = new StringBuilder();
-                            var70 = q.getMobKills().values().iterator();
-
-                            while(var70.hasNext()) {
-                                kills = (Integer)var70.next();
-                                sb.append(StringUtil.getLeftPaddedStr(String.valueOf(kills), '0', 3));
-                            }
-
-                            mplew.writeMapleAsciiString(sb.toString());
-                        } else {
-                            mplew.writeMapleAsciiString(q.getCustomData() == null ? "" : q.getCustomData());
-                        }
-                    }
-
-                    if (!bUnk) {
-                        mplew.writeShort(0);
-                    }
-
-                    mplew.writeShort(0);
-                    break;
-                }
-            }
-
-//            int itemId;
-//            int nQ;
-//            List completed;
-//            List mRing;
-            if ((flag & 16384L) != 0L) {
-                boolean bUnk = true;
-                mplew.write(bUnk);
-                List<MapleQuestStatus> completed = chr.getCompletedQuests();
-                if (ServerConfig.HideBulbQuest) {
-                    List<MapleQuest> questList = new LinkedList();
-                    for (MapleQuestStatus mapleQuestStatus : completed) {
-                        questList.add(mapleQuestStatus.getQuest());
-                    }
-
-                    List<Integer>ignoreQuest = Arrays.asList(5741, 5742, 5743, 5744, 5745);
-                    List<MapleQuest> mapleQuests = MapleQuest.GetBulbQuest();
-                    for (MapleQuest quest : mapleQuests) {
-                        if (!questList.contains(quest) && !ignoreQuest.contains(quest.getId())) {
-                            completed.add(new MapleQuestStatus(quest, 2));
-                            questList.add(quest);
-                        }
-                    }
-
-                    int[] extraQuests = new int[]{32510};
-                    for (int nQ : extraQuests) {
-                        MapleQuest quest = MapleQuest.getInstance(nQ);
-                        if (!questList.contains(quest)) {
-                            completed.add(new MapleQuestStatus(quest, 2));
-                            questList.add(quest);
-                        }
-                    }
-                }
-
-                mplew.writeShort(completed.size());
-                for (MapleQuestStatus mapleQuestStatus : completed) {
-                    mplew.writeInt(mapleQuestStatus.getQuest().getId());
-                    mplew.writeLong(getTime(mapleQuestStatus.getCompletionTime()));
-                }
-
-                if (!bUnk) {
-                    mplew.writeShort(0);
-                }
-            }
-
-            if ((flag & 1024L) != 0L) {
-                mplew.writeShort(0);
-            }
-            // ring INFO
-
-            if ((flag & 2048L) != 0L) {
-                Triple<List<MapleRing>, List<MapleRing>, List<MapleRing>> aRing = chr.getRings(true);
-                List<MapleRing> cRing = aRing.getLeft();
-                mplew.writeShort(cRing.size());
-
-                for (MapleRing ring : cRing) {
-                    mplew.writeInt(ring.getPartnerChrId());
-                    mplew.writeAsciiString(ring.getPartnerName(), 15);
-                    mplew.writeLong((long)ring.getRingId());
-                    mplew.writeLong((long)ring.getPartnerRingId());
-                }
-
-                List<MapleRing> fRing = (List)aRing.getMid();
-                mplew.writeShort(fRing.size());
-                for (MapleRing ring : fRing) {
-                    mplew.writeInt(ring.getPartnerChrId());
-                    mplew.writeAsciiString(ring.getPartnerName(), 15);
-                    mplew.writeLong((long)ring.getRingId());
-                    mplew.writeLong((long)ring.getPartnerRingId());
-                    mplew.writeInt(ring.getItemId());
-                }
-
-                List<MapleRing> mRing = (List)aRing.getRight();
-                mplew.writeShort(mRing.size());
-                for (MapleRing ring : mRing) {
-                    mplew.writeInt(chr.getMarriageId());
-                    mplew.writeInt(chr.getId());
-                    mplew.writeInt(ring.getPartnerChrId());
-                    mplew.writeShort(3);
-                    mplew.writeInt(ring.getItemId());
-                    mplew.writeInt(ring.getItemId());
-                    mplew.writeAsciiString(chr.getName(), 15);
-                    mplew.writeAsciiString(ring.getPartnerName(), 15);
-                }
-            }
-
-            // rocksInfo
-
-            if ((flag & 0x1000L) != 0x0L) {
-                int[] mapz = chr.getRegRocks();
-                for (int i = 0; i < 5; i++) { // VIP teleport map
-                    mplew.writeInt(mapz[i]);
-                }
-                int[] map = chr.getRocks();
-                for (int i = 0; i < 10; i++) { // VIP teleport map
-                    mplew.writeInt(map[i]);
-                }
-                int[] maps = chr.getHyperRocks();
-                for (int i = 0; i < 13; i++) { // VIP teleport map
-                    mplew.writeInt(maps[i]);
-                }
-            }
-
-            // 268
-
-            if ((flag & 262144L) != 0L) {
-                LinkedHashMap wsInfos = new LinkedHashMap();
-                Iterator<Entry<Integer, String>> infoQuestIterator = chr.getInfoQuest_Map().entrySet().iterator();
-
-                while(infoQuestIterator.hasNext()) {
-                    entry = (Map.Entry)infoQuestIterator.next();
-                    wsInfos.put((Integer)entry.getKey(), (String)entry.getValue());
-                }
-
-                Iterator<Entry<Integer, String>> worldShareIterator = chr.getWorldShareInfo().entrySet().iterator();
-
-                while(worldShareIterator.hasNext()) {
-                    entry = (Map.Entry)worldShareIterator.next();
-                    if (!GameConstants.isWorldShareQuest((Integer)entry.getKey())) {
-                        wsInfos.put((Integer)entry.getKey(), (String)entry.getValue());
-                    }
-                }
-
-                mplew.writeShort(wsInfos.size());
-                Iterator wsIterator = wsInfos.entrySet().iterator();
-
-                while(wsIterator.hasNext()) {
-                    entry = (Map.Entry)wsIterator.next();
-                    mplew.writeInt((Integer)entry.getKey());
-                    mplew.writeMapleAsciiString(entry.getValue() == null ? "" : (String)entry.getValue());
-                }
-            }
-
-            byte nCount;
-            if ((flag & 524288L) != 0L) {
-                nCount = 0;
-                mplew.writeShort(nCount);
-
-                for(int num = 0; num < nCount; ++num) {
-                    mplew.writeInt(0);
-                    mplew.writeShort(0);
-                }
-            }
-
-            mplew.writeBool(true);
-            if ((flag & 549755813888L) != 0L) {
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(int num = 0; num < nCount; ++num) {
-                    mplew.writeInt(26);
-                    mplew.writeMapleAsciiString("Present=7");
-                }
-            }
-
-            if ((flag & 17592186044416L) != 0L) {
-                nCount = 1;
-                mplew.writeInt(nCount);
-
-                for(int  num = 0; num < nCount; ++num) {
-                    mplew.writeInt(4475);
-                    mplew.writeInt(-1);
-                }
-            }
-
-            if ((flag & 2097152L) != 0L) {
-                addJaguarInfo(mplew, chr);
-            }
-
-            if ((flag & 2048L) != 0L && JobConstants.is神之子(chr.getJob())) {
-                chr.getStat().zeroData(mplew, chr, 65535, chr.isBeta());
-            }
-
-            long date;
-            MapleShop shop;
-            Map.Entry o2;
-            NpcShopBuyLimit buyLimit;
-            BuyLimitData data;
-            int i;
-            if ((flag & 67108864L) != 0L) {
-                mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-                var47 = chr.getBuyLimit().entrySet().iterator();
-
-                label769:
-                while(true) {
-                    do {
-                        if (!var47.hasNext()) {
-                            break label769;
-                        }
-
-                        entry = (Map.Entry)var47.next();
-                        i = (Integer)entry.getKey();
-                        buyLimit = (NpcShopBuyLimit)entry.getValue();
-                        shop = MapleShopFactory.getInstance().getShop(i);
-                        mplew.writeInt(i);
-                        mplew.writeShort(shop != null ? buyLimit.getData().size() : 0);
-                    } while(shop == null);
-
-                    var70 = buyLimit.getData().entrySet().iterator();
-
-                    while(var70.hasNext()) {
-                        o2 = (Map.Entry)var70.next();
-                        int itemId = (Integer)o2.getKey();
-                        data = (BuyLimitData)o2.getValue();
-                        i = data.getCount();
-                        date = data.getDate();
-                        mplew.writeInt(i);
-                        mplew.writeShort(shop.getBuyLimitItemIndex((Integer)o2.getKey()));
-                        mplew.writeInt(itemId);
-                        mplew.writeShort(i);
-                        addExpirationTime(mplew, date);
-                        mplew.writeMapleAsciiString("");
-                        mplew.writeInt(0);
-                    }
-                }
-            }
-
-            if ((flag & 67108864L) != 0L) {
-                mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-                var47 = chr.getBuyLimit().entrySet().iterator();
-
-                label752:
-                while(true) {
-                    do {
-                        if (!var47.hasNext()) {
-                            break label752;
-                        }
-
-                        entry = (Map.Entry)var47.next();
-                        i = (Integer)entry.getKey();
-                        buyLimit = (NpcShopBuyLimit)entry.getValue();
-                        shop = MapleShopFactory.getInstance().getShop(i);
-                        mplew.writeInt(i);
-                        mplew.writeShort(shop != null ? buyLimit.getData().size() : 0);
-                    } while(shop == null);
-
-                    var70 = buyLimit.getData().entrySet().iterator();
-
-                    while(var70.hasNext()) {
-                        o2 = (Map.Entry)var70.next();
-                        int itemId = (Integer)o2.getKey();
-                        data = (BuyLimitData)o2.getValue();
-                        i = data.getCount();
-                        date = data.getDate();
-                        mplew.writeInt(i);
-                        mplew.writeShort(shop.getBuyLimitItemIndex((Integer)o2.getKey()));
-                        mplew.writeInt(itemId);
-                        mplew.writeShort(i);
-                        addExpirationTime(mplew, date);
-                        mplew.writeMapleAsciiString("");
-                        mplew.writeInt(0);
-                    }
-                }
-            }
-
-            if ((flag & 67108864L) != 0L) {
-                mplew.writeShort(0);
-            }
-
-            mplew.writeInt(0);
-            if ((flag & 536870912L) != 0L) {
-                for(j = 0; j < 16; ++j) {
-                    mplew.writeInt(chr.getStealMemorySkill(j));
-                }
-            }
-
-            if ((flag & 268435456L) != 0L) {
-                int[] p_skills = new int[]{24001001, 24101001, 24111001, 24121001, 24121054};
-                for (int pSkill : p_skills) {
-                    mplew.writeInt(chr.getEquippedStealSkill(pSkill));
-                }
-            }
-
-            if ((flag & 2147483648L) != 0L) {
-                for(j = 0; j < 3; ++j) {
-                    mplew.writeShort(chr.getInnerSkillSize());
-
-                    for(int num = 0; num < chr.getInnerSkillSize(); ++num) {
-                        InnerSkillEntry innerSkill = chr.getInnerSkills()[num];
-                        if (innerSkill != null) {
-                            mplew.write(innerSkill.getPosition());
-                            mplew.writeInt(innerSkill.getSkillId());
-                            mplew.write(innerSkill.getSkillLevel());
-                            mplew.write(innerSkill.getRank());
-                        } else {
-                            mplew.writeZeroBytes(7);
-                        }
-                    }
-                }
-            }
-
-            if ((flag & 18014398509481984L) != 0L) {
-                mplew.writeShort(chr.getSoulCollection().size());
-                var47 = chr.getSoulCollection().entrySet().iterator();
-
-                while(var47.hasNext()) {
-                    entry = (Map.Entry)var47.next();
-                    mplew.writeInt((Integer)entry.getKey());
-                    mplew.writeInt((Integer)entry.getValue());
-                }
-            }
-
-            if ((flag & 4294967296L) != 0L) {
-                mplew.writeInt(1);
-                mplew.writeInt(chr.getHonor());
-            }
-
-            if ((flag & 140737488355328L) != 0L) {
-                nCount = 0;
-                mplew.writeShort(nCount);
-
-                for(int num = 0; num < nCount; ++num) {
-                    mplew.writeZeroBytes(20);
-                }
-            }
-
-            if ((flag & 281474976710656L) != 0L) {
-                addRedLeafInfo(mplew, chr);
-            }
-
-            if ((flag & 562949953421312L) != 0L) {
-                mplew.writeShort(0);
-            }
-
-            if ((flag & 8589934592L) != 0L) {
-                mplew.write(1);
-                mplew.writeShort(0);
-            }
-
-            if ((flag & 17179869184L) != 0L) {
-                mplew.write(0);
-            }
-
-            if ((flag & 34359738368L) != 0L) {
-                writeDressUpInfo(mplew, chr);
-            }
-
-            if ((flag & 9007199254740992L) != 0L) {
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeLong(getTime(-2L));
-            }
-
-            if ((flag & 2199023255552L) != 0L) {
-                mplew.write(0);
-            }
-
-            if ((flag & 4611686018427387904L) != 0L) {
-                mplew.writeInt(-1);
-                mplew.writeInt(-1157267456);
-                mplew.writeLong(0L);
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeShort(0);
-            }
-
-            if ((flag & 4398046511104L) != 0L) {
-                mplew.writeInt(chr.getLove());
-                mplew.writeLong(getTime(-2L));
-                mplew.writeInt(0);
-            }
-
-            if ((flag & 36028797018963968L) != 0L) {
-                mplew.writeInt(chr.getId());
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeLong(getTime(-2L));
-                mplew.writeInt(10);
-            }
-
-            if ((flag & 144115188075855872L) != 0L) {
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeLong(0L);
-                mplew.write(0);
-                mplew.write(0);
-            }
-
-            // 共享任务数据
-            Map<Integer, String>wsInfos = new LinkedHashMap();
-            Iterator<Entry<Integer, String>> worldShareIterator = chr.getWorldShareInfo().entrySet().iterator();
-
-            while(worldShareIterator.hasNext()) {
-                entry = (Map.Entry)worldShareIterator.next();
-                if (GameConstants.isWorldShareQuest((Integer)entry.getKey())) {
-                    wsInfos.put((Integer)entry.getKey(), (String)entry.getValue());
-                }
-            }
-
-            mplew.writeShort(wsInfos.size());
-            Set<Entry<Integer, String>> wsinfoSet = wsInfos.entrySet();
-            for (Entry<Integer, String> wsEntry : wsinfoSet) {
-                mplew.writeInt((Integer)wsEntry.getKey());
-                mplew.writeMapleAsciiString(wsEntry.getValue() == null ? "" : (String)wsEntry.getValue());
-            }
-
-            if ((flag & 72057594037927936L) != 0L) {
-                mplew.writeShort(chr.getMobCollection().size());
-                Set<Entry<Integer, String>> mobCollectionSet = chr.getMobCollection().entrySet();
-                for (Entry<Integer, String> mobColEntry : mobCollectionSet) {
-
-                    mplew.writeInt((Integer)mobColEntry.getKey());
-                    mplew.writeMapleAsciiString((String)mobColEntry.getValue());
-                }
-            }
-
-            mplew.writeInt(0);
-            if ((flag & 288230376151711744L) != 0L) {
-                mplew.writeShort(0);
-            }
-
-            if ((flag & 288230376151711744L) != 0L) {
-                mplew.writeShort(0);
-            }
-
-            if ((flag & 576460752303423488L) != 0L) {
-                VCorePacket.writeVCoreSkillData(mplew, chr);
-            }
-
-            chr.loadHexSkills();
-            encodeHexaSkills(mplew, chr);
-            chr.loadHexStats();
-            encodeSixStats(mplew, chr);
-
-            if ((flag & 1152921504606846976L) != 0L) {
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeInt(0);
-                    mplew.writeInt(0);
-                    mplew.writeInt(0);
-
-                    for(int buffId = 0; buffId < 3; ++buffId) {
-                        mplew.writeInt(0);
-                    }
-
-                    mplew.writeLong(0L);
-                }
-            }
-
-            if ((flag & 1152921504606846976L) != 0L) {
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeInt(0);
-                }
-            }
-
-            byte a2;
-            if ((flag & 1152921504606846976L) != 0L) {
-                mplew.writeInt(chr.getClient().getAccID());
-                mplew.writeInt(chr.getId());
-                mplew.writeInt(0);
-                mplew.writeInt(-1);
-                mplew.writeInt(Integer.MAX_VALUE);
-                mplew.writeLong(getTime(-2L));
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeInt(0);
-                    mplew.write(0);
-                    mplew.write(0);
-                    mplew.writeLong(DateUtil.getFileTimestamp(System.currentTimeMillis()));
-                    a2 = 41;
-                    mplew.writeInt(a2);
-                    if (a2 == 42) {
-                        mplew.writeMapleAsciiString("");
-                    } else {
-                        mplew.writeLong(0L);
-                    }
-                }
-
-                int v6 = 0;
-                mplew.writeInt(v6);
-
-                for(int buffId = 0; buffId < v6; ++buffId) {
-                    mplew.writeInt(0);
-                    mplew.write(0);
-                    mplew.writeLong(0L);
-                }
-            }
-
-            if ((flag & 32L) != 0L) {
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeLong(0L);
-                    mplew.writeInt(0);
-                    mplew.writeInt(0);
-                    mplew.writeLong(0L);
-                    mplew.writeLong(0L);
-                    mplew.writeLong(0L);
-                }
-            }
-
-            for(int num = 3; num > 0; --num) {
-                if ((flag & (num <= 2 ? Long.MIN_VALUE : 268435456L)) != 0L) {
-                    encodeCombingRoomInventory(mplew, (List)chr.getSalon().getOrDefault(num, new LinkedList()));
-                }
-            }
-
-            if ((flag & 134217728L) != 0L) {
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeInt(0);
-                    mplew.writeZeroBytes(14);
-                }
-
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeShort(0);
-                    mplew.writeInt(0);
-                }
-
-                mplew.writeShort(8);
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeShort(0);
-                    mplew.writeZeroBytes(25);
-                }
-
-                nCount = 0;
-                mplew.writeInt(nCount);
-
-                for(i = 0; i < nCount; ++i) {
-                    mplew.writeMapleAsciiString("");
-                    mplew.writeZeroBytes(25);
-                }
-            }
-
-            if ((flag & 2305843009213693952L) != 0L) {
-                mplew.writeInt(pets.size());
-                for (MaplePet pet : pets) {
-                    mplew.writeLong((long)pet.getUniqueId());
-                    a2 = 0;
-                    mplew.writeInt(a2);
-
-                    for(j = 0; j < a2; ++j) {
-                        mplew.writeInt(0);
-                    }
-                }
-            }
-
-            if ((flag & 1125899906842624L) != 0L) {
-                mplew.write(1);
-                String string = chr.getOneInfo(17008, "T");
-                String string2 = chr.getOneInfo(17008, "L");
-                String string3 = chr.getOneInfo(17008, "E");
-                mplew.write(string == null ? 0 : Integer.valueOf(string));
-                mplew.writeInt(string2 == null ? 1 : Integer.valueOf(string2));
-                mplew.writeInt(string3 == null ? 0 : Integer.valueOf(string3));
-                mplew.writeInt(100 - chr.getPQLog("航海能量"));
-                mplew.writeLong(getTime(System.currentTimeMillis()));
-                String questinfo = chr.getInfoQuest(17018);
-                String[] questinfos = questinfo.split(";");
-                mplew.writeShort(!questinfo.isEmpty() ? questinfos.length : 0);
-                for (String questinfo1 : questinfos) {
-                    if (!questinfo1.isEmpty()) {
-                        String[] split = questinfo1.split("=");
-                        mplew.write(Integer.valueOf(split[0]));
-                        mplew.writeInt(Integer.valueOf(split[1]));
-                        mplew.writeInt(0);
-                    }
-                }
-
-                mplew.writeShort(ItemConstants.航海材料.length);
-                int[] hanghaiMa = ItemConstants.航海材料;
-                for (int cailiao : hanghaiMa) {
-                    mplew.writeInt(cailiao);
-                    mplew.writeInt(chr.getPQLog(String.valueOf(cailiao)));
-                    mplew.writeLong(getTime(System.currentTimeMillis()));
-                }
-            }
-
-            if ((flag & 2251799813685248L) != 0L) {
-                List<Integer> buffs = new LinkedList();
-                if (chr.getKeyValue("InnerGlareBuffs") != null) {
-                    String[] var109 = chr.getKeyValue("InnerGlareBuffs").split(",");
-                    for (String s : var109) {
-                        if (!s.isEmpty()) {
-                            buffs.add(Integer.parseInt(s));
-                        }
-                    }
-                }
-
-                mplew.writeReversedVarints(buffs.size());
-                for (Integer buff : buffs) {
-                    mplew.writeInt(buff);
-                }
-            }
-
-            mplew.write(new byte[37]);
-            return;
+            if (item2.getPosition() <= 10000 || item2.getPosition() >= 10200) continue;
+            chr.getSkillSkin().put(MapleItemInformationProvider.getInstance().getSkillSkinFormSkillId(item2.getItemId()), item2.getItemId());
+            equippedUnknown.add(item2);
         }
-    }
-
-    /**
-     * 添加角色相關數據：屬性、道具、任務、技能等
-     *
-     * @param mplew
-     * @param chr
-     * @param flag
-     */
-    public static void addCharacterInfoV267(MaplePacketLittleEndianWriter mplew, MapleCharacter chr, long flag) {
-        for (int i = 0; i < 100; i++) {
-            mplew.write(1);
-        }
-        mplew.write(0);
-
-        for (int i = 0; i < 3; ++i) {
-            mplew.writeInt(JobConstants.is皇家騎士團(chr.getJob()) || JobConstants.is米哈逸(chr.getJob()) ? -6 : -1);
-        }
-        mplew.write(0);
-        mplew.writeInt(0);
-        mplew.write(0);
-        if ((flag & 0x1L) != 0x0L) {
-            chr.getCharacterStat().encode(mplew);
-            mplew.write(chr.getBuddylist().getCapacity());//好友欄上限
-            mplew.write(chr.getBlessOfFairyOrigin() != null); // 精靈的祝福
-            if (chr.getBlessOfFairyOrigin() != null) {
-                mplew.writeMapleAsciiString(chr.getBlessOfFairyOrigin());
-            }
-            mplew.write(chr.getBlessOfEmpressOrigin() != null); // 女皇的祝福
-            if (chr.getBlessOfEmpressOrigin() != null) {
-                mplew.writeMapleAsciiString(chr.getBlessOfEmpressOrigin());
-            }
-            // 終極冒險家訊息
-            MapleQuestStatus ultExplorer = chr.getQuestNoAdd(MapleQuest.getInstance(GameConstants.ULT_EXPLORER));
-            mplew.write((ultExplorer != null) && (ultExplorer.getCustomData() != null));
-            if ((ultExplorer != null) && (ultExplorer.getCustomData() != null)) {
-                mplew.writeMapleAsciiString(ultExplorer.getCustomData());
-            }
-            /*1B0*/
-            mplew.writeLong(133709900400000000L); //創建角色的日期
-            mplew.writeHexString("00 40 E0 FD 3B 37 4F 01"); // Zero Timer ->
-
-            int v7 = 2;
-            do {
-                mplew.writeInt(0);
-                while (true) {
-                    int res = -1;
-                    mplew.write(res);
-                    if (res == -1) {
-                        break;
-                    }
-                    mplew.writeInt(0);
-                }
-                v7 += 36;
-            } while (v7 < 74);
-        }
-        // DBChar_Option62
-        mplew.writeShort(0);
-        mplew.writeLong(getTime(-2)); // Zero Timer ->
-
-        // DBChar_Option_66
-        final String questInfo = chr.getOneInfo(56829, "count");
-        mplew.writeInt((questInfo == null) ? ServerConfig.defaultDamageSkinSlot : Integer.valueOf(questInfo));// DamageSkinMaxSolt
-
-        // DBChar_Option_67
-        addDamageSkinInfo(mplew, chr);
-
-        if ((flag & 0x2L) != 0x0L) { // DBChar_Option1
-            mplew.writeLong(chr.getMeso()); // 楓幣 V.110修改以前是 Int
-            mplew.writeInt(chr.getId());  // 角色ID
-            mplew.writeInt(chr.getBeans()); // 豆豆
-            mplew.writeInt(chr.getCSPoints(2)); // 楓葉點數
-        }
-        if ((flag & 0x40L) != 0x0L) {
-            mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIPPED).getSlotLimit()); // equip slots
-            mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIP).getSlotLimit()); // equip slots
-            mplew.writeInt(chr.getInventory(MapleInventoryType.USE).getSlotLimit()); // use slots
-            mplew.writeInt(chr.getInventory(MapleInventoryType.SETUP).getSlotLimit()); // set-up slots
-            mplew.writeInt(chr.getInventory(MapleInventoryType.ETC).getSlotLimit()); // etc slots
-            mplew.writeInt(chr.getInventory(MapleInventoryType.CASH).getSlotLimit()); // cash slots
-            mplew.writeInt(chr.getInventory(MapleInventoryType.DECORATION).getSlotLimit()); // decoration slots
-        }
-        MapleInventory iv = chr.getInventory(MapleInventoryType.EQUIPPED);
-        List<Item> equippedList = iv.newList(); //獲取裝備中的道具列表
-        Collections.sort(equippedList); //對道具進行排序
-        List<Item> equipped = new ArrayList<>(); // 普通裝備
-        List<Item> equippedCash = new ArrayList<>(); // 現金裝備
-        List<Item> equippedDragon = new ArrayList<>(); // 龍裝備
-        List<Item> equippedMechanic = new ArrayList<>(); // 機甲裝備
-        List<Item> equippedAndroid = new ArrayList<>(); // 機器人的裝備
-        List<Item> equippedLolitaCash = new ArrayList<>(); // 天使破壞者裝備
-        List<Item> equippedBit = new ArrayList<>(); // 拼圖
-        List<Item> equippedZeroBetaCash = new ArrayList<>(); // 神之子培塔時裝
-        List<Item> equippedArcane = new ArrayList<>(); // 秘法符文
-        List<Item> equippedAuthenticSymbol = new ArrayList<>(); // 真實符文
-        List<Item> equippedTotem = new ArrayList<>(); // 圖騰
-        List<Item> equippedMonsterEqp = new ArrayList<>(); // 獸魔裝備
-        List<Item> equippedHakuFan = new ArrayList<>(); // 花狐裝備
-        List<Item> equippedUnknown = new ArrayList<>(); // 未知
-        List<Item> equippedCashPreset = new ArrayList<>(); // 現金裝備
-        for (Item item : equippedList) {
-            if (item.getPosition() < 0 && item.getPosition() > -100) { // 普通裝備
-                equipped.add(item);
-            } else if (item.getPosition() <= -1000 && item.getPosition() > -1100) { // 龍裝備 龍面具(1000), 龍墜飾(1001), 龍之翼(1002), 龍尾巴(1003)
-                equippedDragon.add(item);
-            } else if (item.getPosition() <= -1100 && item.getPosition() > -1200) { // 機甲裝備 戰神引擎(1100), 戰神手臂(1101), 戰神腿部(1102), 戰神身軀(1103), 戰神電晶體(1104)
-                equippedMechanic.add(item);
-            } else if (item.getPosition() <= -1400 && item.getPosition() > -1500) { // 拼圖(1400)~(1425)
-                equippedBit.add(item);
-            } else if (item.getPosition() <= -5000 && item.getPosition() >= -5002) { // 圖騰(5000)~(5002)
-                equippedTotem.add(item);
-            } else if (item.getPosition() <= -1600 && item.getPosition() > -1700) { // 秘法符文 (1600)~(1605)
-                equippedArcane.add(item);
-            } else if (item.getPosition() <= -1700 && item.getPosition() > -1800) { // 真實符文 (1700)~(1705)
-                equippedAuthenticSymbol.add(item);
-            } else if (item.getPosition() <= -1200 && item.getPosition() > -1300) { // 機器人的裝備 帽子(1200), 披風(1201), 臉飾(1202), 上衣(1203), 褲裙(1204), 鞋子(1205), 手套(1206)
-                equippedAndroid.add(item);
-            } else if (item.getPosition() <= -1300 && item.getPosition() > -1400) { // 天使破壞者裝備 帽子(1300), 披風(1301), 臉飾(1302), 上衣(1303), 手套(1304)
-                equippedLolitaCash.add(item);
-            } else if (item.getPosition() <= -1500 && item.getPosition() > -1600) { // 神之子培塔時裝 眼飾(1500), 帽子(1501), 臉飾(1502), 耳環(1503), 披風(1504), 上衣(1505), 手套(1506), 武器(1507), 褲裙(1508), 鞋子(1509), 戒指1(1510), 戒指2(1511)
-                equippedZeroBetaCash.add(item);
-            } else if (item.getPosition() <= -100 && item.getPosition() > -1000) { //現金裝備
-                equippedCash.add(item);
-            } else if (item.getPosition() > 10000 && item.getPosition() < 10200) { // 未知
-                chr.getSkillSkin().put(MapleItemInformationProvider.getInstance().getSkillSkinFormSkillId(item.getItemId()), item.getItemId());
-                equippedUnknown.add(item);
-            }
-        }
-        if ((flag & 0x80L) != 0x0L) {
+        if ((flag & 0x80L) != 0L) {
             mplew.writeBool(false);
             iv = chr.getInventory(MapleInventoryType.EQUIP);
-            List<MapleAndroid> androids = new LinkedList<>();
-            List<Item> items20000 = new ArrayList<>();
-            List<Item> items21000 = new ArrayList<>();
-            List<Item> equip = new ArrayList<>();
-            for (Item item : iv.list()) {
-                if (((Equip) item).getAndroid() != null) {
-                    androids.add(((Equip) item).getAndroid());
+            LinkedList<MapleAndroid> androids = new LinkedList<MapleAndroid>();
+            ArrayList<Item> items20000 = new ArrayList();
+            ArrayList<Item> arrayList = new ArrayList<Item>();
+            ArrayList<Item> arrayList2 = new ArrayList<Item>();
+            for (Item item2 : iv.list()) {
+                if (((Equip)item2).getAndroid() != null) {
+                    androids.add(((Equip)item2).getAndroid());
                 }
-                if (item.getPosition() >= 21000) {
-                    items21000.add(item);
-                } else if (item.getPosition() >= 20000) {
-                    items20000.add(item);
-                } else {
-                    equip.add(item);
+                if (item2.getPosition() >= 21000) {
+                    arrayList.add(item2);
+                    continue;
                 }
+                if (item2.getPosition() >= 20000) {
+                    items20000.add(item2);
+                    continue;
+                }
+                arrayList2.add(item2);
             }
-            // 1
             mplew.writeShort(0);
-            // 2
-            encodeInventory(mplew, equipped, chr);
-            // 開始加載裝備欄道具    3
-            encodeInventory(mplew, equip, chr);
-            // 開始加載龍裝備    4
-            encodeInventory(mplew, equippedDragon, chr);
-            // 開始加載機甲裝備    5
-            encodeInventory(mplew, equippedMechanic, chr);
-            // 開始加載拼圖    6
-            encodeInventory(mplew, equippedBit, chr);
-            // 開始加載獸魔裝備    7
-            encodeInventory(mplew, equippedTotem, chr);
-            // 開始加載秘法符文    8
-            encodeInventory(mplew, equippedArcane, chr);
-            // 開始加載真實符文    9
-            encodeInventory(mplew, equippedAuthenticSymbol, chr);
-            // 開始加載花狐裝備    10
-            encodeInventory(mplew, equippedHakuFan, chr);
-            // 11
+            PacketHelper.encodeInventory(mplew, equipped, chr);
+            PacketHelper.encodeInventory(mplew, arrayList2, chr);
+            PacketHelper.encodeInventory(mplew, equippedDragon, chr);
+            PacketHelper.encodeInventory(mplew, equippedMechanic, chr);
+            PacketHelper.encodeInventory(mplew, equippedBit, chr);
+            PacketHelper.encodeInventory(mplew, equippedTotem, chr);
+            PacketHelper.encodeInventory(mplew, equippedArcane, chr);
+            PacketHelper.encodeInventory(mplew, equippedAuthenticSymbol, chr);
+            PacketHelper.encodeInventory(mplew, equippedHakuFan, chr);
             mplew.writeShort(0);
-            // 12
             mplew.writeShort(0);
-            // 13
             mplew.writeShort(0);
-            // 14
-            mplew.writeShort(0); // 267 ++ unk type equip
-            // 開始加載圖騰    15
-            encodeInventory(mplew, equippedTotem, chr);
-            // 未知    16
-            encodeInventory(mplew, equippedUnknown, chr);
-            // 技能皮膚 從20000開始    已裝備?    17
-            encodeInventory(mplew, items20000, chr);
-            // 技能皮膚 從21000開始    未裝備    18
-            encodeInventory(mplew, items21000, chr);
+            mplew.writeShort(0);
+            mplew.writeShort(0);
+            PacketHelper.encodeInventory(mplew, equippedTotem, chr);
+            PacketHelper.encodeInventory(mplew, equippedUnknown, chr);
+            PacketHelper.encodeInventory(mplew, items20000, chr);
+            PacketHelper.encodeInventory(mplew, arrayList, chr);
         }
-        if ((flag & 0x10L) != 0x0L) {
-            encodeInventory(mplew, Collections.emptyList(), chr); // 18
-            encodeInventory(mplew, Collections.emptyList(), chr); // 19
+        if ((flag & 0x10L) != 0L) {
+            PacketHelper.encodeInventory(mplew, Collections.emptyList(), chr);
+            PacketHelper.encodeInventory(mplew, Collections.emptyList(), chr);
         }
-        if ((flag & 0x2000L) != 0x0L) {
+        if ((flag & 0x2000L) != 0L) {
             mplew.writeBool(false);
-            // 開始加載身上的時裝    1
-            encodeInventory(mplew, equippedCash, chr);
+            PacketHelper.encodeInventory(mplew, equippedCash, chr);
             iv = chr.getInventory(MapleInventoryType.DECORATION);
-            List<Item> decoration = new ArrayList<>();
-            for (Item item : iv.list()) {
-                if (item.getPosition() < 129) {
-                    decoration.add(item);
-                }
+            ArrayList<Item> decoration = new ArrayList<Item>();
+            for (Item item3 : iv.list()) {
+                if (item3.getPosition() >= 129) continue;
+                decoration.add(item3);
             }
-            // 開始加載時裝欄的道具     2
-            encodeInventory(mplew, decoration, chr);
-            // 開始加載機器人的時裝     3
-            encodeInventory(mplew, equippedAndroid, chr);
-            // 開始加載天使破壞者時裝   4
-            encodeInventory(mplew, equippedLolitaCash, chr);
-            // 開始加載神之子培塔時裝   5
-            encodeInventory(mplew, equippedZeroBetaCash, chr);
-            // 開始載入現金裝備分頁     6
-            encodeInventory(mplew, equippedCashPreset, chr);
-
-            mplew.writeShort(0); //7
-            mplew.writeShort(0); //8
+            PacketHelper.encodeInventory(mplew, decoration, chr);
+            PacketHelper.encodeInventory(mplew, equippedAndroid, chr);
+            PacketHelper.encodeInventory(mplew, equippedLolitaCash, chr);
+            PacketHelper.encodeInventory(mplew, equippedZeroBetaCash, chr);
+            PacketHelper.encodeInventory(mplew, equippedCashPreset, chr);
+            mplew.writeShort(0);
+            mplew.writeShort(0);
         }
-        if ((flag & 0x8L) != 0x0L) {
-            // 開始加載消耗欄道具    1
+        if ((flag & 8L) != 0L) {
             iv = chr.getInventory(MapleInventoryType.USE);
-            List<Item> items = new ArrayList<>();
-            for (Item item : iv.list()) {
-                if (item.getPosition() < 129) {
-                    items.add(item);
-                }
+            items = new ArrayList<Item>();
+            for (Item item4 : iv.list()) {
+                if (item4.getPosition() >= 129) continue;
+                items.add(item4);
             }
-            encodeInventory(mplew, items, chr);
+            PacketHelper.encodeInventory(mplew, items, chr);
         }
-        if ((flag & 0x10L) != 0x0L) {
-            // 開始加載裝飾欄道具    2
+        if ((flag & 0x10L) != 0L) {
             iv = chr.getInventory(MapleInventoryType.SETUP);
-            List<Item> items = new ArrayList<>();
-            for (Item item : iv.list()) {
-                if (item.getPosition() < 129) {
-                    items.add(item);
-                }
+            items = new ArrayList();
+            for (Item item5 : iv.list()) {
+                if (item5.getPosition() >= 129) continue;
+                items.add(item5);
             }
-            encodeInventory(mplew, items, chr);
+            PacketHelper.encodeInventory(mplew, items, chr);
         }
-        if ((flag & 0x20L) != 0x0L) {
-            // 開始加載其他欄道具    3
+        if ((flag & 0x80L) != 0L) {
             iv = chr.getInventory(MapleInventoryType.ETC);
-            List<Item> items = new ArrayList<>();
-            for (Item item : iv.list()) {
-                if (item.getPosition() < 129) {
-                    items.add(item);
-                }
+            items = new ArrayList();
+            for (Item item6 : iv.list()) {
+                if (item6.getPosition() >= 129) continue;
+                items.add(item6);
             }
-            encodeInventory(mplew, items, chr);
+            PacketHelper.encodeInventory(mplew, items, chr);
         }
-        List<MaplePet> pets = new ArrayList<>();
-        if ((flag & 0x40L) != 0x0L) {
-            // 開始加載現金欄道具    4
+        ArrayList<MaplePet> pets = new ArrayList<MaplePet>();
+        if ((flag & 0x40L) != 0L) {
             iv = chr.getInventory(MapleInventoryType.CASH);
-            List<Item> items = new ArrayList<>();
-            for (Item item : iv.list()) {
-                items.add(item);
-                if (item.getPet() != null) {
-                    pets.add(item.getPet());
-                }
+            ArrayList<Item> items2 = new ArrayList<Item>();
+            for (Item item7 : iv.list()) {
+                items2.add(item7);
+                if (item7.getPet() == null) continue;
+                pets.add(item7.getPet());
             }
-            encodeInventory(mplew, items, chr);
+            PacketHelper.encodeInventory(mplew, items2, chr);
         }
-        MapleInventoryType eiv;
-        if ((flag & 0x8L) != 0x0L) {
-            //開始加載消耗欄擴展背包道具    1
+        if ((flag & 0x20L) != 0L) {
             eiv = MapleInventoryType.USE;
-            List<Item> exSlots = chr.getExtendedSlots(eiv.getType());
-            mplew.writeInt(exSlots.size());
-            for (Item it : exSlots) {
-                mplew.writeInt(it.getExtendSlot());
-                mplew.writeInt(it.getItemId());
-                chr.getInventory(eiv).list().stream()
-                        .filter(item -> item.getPosition() > (it.getExtendSlot() * 100 + 10100) && item.getPosition() < (it.getExtendSlot() * 100 + 10200))
-                        .forEach(item -> {
-                            addItemPosition(mplew, item, false, true);
-                            GW_ItemSlotBase_Encode(mplew, item);
-                        });
+            List<Item> list = chr.getExtendedSlots(eiv.getType());
+            mplew.writeInt(list.size());
+            for (Item item8 : list) {
+                mplew.writeInt(item8.getExtendSlot());
+                mplew.writeInt(item8.getItemId());
+                chr.getInventory(eiv).list().stream().filter(item -> item.getPosition() > item8.getExtendSlot() * 100 + 10100 && item.getPosition() < item8.getExtendSlot() * 100 + 10200).forEach(item -> {
+                    PacketHelper.addItemPosition(mplew, item, false, true);
+                    PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
+                });
                 mplew.writeInt(-1);
             }
         }
-        if ((flag & 0x10L) != 0x0L) {
-            //開始加載裝飾欄擴展背包道具    2
+        if ((flag & 0x30L) != 0L) {
             eiv = MapleInventoryType.SETUP;
-            List<Item> exSlots = chr.getExtendedSlots(eiv.getType());
-            mplew.writeInt(exSlots.size());
-            for (Item it : exSlots) {
-                mplew.writeInt(it.getExtendSlot());
-                mplew.writeInt(it.getItemId());
-                chr.getInventory(eiv).list().stream()
-                        .filter(item -> item.getPosition() > (it.getExtendSlot() * 100 + 10100) && item.getPosition() < (it.getExtendSlot() * 100 + 10200))
-                        .forEach(item -> {
-                            addItemPosition(mplew, item, false, true);
-                            GW_ItemSlotBase_Encode(mplew, item);
-                        });
+            List<Item> list = chr.getExtendedSlots(eiv.getType());
+            mplew.writeInt(list.size());
+            for (Item item9 : list) {
+                mplew.writeInt(item9.getExtendSlot());
+                mplew.writeInt(item9.getItemId());
+                chr.getInventory(eiv).list().stream().filter(item -> item.getPosition() > item9.getExtendSlot() * 100 + 10100 && item.getPosition() < item9.getExtendSlot() * 100 + 10200).forEach(item -> {
+                    PacketHelper.addItemPosition(mplew, item, false, true);
+                    PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
+                });
                 mplew.writeInt(-1);
             }
         }
-        if ((flag & 0x20L) != 0x0L) {
-            //開始加載其他欄擴展背包道具    3
+        if ((flag & 0x40L) != 0L) {
             eiv = MapleInventoryType.ETC;
-            List<Item> exSlots = chr.getExtendedSlots(eiv.getType());
-            mplew.writeInt(exSlots.size());
-            for (Item it : exSlots) {
-                mplew.writeInt(it.getExtendSlot());
-                mplew.writeInt(it.getItemId());
-                chr.getInventory(eiv).list().stream()
-                        .filter(item -> item.getPosition() > (it.getExtendSlot() * 100 + 10100) && item.getPosition() < (it.getExtendSlot() * 100 + 10200))
-                        .forEach(item -> {
-                            addItemPosition(mplew, item, false, true);
-                            GW_ItemSlotBase_Encode(mplew, item);
-                        });
+            List<Item> list = chr.getExtendedSlots(eiv.getType());
+            mplew.writeInt(list.size());
+            for (Item item10 : list) {
+                mplew.writeInt(item10.getExtendSlot());
+                mplew.writeInt(item10.getItemId());
+                chr.getInventory(eiv).list().stream().filter(item -> item.getPosition() > item10.getExtendSlot() * 100 + 10100 && item.getPosition() < item10.getExtendSlot() * 100 + 10200).forEach(item -> {
+                    PacketHelper.addItemPosition(mplew, item, false, true);
+                    PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
+                });
                 mplew.writeInt(-1);
             }
         }
-        if ((flag & 0x1000000L) != 0x0L) {// nSenseEXP
+        if ((flag & 0x1000000L) != 0L) {
             mplew.writeInt(0);
         }
-        if ((flag & 0x40000000L) != 0x0L) {// DayLimit.nWill
+        if ((flag & 0x40000000L) != 0L) {
             mplew.writeInt(0);
         }
-        if ((flag & 0x800000L) != 0x0L) { // 吃蟲寶石君
+        if ((flag & 0x800000L) != 0L) {
             mplew.write(0);
         }
-        // SkillInfo
-        if ((flag & 0x100L) != 0x0L) {
-            Map<Integer, SkillEntry> skills = chr.getSkills(true);
-            mplew.write(1);  //V.100新加
-            mplew.writeShort(skills.size());
-            for (Entry<Integer, SkillEntry> skillinfo : skills.entrySet()) {
-                Skill skill = SkillFactory.getSkill(skillinfo.getKey());
+        if ((flag & 0x100L) != 0L) {
+            int var27_192 = 0;
+            Map<Integer, SkillEntry> map = chr.getSkills(true);
+            mplew.write(1);
+            mplew.writeShort(map.size());
+            for (Map.Entry<Integer, SkillEntry> entry : map.entrySet()) {
+                Skill skill = SkillFactory.getSkill(entry.getKey());
                 mplew.writeInt(skill.getId());
-                if (skill.isLinkSkills()) { //別人傳授給角色的技能 寫別人角色的ID
-                    mplew.writeInt(skillinfo.getValue().teachId);
-                } else if (skill.isTeachSkills()) { //如果是自己的傳授技能 傳授對像不為空寫傳授對象的角色ID 如果為空寫 自己的角色ID
-                    mplew.writeInt(skillinfo.getValue().teachId > 0 ? skillinfo.getValue().teachId : chr.getId()); //skillinfo.getValue().skillevel
+                if (skill.isLinkSkills()) {
+                    mplew.writeInt(entry.getValue().teachId);
+                } else if (skill.isTeachSkills()) {
+                    mplew.writeInt(entry.getValue().teachId > 0 ? entry.getValue().teachId : chr.getId());
                 } else {
-                    mplew.writeInt(skillinfo.getValue().skillevel);
+                    mplew.writeInt(entry.getValue().skillevel);
                 }
-                addExpirationTime(mplew, skillinfo.getValue().expiration);
+                PacketHelper.addExpirationTime(mplew, entry.getValue().expiration);
                 if (skill.isFourthJob()) {
-                    mplew.writeInt(skillinfo.getValue().masterlevel);
+                    mplew.writeInt(entry.getValue().masterlevel);
                 }
-                if (skill.getId() == 陰陽師.紫扇傳授 || skill.getId() == 陰陽師.紫扇傳授_傳授) {
-                    mplew.writeInt(skillinfo.getValue().masterlevel);
+                if (skill.getId() != 40020002 && skill.getId() != 80000004) continue;
+                mplew.writeInt(entry.getValue().masterlevel);
+            }
+            Map<Integer, SkillEntry> map2 = chr.getLinkSkills();
+            mplew.writeShort(map2.size());
+            for (Map.Entry<Integer, SkillEntry> entry : map2.entrySet()) {
+                mplew.writeInt(entry.getKey());
+                mplew.writeShort(entry.getValue().skillevel - 1);
+            }
+            Map<Integer, Pair<Integer, SkillEntry>> map3 = chr.getSonOfLinkedSkills();
+            mplew.writeInt(map3.size());
+            for (Map.Entry<Integer, Pair<Integer, SkillEntry>> entry : map3.entrySet()) {
+                PacketHelper.writeSonOfLinkedSkill(mplew, entry.getKey(), entry.getValue());
+            }
+            mplew.write((int)chr.getInfoQuestValueWithKey(2498, "hyperstats"));
+            boolean bl = false;
+            while (var27_192 <= 2) {
+                mplew.writeInt(chr.loadHyperStats((int)var27_192).size());
+                for (MapleHyperStats mapleHyperStats : chr.loadHyperStats((int)var27_192)) {
+                    mplew.writeInt(mapleHyperStats.getPosition());
+                    mplew.writeInt(mapleHyperStats.getSkillid());
+                    mplew.writeInt(mapleHyperStats.getSkillLevel());
                 }
-            }
-            //傳授技能的等級
-            Map<Integer, SkillEntry> teachList = chr.getLinkSkills();
-            mplew.writeShort(teachList.size());
-            for (Entry<Integer, SkillEntry> skill : teachList.entrySet()) {
-                mplew.writeInt(skill.getKey());
-                mplew.writeShort(skill.getValue().skillevel - 1);
-            }
-            // getSonOfLinkedSkills
-            Map<Integer, Pair<Integer, SkillEntry>> sonOfLinkedSkills = chr.getSonOfLinkedSkills();
-            mplew.writeInt(sonOfLinkedSkills.size());
-            for (Entry<Integer, Pair<Integer, SkillEntry>> entry : sonOfLinkedSkills.entrySet()) {
-                writeSonOfLinkedSkill(mplew, entry.getKey(), entry.getValue());
-            }
-
-            mplew.write((int) chr.getInfoQuestValueWithKey(2498, "hyperstats"));
-            for (int i = 0; i <= 2; i++) {
-                mplew.writeInt(chr.loadHyperStats(i).size());
-                for (MapleHyperStats mhsz : chr.loadHyperStats(i)) {
-                    mplew.writeInt(mhsz.getPosition());
-                    mplew.writeInt(mhsz.getSkillid());
-                    mplew.writeInt(mhsz.getSkillLevel());
-                }
+                ++var27_192;
             }
         }
-        // CoolDownInfo
-        if ((flag & 0x8000L) != 0x0L) {
-            List<MapleCoolDownValueHolder> cooldowns = chr.getCooldowns();
-            mplew.writeShort(cooldowns.size());
-            for (MapleCoolDownValueHolder cooling : cooldowns) {
-                mplew.writeInt(cooling.skillId);
-                int timeLeft = (int) (cooling.length + cooling.startTime - System.currentTimeMillis());
-                mplew.writeInt(timeLeft / 1000); //V.103修改為int
-                //System.out.println("技能冷卻 - 技能ID: " + cooling.skillId + " 剩餘時間: " + (timeLeft / 1000) + " 秒");
+        if ((flag & 0x8000L) != 0L) {
+            List<MapleCoolDownValueHolder> list = chr.getCooldowns();
+            mplew.writeShort(list.size());
+            for (MapleCoolDownValueHolder mapleCoolDownValueHolder : list) {
+                mplew.writeInt(mapleCoolDownValueHolder.skillId);
+                int n = (int)((long)mapleCoolDownValueHolder.length + mapleCoolDownValueHolder.startTime - System.currentTimeMillis());
+                mplew.writeInt(n / 1000);
             }
         }
-        if ((flag & 0x1L) != 0x0L) {
-            for (int n = 0; n < 6; n++) {
+        if ((flag & 1L) != 0L) {
+            int var24_51 = 0;
+            int var24_49 = 0;
+            boolean bl = false;
+            while (var24_49 < 6) {
                 mplew.writeInt(0);
+                ++var24_49;
             }
-            for (int n = 0; n < 6; n++) {
+            boolean bl2 = false;
+            while (var24_51 < 6) {
                 mplew.write(0);
+                ++var24_51;
             }
         }
-        // QuestInfo
-        if ((flag & 0x200L) != 0x0L) {
-            List<MapleQuestStatus> started = chr.getStartedQuests();
-            boolean bUnk = true;
-            mplew.write(bUnk);
-            mplew.writeShort(started.size());
-            for (MapleQuestStatus q : started) { // 檢測是否接過任務
-                mplew.writeInt(q.getQuest().getId()); // 任務ID
-//            mplew.writeShort(0); // 若任務ID不存在為0，否則為-1
-                if (q.hasMobKills()) {
-                    StringBuilder sb = new StringBuilder();
-                    for (int kills : q.getMobKills().values()) {
-                        sb.append(StringUtil.getLeftPaddedStr(String.valueOf(kills), '0', 3));
+        if ((flag & 0x200L) != 0L) {
+            List<MapleQuestStatus> list = chr.getStartedQuests();
+            boolean bl = true;
+            mplew.write(bl);
+            mplew.writeShort(list.size());
+            for (MapleQuestStatus mapleQuestStatus : list) {
+                mplew.writeInt(mapleQuestStatus.getQuest().getId());
+                if (mapleQuestStatus.hasMobKills()) {
+                    StringBuilder stringBuilder = new StringBuilder();
+                    for (int n : mapleQuestStatus.getMobKills().values()) {
+                        stringBuilder.append(StringUtil.getLeftPaddedStr(String.valueOf(n), '0', 3));
                     }
-                    mplew.writeMapleAsciiString(sb.toString());
-                } else {
-                    mplew.writeMapleAsciiString(q.getCustomData() == null ? "" : q.getCustomData());
+                    mplew.writeMapleAsciiString(stringBuilder.toString());
+                    continue;
                 }
+                mplew.writeMapleAsciiString(mapleQuestStatus.getCustomData() == null ? "" : mapleQuestStatus.getCustomData());
             }
-            if (!bUnk) {
-                mplew.writeShort(0); // for UInt
+            if (!bl) {
+                mplew.writeShort(0);
             }
-            mplew.writeShort(0); // String String
-        }
-        if ((flag & 0x4000L) != 0x0L) {
-            boolean bUnk = true;
-            mplew.write(bUnk);
-            List<MapleQuestStatus> completed = chr.getCompletedQuests();
-            if (ServerConfig.HideBulbQuest) {
-                List<MapleQuest> questList = new LinkedList<>();
-                for (MapleQuestStatus q : completed) {
-                    questList.add(q.getQuest());
-                }
-                List<Integer> ignoreQuests = Arrays.asList(5741, 5742, 5743, 5744, 5745);
-                for (MapleQuest q : MapleQuest.GetBulbQuest()) {
-                    if (!questList.contains(q) && !ignoreQuests.contains(q.getId())) {
-                        completed.add(new MapleQuestStatus(q, 2));
-                        questList.add(q);
-                    }
-                }
-                int[] extraQuests = {32510};
-                for (int nQ : extraQuests) {
-                    MapleQuest q = MapleQuest.getInstance(nQ);
-                    if (!questList.contains(q)) {
-                        completed.add(new MapleQuestStatus(q, 2));
-                        questList.add(q);
-                    }
-                }
-            }
-            mplew.writeShort(completed.size());
-            for (MapleQuestStatus q : completed) {
-                mplew.writeInt(q.getQuest().getId());
-                mplew.writeLong(getTime(q.getCompletionTime()));//int to long at V.149
-            }
-            if (!bUnk) {
-                mplew.writeShort(0); // for UInt
-            }
-        }
-        if ((flag & 0x400L) != 0x0L) {
             mplew.writeShort(0);
         }
-        /*
-         * RingInfo
-         */
-        if ((flag & 0x800L) != 0x0L) {
-            Triple<List<MapleRing>, List<MapleRing>, List<MapleRing>> aRing = chr.getRings(true);
-            //戀人戒指
-            List<MapleRing> cRing = aRing.getLeft();
-            mplew.writeShort(cRing.size());
-            for (MapleRing ring : cRing) { // 35
-                mplew.writeInt(ring.getPartnerChrId());
-                mplew.writeAsciiString(ring.getPartnerName(), 15);
-                mplew.writeLong(ring.getRingId());
-                mplew.writeLong(ring.getPartnerRingId());
-            }
-            //好友戒指
-            List<MapleRing> fRing = aRing.getMid();
-            mplew.writeShort(fRing.size());
-            for (MapleRing ring : fRing) { // 39
-                mplew.writeInt(ring.getPartnerChrId());
-                mplew.writeAsciiString(ring.getPartnerName(), 15);
-                mplew.writeLong(ring.getRingId());
-                mplew.writeLong(ring.getPartnerRingId());
-                mplew.writeInt(ring.getItemId());
-            }
-            //結婚戒指
-            List<MapleRing> mRing = aRing.getRight();
-            mplew.writeShort(mRing.size());
-            for (MapleRing ring : mRing) {// 52
-                mplew.writeInt(chr.getMarriageId());
-                mplew.writeInt(chr.getId());
-                mplew.writeInt(ring.getPartnerChrId());
-                mplew.writeShort(3); //1 = engaged 3 = married
-                mplew.writeInt(ring.getItemId());
-                mplew.writeInt(ring.getItemId());
-                mplew.writeAsciiString(chr.getName(), 15);
-                mplew.writeAsciiString(ring.getPartnerName(), 15);
-            }
-        }
-        /*
-         * RocksInfo
-         */
-        if ((flag & 0x1000L) != 0x0L) {
-            int[] mapz = chr.getRegRocks();
-            for (int i = 0; i < 5; i++) { // VIP teleport map
-                mplew.writeInt(mapz[i]);
-            }
-            int[] map = chr.getRocks();
-            for (int i = 0; i < 10; i++) { // VIP teleport map
-                mplew.writeInt(map[i]);
-            }
-            int[] maps = chr.getHyperRocks();
-            for (int i = 0; i < 13; i++) { // VIP teleport map
-                mplew.writeInt(maps[i]);
-            }
-        }
-        /*
-         * QuestDataInfo
-         * 將任務數據根據共享級別分開存放
-         */
-
-        if ((flag & 0x40000L) != 0x0L) {
-            Map<Integer, String> questInfos = new LinkedHashMap<>();
-            for (Entry<Integer, String> quest : chr.getInfoQuest_Map().entrySet()) {
-                questInfos.put(quest.getKey(), quest.getValue());
-            }
-            for (Entry<Integer, String> wsi : chr.getWorldShareInfo().entrySet()) {
-                if (!GameConstants.isWorldShareQuest(wsi.getKey())) {
-                    questInfos.put(wsi.getKey(), wsi.getValue());
+        if ((flag & 0x4000L) != 0L) {
+            boolean bl = true;
+            mplew.write(bl);
+            List<MapleQuestStatus> list = chr.getCompletedQuests();
+            if (ServerConfig.HideBulbQuest) {
+                int[] nArray;
+                LinkedList<MapleQuest> linkedList = new LinkedList<MapleQuest>();
+                for (MapleQuestStatus mapleQuestStatus : list) {
+                    linkedList.add(mapleQuestStatus.getQuest());
+                }
+                List<Integer> list2 = Arrays.asList(5741, 5742, 5743, 5744, 5745);
+                for (MapleQuest mapleQuest : MapleQuest.GetBulbQuest()) {
+                    if (linkedList.contains(mapleQuest) || list2.contains(mapleQuest.getId())) continue;
+                    list.add(new MapleQuestStatus(mapleQuest, 2));
+                    linkedList.add(mapleQuest);
+                }
+                for (int nQ : nArray = new int[]{32510}) {
+                    MapleQuest q = MapleQuest.getInstance(nQ);
+                    if (linkedList.contains(q)) continue;
+                    list.add(new MapleQuestStatus(q, 2));
+                    linkedList.add(q);
                 }
             }
-            mplew.writeShort(questInfos.size());
-            for (Entry<Integer, String> quest : questInfos.entrySet()) {
-                mplew.writeInt(quest.getKey());
-                mplew.writeMapleAsciiString(quest.getValue() == null ? "" : quest.getValue());
+            mplew.writeShort(list.size());
+            for (MapleQuestStatus mapleQuestStatus : list) {
+                mplew.writeInt(mapleQuestStatus.getQuest().getId());
+                mplew.writeLong(PacketHelper.getTime(mapleQuestStatus.getCompletionTime()));
             }
-        }
-        /*if ((flag & 0x20L) != 0x0L) {
-            short nCount = 0;
-            mplew.writeShort(nCount);
-            for (int i = 0; i < nCount; i++) {
-                mplew.writeInt(0);
-                //AvatarLook::Decode
-            }
-        }*/
-        if ((flag & 0x80000L) != 0x0L) {
-            short nCount = 0;
-            mplew.writeShort(nCount);
-            for (int i = 0; i < nCount; i++) {
-                mplew.writeInt(0);
+            if (!bl) {
                 mplew.writeShort(0);
             }
         }
-
+        if ((flag & 0x400L) != 0L) {
+            mplew.writeShort(0);
+        }
+        if ((flag & 0x800L) != 0L) {
+            Triple<List<MapleRing>, List<MapleRing>, List<MapleRing>> triple = chr.getRings(true);
+            List<MapleRing> list = triple.getLeft();
+            mplew.writeShort(list.size());
+            for (MapleRing mapleRing : list) {
+                mplew.writeInt(mapleRing.getPartnerChrId());
+                mplew.writeAsciiString(mapleRing.getPartnerName(), 15);
+                mplew.writeLong(mapleRing.getRingId());
+                mplew.writeLong(mapleRing.getPartnerRingId());
+            }
+            List<MapleRing> list3 = triple.getMid();
+            mplew.writeShort(list3.size());
+            for (MapleRing mapleRing : list3) {
+                mplew.writeInt(mapleRing.getPartnerChrId());
+                mplew.writeAsciiString(mapleRing.getPartnerName(), 15);
+                mplew.writeLong(mapleRing.getRingId());
+                mplew.writeLong(mapleRing.getPartnerRingId());
+                mplew.writeInt(mapleRing.getItemId());
+            }
+            List<MapleRing> list4 = triple.getRight();
+            mplew.writeShort(list4.size());
+            for (MapleRing mapleRing : list4) {
+                mplew.writeInt(chr.getMarriageId());
+                mplew.writeInt(chr.getId());
+                mplew.writeInt(mapleRing.getPartnerChrId());
+                mplew.writeShort(3);
+                mplew.writeInt(mapleRing.getItemId());
+                mplew.writeInt(mapleRing.getItemId());
+                mplew.writeAsciiString(chr.getName(), 15);
+                mplew.writeAsciiString(mapleRing.getPartnerName(), 15);
+            }
+        }
+        if ((flag & 0x1000L) != 0L) {
+            int var27_202 = 0;
+            int var26_148 = 0;
+            int var25_88 = 0;
+            int[] nArray = chr.getRegRocks();
+            boolean bl = false;
+            while (var25_88 < 5) {
+                mplew.writeInt(nArray[var25_88]);
+                ++var25_88;
+            }
+            int[] nArray2 = chr.getRocks();
+            boolean bl3 = false;
+            while (var26_148 < 10) {
+                mplew.writeInt(nArray2[var26_148]);
+                ++var26_148;
+            }
+            int[] nArray3 = chr.getHyperRocks();
+            boolean bl4 = false;
+            while (var27_202 < 13) {
+                mplew.writeInt(nArray3[var27_202]);
+                ++var27_202;
+            }
+        }
+        if ((flag & 0x40000L) != 0L) {
+            LinkedHashMap<Integer, String> linkedHashMap = new LinkedHashMap<Integer, String>();
+            for (Map.Entry<Integer, String> entry : chr.getInfoQuest_Map().entrySet()) {
+                linkedHashMap.put(entry.getKey(), entry.getValue());
+            }
+            for (Map.Entry<Integer, String> entry : chr.getWorldShareInfo().entrySet()) {
+                if (GameConstants.isWorldShareQuest(entry.getKey())) continue;
+                linkedHashMap.put(entry.getKey(), entry.getValue());
+            }
+            mplew.writeShort(linkedHashMap.size());
+            for (Map.Entry entry : linkedHashMap.entrySet()) {
+                mplew.writeInt((Integer)entry.getKey());
+                mplew.writeMapleAsciiString(entry.getValue() == null ? "" : (String)entry.getValue());
+            }
+        }
+        if ((flag & 0x80000L) != 0L) {
+            int var25_94 = 0;
+            int n = 0;
+            mplew.writeShort(n);
+            boolean bl = false;
+            while (var25_94 < n) {
+                mplew.writeInt(0);
+                mplew.writeShort(0);
+                ++var25_94;
+            }
+        }
         mplew.writeBool(true);
-
-        if ((flag & 0x8000000000L) != 0x0L) {
-            int nCount = 0;
-            mplew.writeInt(nCount);
-            for (int j = 0; j < nCount; ++j) {
+        if ((flag & 0x8000000000L) != 0L) {
+            int var25_96 = 0;
+            int n = 0;
+            mplew.writeInt(n);
+            boolean bl = false;
+            while (var25_96 < n) {
                 mplew.writeInt(26);
                 mplew.writeMapleAsciiString("Present=7");
+                ++var25_96;
             }
         }
-        if ((flag & 0x100000000000L) != 0x0L) {
-            int nCount = 1;
-            mplew.writeInt(nCount);
-            for (int k = 0; k < nCount; ++k) {
+        if ((flag & 0x100000000000L) != 0L) {
+            int var25_98 = 0;
+            int n = 1;
+            mplew.writeInt(n);
+            boolean bl = false;
+            while (var25_98 < n) {
                 mplew.writeInt(4475);
                 mplew.writeInt(-1);
+                ++var25_98;
             }
         }
-        if ((flag & 0x200000L) != 0x0L) {
-            addJaguarInfo(mplew, chr); // 狂豹獵人的豹子信息 不是該職業就不發送
+        if ((flag & 0x200000L) != 0L) {
+            PacketHelper.addJaguarInfo(mplew, chr);
         }
-        if ((flag & 0x800L) != 0x0L) {
-            if (JobConstants.is神之子(chr.getJob())) {
-                chr.getStat().zeroData(mplew, chr, 0xffff, chr.isBeta());
-            }
+        if ((flag & 0x800L) != 0L && JobConstants.is神之子(chr.getJob())) {
+            chr.getStat().zeroData(mplew, chr, 65535, chr.isBeta());
         }
-        if ((flag & 0x4000000L) != 0x0L) {
+        if ((flag & 0x4000000L) != 0L) {
             mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-            for (Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
-                final int shopId = entry.getKey();
-                final NpcShopBuyLimit buyLimit = entry.getValue();
-                final MapleShop shop = MapleShopFactory.getInstance().getShop(shopId);
-                mplew.writeInt(shopId);
-                mplew.writeShort((shop != null) ? buyLimit.getData().size() : 0);
-                if (shop != null) {
-                    for (Entry<Integer, BuyLimitData> o2 : buyLimit.getData().entrySet()) {
-                        final int itemId = o2.getKey();
-                        final BuyLimitData data = o2.getValue();
-                        final int count = data.getCount();
-                        final long date = data.getDate();
-                        mplew.writeInt(shopId);
-                        mplew.writeShort(shop.getBuyLimitItemIndex(o2.getKey()));
-                        mplew.writeInt(itemId);
-                        mplew.writeShort(count);
-                        addExpirationTime(mplew, date);
-                        mplew.writeMapleAsciiString("");
-                        mplew.writeInt(0);
-                    }
+            for (Map.Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
+                int n = entry.getKey();
+                NpcShopBuyLimit npcShopBuyLimit = entry.getValue();
+                MapleShop mapleShop = MapleShopFactory.getInstance().getShop(n);
+                mplew.writeInt(n);
+                mplew.writeShort(mapleShop != null ? npcShopBuyLimit.getData().size() : 0);
+                if (mapleShop == null) continue;
+                for (Map.Entry entry2 : npcShopBuyLimit.getData().entrySet()) {
+                    itemId = (Integer)entry2.getKey();
+                    BuyLimitData data = (BuyLimitData)entry2.getValue();
+                    int count = data.getCount();
+                    date = data.getDate();
+                    mplew.writeInt(n);
+                    mplew.writeShort(mapleShop.getBuyLimitItemIndex((Integer)entry2.getKey()));
+                    mplew.writeInt(itemId);
+                    mplew.writeShort(count);
+                    PacketHelper.addExpirationTime(mplew, date);
+                    mplew.writeMapleAsciiString("");
+                    mplew.writeInt(0);
                 }
             }
         }
-        if ((flag & 0x4000000L) != 0x0L) {
+        if ((flag & 0x4000000L) != 0L) {
             mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-            for (Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
-                final int shopId = entry.getKey();
-                final NpcShopBuyLimit buyLimit = entry.getValue();
-                final MapleShop shop = MapleShopFactory.getInstance().getShop(shopId);
-                mplew.writeInt(shopId);
-                mplew.writeShort((shop != null) ? buyLimit.getData().size() : 0);
-                if (shop != null) {
-                    for (Entry<Integer, BuyLimitData> o2 : buyLimit.getData().entrySet()) {
-                        final int itemId = o2.getKey();
-                        final BuyLimitData data = o2.getValue();
-                        final int count = data.getCount();
-                        final long date = data.getDate();
-                        mplew.writeInt(shopId);
-                        mplew.writeShort(shop.getBuyLimitItemIndex(o2.getKey()));
-                        mplew.writeInt(itemId);
-                        mplew.writeShort(count);
-                        addExpirationTime(mplew, date);
-                        mplew.writeMapleAsciiString("");
-                        mplew.writeInt(0);
-                    }
+            for (Map.Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
+                int n = entry.getKey();
+                NpcShopBuyLimit npcShopBuyLimit = entry.getValue();
+                MapleShop mapleShop = MapleShopFactory.getInstance().getShop(n);
+                mplew.writeInt(n);
+                mplew.writeShort(mapleShop != null ? npcShopBuyLimit.getData().size() : 0);
+                if (mapleShop == null) continue;
+                for (Map.Entry entry3 : npcShopBuyLimit.getData().entrySet()) {
+                    itemId = (Integer)entry3.getKey();
+                    BuyLimitData data = (BuyLimitData)entry3.getValue();
+                    int count = data.getCount();
+                    date = data.getDate();
+                    mplew.writeInt(n);
+                    mplew.writeShort(mapleShop.getBuyLimitItemIndex((Integer)entry3.getKey()));
+                    mplew.writeInt(itemId);
+                    mplew.writeShort(count);
+                    PacketHelper.addExpirationTime(mplew, date);
+                    mplew.writeMapleAsciiString("");
+                    mplew.writeInt(0);
                 }
             }
         }
-
-//        if ((flag & 0x2000000000000000L) != 0x0L) {
-//            int nCount = 0;
-//            mplew.writeShort(nCount);
-//            for (int i = 0; i < nCount; i++) {
-//                mplew.writeInt(0);
-//                mplew.writeShort(0);
-//                // sub_1403B6BE0
-//            }
-//        }
-
-        //V.160 new:
-        /*if ((flag & 0x20000000L) != 0x0L) {
-            int nCount = 0;
-            mplew.writeShort(nCount);
-            for (int i = 0; i < nCount; i++) {
-                int nnCount = 0;
-                mplew.writeShort(nnCount);
-                int a1 = 0;
-                mplew.writeInt(a1); // 9063002
-                if (nnCount > 0 && a1 > 0) {
-                    for (int j = 0; j < nnCount; j++) {
-                        mplew.writeInt(0); // 9063002
-                        mplew.writeShort(0); // 36
-                        mplew.writeInt(0); // 2439267
-                        mplew.writeShort(0); // 1
-                        mplew.writeLong(0); // 2019/3/27 下午 5:22
-                    }
-                }
-            }
-        }*/
-
-        // 68
-        if ((flag & 0x4000000L) != 0x0L) {
+        if ((flag & 0x4000000L) != 0L) {
             mplew.writeShort(0);
-//            for (Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
-//                final int shopId = entry.getKey();
-//                final NpcShopBuyLimit buyLimit = entry.getValue();
-//                final MapleShop shop = MapleShopFactory.getInstance().getShop(shopId);
-//                mplew.writeInt(shopId);
-//                mplew.writeShort((shop != null) ? buyLimit.getData().size() : 0);
-//                if (shop != null) {
-//                    for (Entry<Integer, BuyLimitData> o2 : buyLimit.getData().entrySet()) {
-//                        final int itemId = o2.getKey();
-//                        final BuyLimitData data = o2.getValue();
-//                        final int count = data.getCount();
-//                        final long date = data.getDate();
-//                        mplew.writeInt(shopId);
-//                        mplew.writeShort(shop.getBuyLimitItemIndex(o2.getKey()));
-//                        mplew.writeInt(itemId);
-//                        mplew.writeShort(count);
-//                        addExpirationTime(mplew, date);
-//                        mplew.writeMapleAsciiString("");
-//                        mplew.writeInt(0);
-//                    }
-//                }
-//            }
         }
-        // 69
         mplew.writeInt(0);
-        // for { int, int, int, int }
-
-        //end
-        if ((flag & 0x20000000L) != 0x0L) {
-            //獲取複製技能數裝備的技能列表
-            for (int i = 0; i < 16; i++) {
-                mplew.writeInt(chr.getStealMemorySkill(i));
+        if ((flag & 0x20000000L) != 0L) {
+            int var24_63 = 0;
+            boolean bl = false;
+            while (var24_63 < 16) {
+                mplew.writeInt(chr.getStealMemorySkill((int)var24_63));
+                ++var24_63;
             }
         }
-        if ((flag & 0x10000000L) != 0x0L) {
-            //裝備中的技能
-            int[] p_skills = {幻影俠盜.盜亦有道Ⅰ, 幻影俠盜.盜亦有道Ⅱ, 幻影俠盜.盜亦有道Ⅲ, 幻影俠盜.盜亦有道Ⅳ, 幻影俠盜.盜亦有道H};
-            for (int i : p_skills) {
-                mplew.writeInt(chr.getEquippedStealSkill(i));
+        if ((flag & 0x10000000L) != 0L) {
+            int var27_206 = 0;
+            int[] nArray;
+            int[] nArray4 = nArray = new int[]{24001001, 24101001, 24111001, 24121001, 24121054};
+            int n = nArray4.length;
+            boolean bl = false;
+            while (var27_206 < n) {
+                int n2 = nArray4[var27_206];
+                mplew.writeInt(chr.getEquippedStealSkill(n2));
+                ++var27_206;
             }
         }
-        if ((flag & 0x80000000L) != 0x0L) {
-            for (int j = 0; j < 3; j++) { // v262新增潛能分頁
-                mplew.writeShort(chr.getInnerSkillSize()); //內在能力技能數量
-                for (int i = 0; i < chr.getInnerSkillSize(); i++) {
-                    InnerSkillEntry innerSkill = chr.getInnerSkills()[i];
-                    if (innerSkill != null) {
-                        mplew.write(innerSkill.getPosition()); // key
-                        mplew.writeInt(innerSkill.getSkillId()); // id 7000000 id ++
-                        mplew.write(innerSkill.getSkillLevel());  // level
-                        mplew.write(innerSkill.getRank()); // rank, C, B, A, and S
+        if ((flag & 0x80000000L) != 0L) {
+            int var24_66 = 0;
+            boolean bl = false;
+            while (var24_66 < 3) {
+                int var25_103 = 0;
+                mplew.writeShort(chr.getInnerSkillSize());
+                boolean bl5 = false;
+                while (var25_103 < chr.getInnerSkillSize()) {
+                    InnerSkillEntry innerSkillEntry = chr.getInnerSkills()[var25_103];
+                    if (innerSkillEntry != null) {
+                        mplew.write(innerSkillEntry.getPosition());
+                        mplew.writeInt(innerSkillEntry.getSkillId());
+                        mplew.write(innerSkillEntry.getSkillLevel());
+                        mplew.write(innerSkillEntry.getRank());
                     } else {
                         mplew.writeZeroBytes(7);
                     }
+                    ++var25_103;
                 }
+                ++var24_66;
             }
         }
-        if ((flag & 0x40000000000000L) != 0x0L) {
+        if ((flag & 0x40000000000000L) != 0L) {
             mplew.writeShort(chr.getSoulCollection().size());
-            for (Entry<Integer, Integer> entry : chr.getSoulCollection().entrySet()) {
+            for (Map.Entry<Integer, Integer> entry : chr.getSoulCollection().entrySet()) {
                 mplew.writeInt(entry.getKey());
                 mplew.writeInt(entry.getValue());
             }
         }
-        if ((flag & 0x100000000L) != 0x0L) {
-            mplew.writeInt(1); //榮譽等級//118已經不存在了
-            mplew.writeInt(chr.getHonor()); //聲望點數
+        if ((flag & 0x100000000L) != 0L) {
+            mplew.writeInt(1);
+            mplew.writeInt(chr.getHonor());
         }
-        /*
-        if ((flag & 0x4000L) != 0x0L) {//  OX Quiz
-            int nCount = 0;
-            mplew.writeShort(nCount);
-            for (int i = 0; i < nCount; i++) {
-                mplew.writeInt(0);
-                mplew.writeInt(0);
-                mplew.writeMapleAsciiString("");
-                mplew.write(0);
-                mplew.writeLong(0);
-                mplew.writeInt(0);
-                mplew.writeMapleAsciiString("");
-                mplew.write(0);
-                mplew.write(0);
-                mplew.writeLong(0);
-                mplew.writeMapleAsciiString("");
-            }
-        }
-        */
-        if ((flag & 0x800000000000L) != 0x0L) {// 經驗椅子
-            int nCount = 0;
-            mplew.writeShort(nCount);
-            for (int i = 0; i < nCount; i++) {
+        if ((flag & 0x800000000000L) != 0L) {
+            int var25_106 = 0;
+            int n = 0;
+            mplew.writeShort(n);
+            boolean bl = false;
+            while (var25_106 < n) {
                 mplew.writeZeroBytes(20);
+                ++var25_106;
             }
         }
-        if ((flag & 0x1000000000000L) != 0x0L) {
-            addRedLeafInfo(mplew, chr); // v258(sub_1403FB2C0)
+        if ((flag & 0x1000000000000L) != 0L) {
+            PacketHelper.addRedLeafInfo(mplew, chr);
         }
-        if ((flag & 0x2000000000000L) != 0x0L) {
+        if ((flag & 0x2000000000000L) != 0L) {
             mplew.writeShort(0);
         }
-        if ((flag & 0x200000000L) != 0x0L) {
+        if ((flag & 0x200000000L) != 0L) {
             mplew.write(1);
             mplew.writeShort(0);
         }
-        if ((flag & 0x400000000L) != 0x0L) {
-            mplew.write(0);
-            // GW_ItemSlotBase::Decode
-        }
-        if ((flag & 0x800000000L) != 0x0L) {
-            writeDressUpInfo(mplew, chr);
-        }
-        if ((flag & 0x20000000000000L) != 0x0L) { // ActiveDamageSkin
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeLong(getTime(-2L));
-        }
-        /*if ((flag & 0x10L) != 0x0L) {
-            writeEsInfo(mplew, chr);
-        }*/
-        if ((flag & 0x20000000000L) != 0x0L) {
+        if ((flag & 0x400000000L) != 0L) {
             mplew.write(0);
         }
-        //V.160 new:
-        if ((flag & 0x4000000000000000L) != 0x0L) {
+        if ((flag & 0x800000000L) != 0L) {
+            PacketHelper.writeDressUpInfo(mplew, chr);
+        }
+        if ((flag & 0x20000000000000L) != 0L) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeLong(PacketHelper.getTime(-2L));
+        }
+        if ((flag & 0x20000000000L) != 0L) {
+            mplew.write(0);
+        }
+        if ((flag & 0x4000000000000000L) != 0L) {
             mplew.writeInt(-1);
             mplew.writeInt(-1157267456);
             mplew.writeLong(0L);
             mplew.writeInt(0);
             mplew.writeInt(0);
-            mplew.writeShort(0);// V.181 new
+            mplew.writeShort(0);
         }
-        //end
-        if ((flag & 0x40000000000L) != 0x0L) { // LinkPoint
-            mplew.writeInt(chr.getLove()); //V.112新增 好感度
-            mplew.writeLong(getTime(-2)); //00 40 E0 FD 3B 37 4F 01
+        if ((flag & 0x40000000000L) != 0L) {
+            mplew.writeInt(chr.getLove());
+            mplew.writeLong(PacketHelper.getTime(-2L));
             mplew.writeInt(0);
         }
-        // v133 start RunnerGameRecord
-        if ((flag & 0x80000000000000L) != 0x0L) {
+        if ((flag & 0x80000000000000L) != 0L) {
             mplew.writeInt(chr.getId());
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.writeInt(0);
-            mplew.writeLong(PacketHelper.getTime(-2));
+            mplew.writeLong(PacketHelper.getTime(-2L));
             mplew.writeInt(10);
         }
-        if ((flag & 0x200000000000000L) != 0x0L) {
-            mplew.writeInt(0); // -> int byte byte byte
+        if ((flag & 0x200000000000000L) != 0L) {
+            mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.writeLong(0L);
-
             mplew.write(0);
             mplew.write(0);
         }
-        /*
-          賬號下角色共享任務數據
-         */
-        Map<Integer, String> wsInfos = new LinkedHashMap<>();
-        for (Entry<Integer, String> wsi : chr.getWorldShareInfo().entrySet()) {
-            if (GameConstants.isWorldShareQuest(wsi.getKey())) {
-                wsInfos.put(wsi.getKey(), wsi.getValue());
-            }
+        LinkedHashMap<Integer, String> linkedHashMap = new LinkedHashMap<Integer, String>();
+        for (Map.Entry<Integer, String> entry : chr.getWorldShareInfo().entrySet()) {
+            if (!GameConstants.isWorldShareQuest(entry.getKey())) continue;
+            linkedHashMap.put(entry.getKey(), entry.getValue());
         }
-        mplew.writeShort(wsInfos.size());
-        for (Entry<Integer, String> quest : wsInfos.entrySet()) {
-            mplew.writeInt(quest.getKey());
-            mplew.writeMapleAsciiString(quest.getValue() == null ? "" : quest.getValue());
+        mplew.writeShort(linkedHashMap.size());
+        for (Map.Entry entry : linkedHashMap.entrySet()) {
+            mplew.writeInt((Integer)entry.getKey());
+            mplew.writeMapleAsciiString(entry.getValue() == null ? "" : (String)entry.getValue());
         }
-        // v133 end
-        if ((flag & 0x100000000000000L) != 0x0L) {
+        if ((flag & 0x100000000000000L) != 0L) {
             mplew.writeShort(chr.getMobCollection().size());
-            for (Entry<Integer, String> entry : chr.getMobCollection().entrySet()) {
+            for (Map.Entry<Integer, String> entry : chr.getMobCollection().entrySet()) {
                 mplew.writeInt(entry.getKey());
                 mplew.writeMapleAsciiString(entry.getValue());
             }
         }
-
-        mplew.writeInt(0); // sub_58B140 // v255 - sub_1403DCFF0 -> int str
-
-        if ((flag & 0x400000000000000L) != 0x0L) {
+        mplew.writeInt(0);
+        if ((flag & 0x400000000000000L) != 0L) {
             mplew.writeShort(0);
         }
-        if ((flag & 0x400000000000000L) != 0x0L) {
-            mplew.writeShort(0); // v264 add
+        if ((flag & 0x400000000000000L) != 0L) {
+            mplew.writeShort(0);
         }
-        if ((flag & 0x800000000000000L) != 0x0L) {
-            // VCoreSkill
+        if ((flag & 0x800000000000000L) != 0L) {
             VCorePacket.writeVCoreSkillData(mplew, chr);
         }
-        // v258 New
-        // sub_1403F5620
         chr.loadHexSkills();
-        encodeHexaSkills(mplew, chr);
-        // sub_1403F5620 end
-
-        // v258 Add
-        // sub_1403F5FD0
+        PacketHelper.encodeHexaSkills(mplew, chr);
         chr.loadHexStats();
-        encodeSixStats(mplew, chr);
-        // sub_1403F5FD0 end
-
-        if ((flag & 0x1000000000000000L) != 0x0L) {
-            int size = 0;
-            mplew.writeInt(size);
-            for (int i = 0; i < size; i++) {
+        PacketHelper.encodeSixStats(mplew, chr);
+        if ((flag & 0x1000000000000000L) != 0L) {
+            int var26_165 = 0;
+            int n = 0;
+            mplew.writeInt(n);
+            boolean bl = false;
+            while (var26_165 < n) {
+                int var27_208 = 0;
                 mplew.writeInt(0);
                 mplew.writeInt(0);
                 mplew.writeInt(0);
-                for (int j = 0; j < 3; j++) {
+                boolean bl6 = false;
+                while (var27_208 < 3) {
                     mplew.writeInt(0);
+                    ++var27_208;
                 }
-                mplew.writeLong(0);
+                mplew.writeLong(0L);
+                ++var26_165;
             }
         }
-
-        if ((flag & 0x1000000000000000L) != 0x0L) {
-            int size = 0;
-            mplew.writeInt(size);
-            for (int i = 0; i < size; i++) {
+        if ((flag & 0x1000000000000000L) != 0L) {
+            int var26_167 = 0;
+            int n = 0;
+            mplew.writeInt(n);
+            boolean bl = false;
+            while (var26_167 < n) {
                 mplew.writeInt(0);
+                ++var26_167;
             }
         }
-
-        if ((flag & 0x1000000000000000L) != 0x0L) { // TMS 229 done Achievement 成就系統
+        if ((flag & 0x1000000000000000L) != 0L) {
+            int var27_211 = 0;
+            int var26_169 = 0;
             mplew.writeInt(chr.getClient().getAccID());
             mplew.writeInt(chr.getId());
             mplew.writeInt(0);
             mplew.writeInt(-1);
             mplew.writeInt(Integer.MAX_VALUE);
-            mplew.writeLong(getTime(-2));
-            // sub_1403C7AE0
-            int a2 = 0;
-            mplew.writeInt(a2);
-            for (int i = 0; i < a2; i++) {
+            mplew.writeLong(PacketHelper.getTime(-2L));
+            int n = 0;
+            mplew.writeInt(n);
+            boolean bl = false;
+            while (var26_169 < n) {
                 mplew.writeInt(0);
                 mplew.write(0);
                 mplew.write(0);
-                mplew.writeLong(DateUtil.getFileTimestamp(System.currentTimeMillis())); // or getTime(-2)
-                int unk = 41;
-                mplew.writeInt(unk);
-                if (unk == 42) {
+                mplew.writeLong(DateUtil.getFileTimestamp(System.currentTimeMillis()));
+                int n3 = 41;
+                mplew.writeInt(n3);
+                if (n3 == 42) {
                     mplew.writeMapleAsciiString("");
-                    // Plugin.script=0;user_lvup=104
-                    // Plugin.script=0;user_lvup=17
-                    // Plugin.script=0;field_enter=1
-                    // union_attacker_power_change=0;Plugin.script=0
                 } else {
-                    mplew.writeLong(0); // int int
+                    mplew.writeLong(0L);
                 }
+                ++var26_169;
             }
-            int v6 = 0;
-            mplew.writeInt(v6);
-            for (int i = 0; i < v6; i++) {
+            int n4 = 0;
+            mplew.writeInt(n4);
+            boolean bl7 = false;
+            while (var27_211 < n4) {
                 mplew.writeInt(0);
                 mplew.write(0);
-                mplew.writeLong(0);
+                mplew.writeLong(0L);
+                ++var27_211;
             }
         }
-
-        if ((flag & 0x20L) != 0x0L) { // TMS 229 done ItemSlotEtc
-            int v6 = 0;
-            mplew.writeInt(v6);// 未知，V.144新增
-            for (int i = 0; i < v6; i++) {
-                mplew.writeLong(0);
+        if ((flag & 0x20L) != 0L) {
+            int var26_172 = 0;
+            int n = 0;
+            mplew.writeInt(n);
+            boolean bl = false;
+            while (var26_172 < n) {
+                mplew.writeLong(0L);
                 mplew.writeInt(0);
                 mplew.writeInt(0);
-                mplew.writeLong(0);
-                mplew.writeLong(0);
-                mplew.writeLong(0);
+                mplew.writeLong(0L);
+                mplew.writeLong(0L);
+                mplew.writeLong(0L);
+                ++var26_172;
             }
         }
-
-        for (int num = 3; num > 0; num--) { // TMS 229 done
-            if ((flag & (num <= 2 ? 0x8000000000000000L : 0x10000000L)) != 0x0L) {
-                encodeCombingRoomInventory(mplew, chr.getSalon().getOrDefault(num, new LinkedList<>()));
+        int n = 3;
+        while (var25_116 > 0) {
+            if ((flag & (var25_116 <= 2 ? Long.MIN_VALUE : 0x10000000L)) != 0L) {
+                PacketHelper.encodeCombingRoomInventory(mplew, chr.getSalon().getOrDefault((int)var25_116, new LinkedList()));
             }
+            --var25_116;
         }
-
-        if ((flag & 0x8000000L) != 0x0L) { // TMS 229 done Emoticons
-            int nCount = 0;
-            mplew.writeInt(nCount); // Emoticons
-            for (int i = 0; i < nCount; i++) {
+        if ((flag & 0x8000000L) != 0L) {
+            int var26_180 = 0;
+            int var26_178 = 0;
+            int var26_176 = 0;
+            int var26_174 = 0;
+            int n5 = 0;
+            mplew.writeInt(n5);
+            boolean bl = false;
+            while (var26_174 < n5) {
                 mplew.writeInt(0);
                 mplew.writeZeroBytes(14);
+                ++var26_174;
             }
-
-            nCount = 0;
-            mplew.writeInt(nCount); //EmoticonTabs
-            for (int i = 0; i < nCount; i++) {
+            int n6 = 0;
+            mplew.writeInt(n6);
+            boolean bl8 = false;
+            while (var26_176 < n6) {
                 mplew.writeShort(0);
                 mplew.writeInt(0);
+                ++var26_176;
             }
             mplew.writeShort(8);
-
-            nCount = 0;
-            mplew.writeInt(nCount); // SavedEmoticon
-            for (int i = 0; i < nCount; i++) {
+            int n7 = 0;
+            mplew.writeInt(n7);
+            boolean bl9 = false;
+            while (var26_178 < n7) {
                 mplew.writeShort(0);
                 mplew.writeZeroBytes(25);
+                ++var26_178;
             }
-
-            nCount = 0;
-            mplew.writeInt(nCount); //SavedEmoticon
-            for (int i = 0; i < nCount; i++) {
+            int n8 = 0;
+            mplew.writeInt(n8);
+            boolean bl10 = false;
+            while (var26_180 < n8) {
                 mplew.writeMapleAsciiString("");
                 mplew.writeZeroBytes(25);
+                ++var26_180;
             }
         }
-        if ((flag & 0x2000000000000000L) != 0x0L) { // TMS 238 done
+        if ((flag & 0x2000000000000000L) != 0L) {
             mplew.writeInt(pets.size());
-            for (MaplePet pet : pets) {
-                mplew.writeLong(pet.getUniqueId());
-                int a2 = 0;
-                mplew.writeInt(a2);
-                for (int j = 0; j < a2; j++) {
+            for (MaplePet maplePet : pets) {
+                int var28_236 = 0;
+                mplew.writeLong(maplePet.getUniqueId());
+                int n9 = 0;
+                mplew.writeInt(n9);
+                boolean bl = false;
+                while (var28_236 < n9) {
                     mplew.writeInt(0);
+                    ++var28_236;
                 }
             }
         }
-        if ((flag & 0x4000000000000L) != 0x0L) { // TMS 229 done
+        if ((flag & 0x4000000000000L) != 0L) {
             mplew.write(1);
             String string = chr.getOneInfo(17008, "T");
             String string2 = chr.getOneInfo(17008, "L");
@@ -2269,1038 +1108,65 @@ public class PacketHelper {
             mplew.writeInt(string2 == null ? 1 : Integer.valueOf(string2));
             mplew.writeInt(string3 == null ? 0 : Integer.valueOf(string3));
             mplew.writeInt(100 - chr.getPQLog("航海能量"));
-            mplew.writeLong(getTime(System.currentTimeMillis()));
-
-            String questinfo = chr.getInfoQuest(17018);
-            String[] questinfos = questinfo.split(";");
-            mplew.writeShort(!questinfo.isEmpty() ? questinfos.length : 0);
-            for (String questinfo1 : questinfos) {
-                if (!questinfo1.isEmpty()) {
-                    String[] split = questinfo1.split("=");
-                    mplew.write(Integer.valueOf(split[0]));
-                    mplew.writeInt(Integer.valueOf(split[1]));
-                    mplew.writeInt(0);
-                }
+            mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis()));
+            String string4 = chr.getInfoQuest(17018);
+            String[] stringArray = string4.split(";");
+            mplew.writeShort(!string4.isEmpty() ? stringArray.length : 0);
+            for (String questinfo1 : stringArray) {
+                if (questinfo1.isEmpty()) continue;
+                String[] split = questinfo1.split("=");
+                mplew.write(Integer.valueOf(split[0]));
+                mplew.writeInt(Integer.valueOf(split[1]));
+                mplew.writeInt(0);
             }
             mplew.writeShort(ItemConstants.航海材料.length);
-            for (int i : ItemConstants.航海材料) {
-                mplew.writeInt(i);
-                mplew.writeInt(chr.getPQLog(String.valueOf(i)));
-                mplew.writeLong(getTime(System.currentTimeMillis()));
+            for (int i17 : ItemConstants.航海材料) {
+                mplew.writeInt(i17);
+                mplew.writeInt(chr.getPQLog(String.valueOf(i17)));
+                mplew.writeLong(PacketHelper.getTime(System.currentTimeMillis()));
             }
         }
-//        if ((flag & 0x8000000000000L) != 0x0L) { // TMS 229 done
-//            mplew.write(0);
-//        }
-        if ((flag & 0x8000000000000L) != 0x0L) { // TMS 229 done
-            // 內面耀光技能
-            List<Integer> buffs = new LinkedList<>();
+        if ((flag & 0x8000000000000L) != 0L) {
+            LinkedList<Integer> linkedList = new LinkedList<Integer>();
             if (chr.getKeyValue("InnerGlareBuffs") != null) {
-                for (String s : chr.getKeyValue("InnerGlareBuffs").split(",")) {
-                    if (s.isEmpty()) {
-                        continue;
+                int var28_239 = 0;
+                String[] stringArray = chr.getKeyValue("InnerGlareBuffs").split(",");
+                int n10 = stringArray.length;
+                boolean bl = false;
+                while (var28_239 < n10) {
+                    String string = stringArray[var28_239];
+                    if (!string.isEmpty()) {
+                        linkedList.add(Integer.parseInt(string));
                     }
-                    buffs.add(Integer.parseInt(s));
+                    ++var28_239;
                 }
             }
-            mplew.writeReversedVarints(buffs.size());
-            for (int buffId : buffs) {
-                mplew.writeInt(buffId);
+            mplew.writeReversedVarints(linkedList.size());
+            Iterator iterator = linkedList.iterator();
+            while (iterator.hasNext()) {
+                int n11 = (Integer)iterator.next();
+                mplew.writeInt(n11);
             }
         }
+        mplew.write(new byte[37]);
     }
 
     public static void showCharacterInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr, long flag) {
-        if ((flag & 0x80L) != 0x0L) {
-            mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIPPED).getSlotLimit()); // equip slots
+        if ((flag & 0x80L) != 0L) {
+            mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIPPED).getSlotLimit());
             MapleInventory iv = chr.getInventory(MapleInventoryType.EQUIPPED);
-            List<Item> Inbudy = iv.newList(); //獲取裝備中的道具列表
-            Collections.sort(Inbudy); //對道具進行排序
-            for (short slotEquip = 0; slotEquip <= 128; slotEquip++) {
-                if (iv.getItem(slotEquip) != null) {
-                    mplew.writeShort(iv.getItem(slotEquip).getPosition());
-                    mplew.write(iv.getItem(slotEquip).getType());
-                    mplew.writeInt(iv.getItem(slotEquip).getItemId());
-                    mplew.write(0);
-                    mplew.writeLong(150842304000000000L);
-                    mplew.writeInt(iv.getItem(slotEquip).getExtendSlot()); // = -1 穿戴
-                    mplew.writeBool(false);
-                    mplew.writeShort(0);
-////        mplew.writeInt(65537);
-////        mplew.write(1);
-////        mplew.writeShort(0);
-////        mplew.writeInt(257);
-////        mplew.writeInt(0);
-////        mplew.writeInt(0);
-////        mplew.writeInt(0);
-////        mplew.writeInt(0);
-////        mplew.write(0);
-////        mplew.writeInt(257);
-////        mplew.writeInt(65537);
-////        mplew.writeInt(0);
-////        mplew.writeInt(1);
-////        mplew.writeInt(1);
-////        mplew.writeShort(0);
-////        mplew.writeInt(1);
-////        mplew.writeInt(0);
-////        mplew.write(0);
-////        mplew.writeInt(257);
-////        mplew.writeZeroBytes(37);
-////        mplew.write(0);
-////
-////        for (int i = 0; i < 3; ++i) {
-////            mplew.writeInt(JobConstants.is皇家騎士團(chr.getJob()) || JobConstants.is米哈逸(chr.getJob()) ? -6 : -1);
-////        }
-////        mplew.write(0);
-////        mplew.writeInt(0);
-////        mplew.write(0);
-////
-////        if ((flag & 0x1L) != 0x0L) {
-////            chr.getCharacterStat().encode(mplew);
-////            mplew.write(chr.getBuddylist().getCapacity());//好友欄上限
-////            mplew.write(chr.getBlessOfFairyOrigin() != null); // 精靈的祝福
-////            if (chr.getBlessOfFairyOrigin() != null) {
-////                mplew.writeMapleAsciiString(chr.getBlessOfFairyOrigin());
-////            }
-////            mplew.write(chr.getBlessOfEmpressOrigin() != null); // 女皇的祝福
-////            if (chr.getBlessOfEmpressOrigin() != null) {
-////                mplew.writeMapleAsciiString(chr.getBlessOfEmpressOrigin());
-////            }
-////            // 終極冒險家訊息
-////            MapleQuestStatus ultExplorer = chr.getQuestNoAdd(MapleQuest.getInstance(GameConstants.ULT_EXPLORER));
-////            mplew.write((ultExplorer != null) && (ultExplorer.getCustomData() != null));
-////            if ((ultExplorer != null) && (ultExplorer.getCustomData() != null)) {
-////                mplew.writeMapleAsciiString(ultExplorer.getCustomData());
-////            }
-////            mplew.writeLong(DateUtil.getFileTimestamp(-2L)); // CreateDate ?
-////            mplew.writeLong(DateUtil.getFileTimestamp(-2L));
-////            for (int i = 2; i < 74; i += 36) {
-////                mplew.writeInt(0);
-////                mplew.write(-1);
-////            }
-////
-////            // v260 add
-////            mplew.writeShort(0);
-////            mplew.writeLong(DateUtil.getFileTimestamp(-2L));
-////        }
-////        if ((flag & 0x2L) != 0x0L) {
-////            mplew.writeLong(chr.getMeso()); // 楓幣 V.110修改以前是 Int
-////            mplew.writeInt(chr.getId());  // 角色ID
-////            mplew.writeInt(chr.getBeans()); // 豆豆
-////            mplew.writeInt(chr.getCSPoints(2)); // 楓葉點數
-////        }
-////        if ((flag & 0x2000000L) != 0x0L && (flag & 0x8L) != 0x0L) { //  & 0x2000008
-////            int nCount = 0;
-////            mplew.writeInt(nCount);
-////            for (int i = 0; i < nCount; i++) {
-////                mplew.writeInt(0);
-////                mplew.writeInt(0);
-////                mplew.writeInt(0);
-////                mplew.writeLong(0);
-////            }
-////        }
-//////        if ((flag >>> 32 & 0x4000000L) != 0x0L | (flag & 0x8L) != 0x0L) { // TMS 218 沒找到
-//////            mplew.writeInt(chr.getPotionPot() != null ? 1 : 0); //藥劑罐信息
-//////            if (chr.getPotionPot() != null) {
-//////                addPotionPotInfo(mplew, chr.getPotionPot());
-//////            }
-//////        }
-////        if ((flag & 0x80L) != 0x0L) {
-////            mplew.writeInt(chr.getInventory(MapleInventoryType.EQUIP).getSlotLimit()); // equip slots
-////            mplew.writeInt(chr.getInventory(MapleInventoryType.USE).getSlotLimit()); // use slots
-////            mplew.writeInt(chr.getInventory(MapleInventoryType.SETUP).getSlotLimit()); // set-up slots
-////            mplew.writeInt(chr.getInventory(MapleInventoryType.ETC).getSlotLimit()); // etc slots
-////            mplew.writeInt(chr.getInventory(MapleInventoryType.CASH).getSlotLimit()); // cash slots
-////            mplew.writeInt(chr.getInventory(MapleInventoryType.DECORATION).getSlotLimit()); // decoration slots
-////        }
-////        /*
-////         * 項鏈擴充過期時間
-////         */
-////        /*if ((flag & 0x100000L) != 0x0L) {
-////            MapleQuestStatus stat = chr.getQuestNoAdd(MapleQuest.getInstance(GameConstants.PENDANT_SLOT));
-////            if (stat != null && stat.getCustomData() != null && ("0".equals(stat.getCustomData()) || Long.parseLong(stat.getCustomData()) > System.currentTimeMillis())) {
-////                mplew.writeLong("0".equals(stat.getCustomData()) ? getTime(-1) : getTime(Long.parseLong(stat.getCustomData())));
-////            } else {
-////                mplew.writeLong(getTime(-2));
-////            }
-////        }*/
-////        MapleInventory iv = chr.getInventory(MapleInventoryType.EQUIPPED);
-////        List<Item> equippedList = iv.newList(); //獲取裝備中的道具列表
-////        Collections.sort(equippedList); //對道具進行排序
-////        List<Item> equipped = new ArrayList<>(); // 普通裝備
-////        List<Item> equippedCash = new ArrayList<>(); // 現金裝備
-////        List<Item> equippedDragon = new ArrayList<>(); // 龍裝備
-////        List<Item> equippedMechanic = new ArrayList<>(); // 機甲裝備
-////        List<Item> equippedAndroid = new ArrayList<>(); // 機器人的裝備
-////        List<Item> equippedLolitaCash = new ArrayList<>(); // 天使破壞者裝備
-////        List<Item> equippedBit = new ArrayList<>(); // 拼圖
-////        List<Item> equippedZeroBetaCash = new ArrayList<>(); // 神之子培塔時裝
-////        List<Item> equippedArcane = new ArrayList<>(); // 秘法符文
-////        List<Item> equippedAuthenticSymbol = new ArrayList<>(); // 真實符文
-////        List<Item> equippedTotem = new ArrayList<>(); // 圖騰
-////        List<Item> equippedMonsterEqp = new ArrayList<>(); // 獸魔裝備
-////        List<Item> equippedHakuFan = new ArrayList<>(); // 花狐裝備
-////        List<Item> equippedUnknown = new ArrayList<>(); // 未知
-////        List<Item> equippedCashPreset = new ArrayList<>(); // 現金裝備
-////        for (Item item : equippedList) {
-////            if (item.getPosition() < 0 && item.getPosition() > -100) { // 普通裝備
-////                equipped.add(item);
-////            } else if (item.getPosition() <= -100 && item.getPosition() > -1000) { //現金裝備
-////                equippedCash.add(item);
-////            } else if (item.getPosition() <= -1000 && item.getPosition() > -1100) { // 龍裝備 龍面具(1000), 龍墜飾(1001), 龍之翼(1002), 龍尾巴(1003)
-////                equippedDragon.add(item);
-////            } else if (item.getPosition() <= -1100 && item.getPosition() > -1200) { // 機甲裝備 戰神引擎(1100), 戰神手臂(1101), 戰神腿部(1102), 戰神身軀(1103), 戰神電晶體(1104)
-////                equippedMechanic.add(item);
-////            } else if (item.getPosition() <= -1200 && item.getPosition() > -1300) { // 機器人的裝備 帽子(1200), 披風(1201), 臉飾(1202), 上衣(1203), 褲裙(1204), 鞋子(1205), 手套(1206)
-////                equippedAndroid.add(item);
-////            } else if (item.getPosition() <= -1300 && item.getPosition() > -1310) { // 天使破壞者裝備 帽子(1300), 披風(1301), 臉飾(1302), 上衣(1303), 手套(1304)
-////                equippedLolitaCash.add(item);
-////            } else if (item.getPosition() <= -1400 && item.getPosition() > -1500) { // 拼圖(1400)~(1425)
-////                equippedBit.add(item);
-////            } else if (item.getPosition() <= -1500 && item.getPosition() > -1600) { // 神之子培塔時裝 眼飾(1500), 帽子(1501), 臉飾(1502), 耳環(1503), 披風(1504), 上衣(1505), 手套(1506), 武器(1507), 褲裙(1508), 鞋子(1509), 戒指1(1510), 戒指2(1511)
-////                equippedZeroBetaCash.add(item);
-////            } else if (item.getPosition() <= -1600 && item.getPosition() > -1606) { // 秘法符文 (1600)~(1605)
-////                equippedArcane.add(item);
-////            } else if (item.getPosition() <= -1700 && item.getPosition() > -1706) { // 真實符文 (1700)~(1705)
-////                equippedAuthenticSymbol.add(item);
-////            } else if (item.getPosition() <= -1800 && item.getPosition() > -17830) { // 現金裝備分頁(1801)~(1830)
-////                equippedCashPreset.add(item);
-////            } else if (item.getPosition() <= -5000 && item.getPosition() > -5003) { // 圖騰(5000)~(5002)
-////                equippedTotem.add(item);
-////            } else if (item.getPosition() <= -5100 && item.getPosition() > -5107) { // 獸魔裝備 帽子(5101), 披風(5102), 上衣(5103), 手套(5104), 鞋子(5105), 武器(5106)
-////                equippedMonsterEqp.add(item);
-////            } else if (item.getPosition() == -5200) { // 花狐裝備 扇子(5200)
-////                equippedHakuFan.add(item);
-////            } else if (item.getPosition() <= -6000 && item.getPosition() > -6200) { // 未知
-////                chr.getSkillSkin().put(MapleItemInformationProvider.getInstance().getSkillSkinFormSkillId(item.getItemId()), item.getItemId());
-////                equippedUnknown.add(item);
-////            }
-////        }
-////        if ((flag & 0x4L) != 0x0L) {
-////            mplew.writeBool(false);
-////
-////            // 開始加載身上的普通裝備    1
-////            encodeInventory(mplew, equipped, chr);
-////            iv = chr.getInventory(MapleInventoryType.EQUIP);
-////            List<MapleAndroid> androids = new LinkedList<>();
-////            List<Item> items20000 = new ArrayList<>();
-////            List<Item> items21000 = new ArrayList<>();
-////            List<Item> equip = new ArrayList<>();
-////            for (Item item : iv.list()) {
-////                if (((Equip) item).getAndroid() != null) {
-////                    androids.add(((Equip) item).getAndroid());
-////                }
-////                if (item.getPosition() >= 21000) {
-////                    items21000.add(item);
-////                } else if (item.getPosition() >= 20000) {
-////                    items20000.add(item);
-////                } else {
-////                    equip.add(item);
-////                }
-////            }
-////            // 開始加載裝備欄道具    2
-////            encodeInventory(mplew, equip, chr);
-////            // 開始加載龍裝備    3
-////            encodeInventory(mplew, equippedDragon, chr);
-////            // 開始加載機甲裝備    4
-////            encodeInventory(mplew, equippedMechanic, chr);
-////            // 開始加載拼圖    5
-////            encodeInventory(mplew, equippedBit, chr);
-////            // 開始加載獸魔裝備    6
-////            encodeInventory(mplew, equippedMonsterEqp, chr);
-////            // 開始加載秘法符文    7
-////            encodeInventory(mplew, equippedArcane, chr);
-////            // 開始加載真實符文    8
-////            encodeInventory(mplew, equippedAuthenticSymbol, chr);
-////            // 開始加載花狐裝備    9
-////            encodeInventory(mplew, equippedHakuFan, chr);
-////            // 開始加載圖騰    10
-////            encodeInventory(mplew, equippedTotem, chr);
-////            // 未知    11
-////            encodeInventory(mplew, equippedUnknown, chr);
-////            // 技能皮膚 從20000開始    已裝備?    12
-////            encodeInventory(mplew, items20000, chr);
-////            // 技能皮膚 從21000開始    未裝備    13
-////            encodeInventory(mplew, items21000, chr);
-////            /*mplew.writeInt(androids.size());
-////            for (MapleAndroid android : androids) {
-////                mplew.writeLong(android.getUniqueId());
-////                android.encodeAndroidLook(mplew);
-////            }*/
-////        }
-////        if ((flag & 0x10L) != 0x0L) {
-////            encodeInventory(mplew, Collections.emptyList(), chr); // 14
-////            encodeInventory(mplew, Collections.emptyList(), chr); // 15
-////        }
-////        if ((flag & 0x2000L) != 0x0L) {
-////            mplew.writeBool(false);
-////            // 開始加載身上的時裝    1
-////            encodeInventory(mplew, equippedCash, chr);
-////            iv = chr.getInventory(MapleInventoryType.DECORATION);
-////            List<Item> decoration = new ArrayList<>();
-////            for (Item item : iv.list()) {
-////                if (item.getPosition() < 129) {
-////                    decoration.add(item);
-////                }
-////            }
-////            // 開始加載時裝欄的道具     2
-////            encodeInventory(mplew, decoration, chr);
-////            // 開始加載機器人的時裝     3
-////            encodeInventory(mplew, equippedAndroid, chr);
-////            // 開始加載天使破壞者時裝   4
-////            encodeInventory(mplew, equippedLolitaCash, chr);
-////            // 開始加載神之子培塔時裝   5
-////            encodeInventory(mplew, equippedZeroBetaCash, chr);
-////            // 開始載入現金裝備分頁     6
-////            encodeInventory(mplew, equippedCashPreset, chr);
-////
-////            mplew.writeShort(0); //7
-////            mplew.writeShort(0); //8
-////        }
-////        if ((flag & 0x8L) != 0x0L) {
-////            // 開始加載消耗欄道具    1
-////            iv = chr.getInventory(MapleInventoryType.USE);
-////            List<Item> items = new ArrayList<>();
-////            for (Item item : iv.list()) {
-////                if (item.getPosition() < 129) {
-////                    items.add(item);
-////                }
-////            }
-////            encodeInventory(mplew, items, chr);
-////        }
-////        if ((flag & 0x10L) != 0x0L) {
-////            // 開始加載裝飾欄道具    2
-////            iv = chr.getInventory(MapleInventoryType.SETUP);
-////            List<Item> items = new ArrayList<>();
-////            for (Item item : iv.list()) {
-////                if (item.getPosition() < 129) {
-////                    items.add(item);
-////                }
-////            }
-////            encodeInventory(mplew, items, chr);
-////        }
-////        if ((flag & 0x20L) != 0x0L) {
-////            // 開始加載其他欄道具    3
-////            iv = chr.getInventory(MapleInventoryType.ETC);
-////            List<Item> items = new ArrayList<>();
-////            for (Item item : iv.list()) {
-////                if (item.getPosition() < 129) {
-////                    items.add(item);
-////                }
-////            }
-////            encodeInventory(mplew, items, chr);
-////        }
-////        List<MaplePet> pets = new ArrayList<>();
-////        if ((flag & 0x40L) != 0x0L) {
-////            // 開始加載現金欄道具    4
-////            iv = chr.getInventory(MapleInventoryType.CASH);
-////            List<Item> items = new ArrayList<>();
-////            for (Item item : iv.list()) {
-////                items.add(item);
-////                if (item.getPet() != null) {
-////                    pets.add(item.getPet());
-////                }
-////            }
-////            encodeInventory(mplew, items, chr);
-////        }
-////        MapleInventoryType eiv;
-////        if ((flag & 0x8L) != 0x0L) {
-////            //開始加載消耗欄擴展背包道具    1
-////            eiv = MapleInventoryType.USE;
-////            List<Item> exSlots = chr.getExtendedSlots(eiv.getType());
-////            mplew.writeInt(exSlots.size());
-////            for (Item it : exSlots) {
-////                mplew.writeInt(it.getExtendSlot());
-////                mplew.writeInt(it.getItemId());
-////                chr.getInventory(eiv).list().stream()
-////                        .filter(item -> item.getPosition() > (it.getExtendSlot() * 100 + 10100) && item.getPosition() < (it.getExtendSlot() * 100 + 10200))
-////                        .forEach(item -> {
-////                            addItemPosition(mplew, item, false, true);
-////                            GW_ItemSlotBase_Encode(mplew, item);
-////                        });
-////                mplew.writeInt(-1);
-////            }
-////        }
-////        if ((flag & 0x10L) != 0x0L) {
-////            //開始加載裝飾欄擴展背包道具    2
-////            eiv = MapleInventoryType.SETUP;
-////            List<Item> exSlots = chr.getExtendedSlots(eiv.getType());
-////            mplew.writeInt(exSlots.size());
-////            for (Item it : exSlots) {
-////                mplew.writeInt(it.getExtendSlot());
-////                mplew.writeInt(it.getItemId());
-////                chr.getInventory(eiv).list().stream()
-////                        .filter(item -> item.getPosition() > (it.getExtendSlot() * 100 + 10100) && item.getPosition() < (it.getExtendSlot() * 100 + 10200))
-////                        .forEach(item -> {
-////                            addItemPosition(mplew, item, false, true);
-////                            GW_ItemSlotBase_Encode(mplew, item);
-////                        });
-////                mplew.writeInt(-1);
-////            }
-////        }
-////        if ((flag & 0x20L) != 0x0L) {
-////            //開始加載其他欄擴展背包道具    3
-////            eiv = MapleInventoryType.ETC;
-////            List<Item> exSlots = chr.getExtendedSlots(eiv.getType());
-////            mplew.writeInt(exSlots.size());
-////            for (Item it : exSlots) {
-////                mplew.writeInt(it.getExtendSlot());
-////                mplew.writeInt(it.getItemId());
-////                chr.getInventory(eiv).list().stream()
-////                        .filter(item -> item.getPosition() > (it.getExtendSlot() * 100 + 10100) && item.getPosition() < (it.getExtendSlot() * 100 + 10200))
-////                        .forEach(item -> {
-////                            addItemPosition(mplew, item, false, true);
-////                            GW_ItemSlotBase_Encode(mplew, item);
-////                        });
-////                mplew.writeInt(-1);
-////            }
-////        }
-////        if ((flag & 0x1000000L) != 0x0L) {// nSenseEXP
-////            mplew.writeInt(0);
-////        }
-////        if ((flag & 0x40000000L) != 0x0L) {// DayLimit.nWill
-////            mplew.writeInt(0);
-////        }
-////        if ((flag & 0x800000L) != 0x0L) { // 吃蟲寶石君
-////            mplew.write(0);
-////        }
-////        // SkillInfo
-////        if ((flag & 0x100L) != 0x0L) {
-////            Map<Integer, SkillEntry> skills = chr.getSkills(true);
-////            mplew.write(1);  //V.100新加
-////            mplew.writeShort(skills.size());
-////            for (Entry<Integer, SkillEntry> skillinfo : skills.entrySet()) {
-////                Skill skill = SkillFactory.getSkill(skillinfo.getKey());
-////                mplew.writeInt(skill.getId());
-////                if (skill.isLinkSkills()) { //別人傳授給角色的技能 寫別人角色的ID
-////                    mplew.writeInt(skillinfo.getValue().teachId);
-////                } else if (skill.isTeachSkills()) { //如果是自己的傳授技能 傳授對像不為空寫傳授對象的角色ID 如果為空寫 自己的角色ID
-////                    mplew.writeInt(skillinfo.getValue().teachId > 0 ? skillinfo.getValue().teachId : chr.getId()); //skillinfo.getValue().skillevel
-////                } else {
-////                    mplew.writeInt(skillinfo.getValue().skillevel);
-////                }
-////                addExpirationTime(mplew, skillinfo.getValue().expiration);
-////                if (skill.isFourthJob()) {
-////                    mplew.writeInt(skillinfo.getValue().masterlevel);
-////                }
-////                if (skill.getId() == 陰陽師.紫扇傳授 || skill.getId() == 陰陽師.紫扇傳授_傳授) {
-////                    mplew.writeInt(skillinfo.getValue().masterlevel);
-////                }
-////            }
-////            //傳授技能的等級
-////            Map<Integer, SkillEntry> teachList = chr.getLinkSkills();
-////            mplew.writeShort(teachList.size());
-////            for (Entry<Integer, SkillEntry> skill : teachList.entrySet()) {
-////                mplew.writeInt(skill.getKey());
-////                mplew.writeShort(skill.getValue().skillevel - 1);
-////            }
-////            // getSonOfLinkedSkills
-////            Map<Integer, Pair<Integer, SkillEntry>> sonOfLinkedSkills = chr.getSonOfLinkedSkills();
-////            mplew.writeInt(sonOfLinkedSkills.size());
-////            for (Entry<Integer, Pair<Integer, SkillEntry>> entry : sonOfLinkedSkills.entrySet()) {
-////                writeSonOfLinkedSkill(mplew, entry.getKey(), entry.getValue());
-////            }
-////
-////            mplew.write((int) chr.getInfoQuestValueWithKey(2498, "hyperstats"));
-////            for (int i = 0; i <= 2; i++) {
-////                mplew.writeInt(chr.loadHyperStats(i).size());
-////                for (MapleHyperStats mhsz : chr.loadHyperStats(i)) {
-////                    mplew.writeInt(mhsz.getPosition());
-////                    mplew.writeInt(mhsz.getSkillid());
-////                    mplew.writeInt(mhsz.getSkillLevel());
-////                }
-////            }
-////        }
-////        // CoolDownInfo
-////        if ((flag & 0x8000L) != 0x0L) {
-////            List<MapleCoolDownValueHolder> cooldowns = chr.getCooldowns();
-////            mplew.writeShort(cooldowns.size());
-////            for (MapleCoolDownValueHolder cooling : cooldowns) {
-////                mplew.writeInt(cooling.skillId);
-////                int timeLeft = (int) (cooling.length + cooling.startTime - System.currentTimeMillis());
-////                mplew.writeInt(timeLeft / 1000); //V.103修改為int
-////                //System.out.println("技能冷卻 - 技能ID: " + cooling.skillId + " 剩餘時間: " + (timeLeft / 1000) + " 秒");
-////            }
-////        }
-////        if ((flag & 0x1L) != 0x0L) {
-////            for (int n = 0; n < 6; n++) {
-////                mplew.writeInt(0);
-////            }
-////            for (int n = 0; n < 6; n++) {
-////                mplew.write(0);
-////            }
-////        }
-////        // QuestInfo
-////        if ((flag & 0x200L) != 0x0L) {
-////            List<MapleQuestStatus> started = chr.getStartedQuests();
-////            boolean bUnk = true;
-////            mplew.write(bUnk);
-////            mplew.writeShort(started.size());
-////            for (MapleQuestStatus q : started) { // 檢測是否接過任務
-////                mplew.writeInt(q.getQuest().getId()); // 任務ID
-//////            mplew.writeShort(0); // 若任務ID不存在為0，否則為-1
-////                if (q.hasMobKills()) {
-////                    StringBuilder sb = new StringBuilder();
-////                    for (int kills : q.getMobKills().values()) {
-////                        sb.append(StringUtil.getLeftPaddedStr(String.valueOf(kills), '0', 3));
-////                    }
-////                    mplew.writeMapleAsciiString(sb.toString());
-////                } else {
-////                    mplew.writeMapleAsciiString(q.getCustomData() == null ? "" : q.getCustomData());
-////                }
-////            }
-////            if (!bUnk) {
-////               mplew.writeShort(0); // for UInt
-////           }
-////           mplew.writeShort(0); // String String
-////       }
-////       if ((flag & 0x4000L) != 0x0L) {
-////           boolean bUnk = true;
-////           mplew.write(bUnk);
-////           List<MapleQuestStatus> completed = chr.getCompletedQuests();
-////           if (ServerConfig.HideBulbQuest) {
-////               List<MapleQuest> questList = new LinkedList<>();
-////               for (MapleQuestStatus q : completed) {
-////                   questList.add(q.getQuest());
-////               }
-////               List<Integer> ignoreQuests = Arrays.asList(5741, 5742, 5743, 5744, 5745);
-////               for (MapleQuest q : MapleQuest.GetBulbQuest()) {
-////                   if (!questList.contains(q) && !ignoreQuests.contains(q.getId())) {
-////                       completed.add(new MapleQuestStatus(q, 2));
-////                       questList.add(q);
-////                   }
-////               }
-////               int[] extraQuests = {32510};
-////               for (int nQ : extraQuests) {
-////                   MapleQuest q = MapleQuest.getInstance(nQ);
-////                   if (!questList.contains(q)) {
-////                       completed.add(new MapleQuestStatus(q, 2));
-////                       questList.add(q);
-////                   }
-////               }
-////           }
-////           mplew.writeShort(completed.size());
-////           for (MapleQuestStatus q : completed) {
-////               mplew.writeInt(q.getQuest().getId());
-////               mplew.writeLong(getTime(q.getCompletionTime()));//int to long at V.149
-////           }
-////           if (!bUnk) {
-////               mplew.writeShort(0); // for UInt
-////           }
-////       }
-////       if ((flag & 0x400L) != 0x0L) {
-////           mplew.writeShort(0);
-////       }
-////       /*
-////        * RingInfo
-////        */
-////       if ((flag & 0x800L) != 0x0L) {
-////           Triple<List<MapleRing>, List<MapleRing>, List<MapleRing>> aRing = chr.getRings(true);
-////           //戀人戒指
-////           List<MapleRing> cRing = aRing.getLeft();
-////           mplew.writeShort(cRing.size());
-////           for (MapleRing ring : cRing) { // 35
-////               mplew.writeInt(ring.getPartnerChrId());
-////               mplew.writeAsciiString(ring.getPartnerName(), 15);
-////               mplew.writeLong(ring.getRingId());
-////               mplew.writeLong(ring.getPartnerRingId());
-////           }
-////           //好友戒指
-////           List<MapleRing> fRing = aRing.getMid();
-////           mplew.writeShort(fRing.size());
-////           for (MapleRing ring : fRing) { // 39
-////               mplew.writeInt(ring.getPartnerChrId());
-////               mplew.writeAsciiString(ring.getPartnerName(), 15);
-////               mplew.writeLong(ring.getRingId());
-////               mplew.writeLong(ring.getPartnerRingId());
-////               mplew.writeInt(ring.getItemId());
-////           }
-////           //結婚戒指
-////           List<MapleRing> mRing = aRing.getRight();
-////           mplew.writeShort(mRing.size());
-////           for (MapleRing ring : mRing) {// 52
-////               mplew.writeInt(chr.getMarriageId());
-////               mplew.writeInt(chr.getId());
-////               mplew.writeInt(ring.getPartnerChrId());
-////               mplew.writeShort(3); //1 = engaged 3 = married
-////               mplew.writeInt(ring.getItemId());
-////               mplew.writeInt(ring.getItemId());
-////               mplew.writeAsciiString(chr.getName(), 15);
-////               mplew.writeAsciiString(ring.getPartnerName(), 15);
-////           }
-////       }
-////       /*
-////        * RocksInfo
-////        */
-////       if ((flag & 0x1000L) != 0x0L) {
-////           int[] mapz = chr.getRegRocks();
-////           for (int i = 0; i < 5; i++) { // VIP teleport map
-////               mplew.writeInt(mapz[i]);
-////           }
-////           int[] map = chr.getRocks();
-////           for (int i = 0; i < 10; i++) { // VIP teleport map
-////               mplew.writeInt(map[i]);
-////           }
-////           int[] maps = chr.getHyperRocks();
-////           for (int i = 0; i < 13; i++) { // VIP teleport map
-////               mplew.writeInt(maps[i]);
-////           }
-////       }
-////       /*
-////        * QuestDataInfo
-////        * 將任務數據根據共享級別分開存放
-////        */
-///
-////       if ((flag & 0x40000L) != 0x0L) {
-////           Map<Integer, String> questInfos = new LinkedHashMap<>();
-////           for (Entry<Integer, String> quest : chr.getInfoQuest_Map().entrySet()) {
-////               questInfos.put(quest.getKey(), quest.getValue());
-////           }
-////           for (Entry<Integer, String> wsi : chr.getWorldShareInfo().entrySet()) {
-////               if (!GameConstants.isWorldShareQuest(wsi.getKey())) {
-////                   questInfos.put(wsi.getKey(), wsi.getValue());
-////               }
-////           }
-////           mplew.writeShort(questInfos.size());
-////           for (Entry<Integer, String> quest : questInfos.entrySet()) {
-////               mplew.writeInt(quest.getKey());
-////               mplew.writeMapleAsciiString(quest.getValue() == null ? "" : quest.getValue());
-////           }
-////       }
-////       /*if ((flag & 0x20L) != 0x0L) {
-////           short nCount = 0;
-////           mplew.writeShort(nCount);
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeInt(0);
-////               //AvatarLook::Decode
-////           }
-////       }*/
-////       if ((flag & 0x80000L) != 0x0L) {
-////           short nCount = 0;
-////           mplew.writeShort(nCount);
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeInt(0);
-////               mplew.writeShort(0);
-////           }
-////       }
-///
-////       mplew.writeBool(true);
-///
-////       if ((flag & 0x8000000000L) != 0x0L) {
-////           int nCount = 0;
-////           mplew.writeInt(nCount);
-////           for (int j = 0; j < nCount; ++j) {
-////               mplew.writeInt(26);
-////               mplew.writeMapleAsciiString("Present=7");
-////           }
-////       }
-////       if ((flag & 0x100000000000L) != 0x0L) {
-////           int nCount = 1;
-////           mplew.writeInt(nCount);
-////           for (int k = 0; k < nCount; ++k) {
-////               mplew.writeInt(4475);
-////               mplew.writeInt(-1);
-////           }
-////       }
-////       if ((flag & 0x200000L) != 0x0L) {
-////           addJaguarInfo(mplew, chr); // 狂豹獵人的豹子信息 不是該職業就不發送
-////       }
-////       if ((flag & 0x800L) != 0x0L) {
-////           if (JobConstants.is神之子(chr.getJob())) {
-////               chr.getStat().zeroData(mplew, chr, 0xffff, chr.isBeta());
-////           }
-////       }
-////       if ((flag & 0x4000000L) != 0x0L) {
-////           mplew.writeShort(chr.getBuyLimit().size() + chr.getAccountBuyLimit().size());
-////           for (Entry<Integer, NpcShopBuyLimit> entry : chr.getBuyLimit().entrySet()) {
-////               final int shopId = entry.getKey();
-////               final NpcShopBuyLimit buyLimit = entry.getValue();
-////               final MapleShop shop = MapleShopFactory.getInstance().getShop(shopId);
-////               mplew.writeInt(shopId);
-////               mplew.writeShort((shop != null) ? buyLimit.getData().size() : 0);
-////               if (shop != null) {
-////                   for (Entry<Integer, BuyLimitData> o2 : buyLimit.getData().entrySet()) {
-////                       final int itemId = o2.getKey();
-////                       final BuyLimitData data = o2.getValue();
-////                       final int count = data.getCount();
-////                       final long date = data.getDate();
-////                       mplew.writeInt(shopId);
-////                       mplew.writeShort(shop.getBuyLimitItemIndex(o2.getKey()));
-////                       mplew.writeInt(itemId);
-////                       mplew.writeShort(count);
-////                       addExpirationTime(mplew, date);
-////                       mplew.writeMapleAsciiString("");
-////                       mplew.writeInt(0);
-////                   }
-////               }
-////           }
-////           for (Entry<Integer, NpcShopBuyLimit> entry : chr.getAccountBuyLimit().entrySet()) {
-////               final int shopId = entry.getKey();
-////               final NpcShopBuyLimit buyLimit = entry.getValue();
-////               final MapleShop shop = MapleShopFactory.getInstance().getShop(shopId);
-////               mplew.writeInt(shopId);
-////               mplew.writeShort((shop != null) ? buyLimit.getData().size() : 0);
-////               if (shop != null) {
-////                   for (Entry<Integer, BuyLimitData> o2 : buyLimit.getData().entrySet()) {
-////                       final int itemId = o2.getKey();
-////                       final BuyLimitData data = o2.getValue();
-////                       final int count = data.getCount();
-////                       final long date = data.getDate();
-////                       mplew.writeInt(shopId);
-////                       mplew.writeShort(shop.getBuyLimitItemIndex(o2.getKey()));
-////                       mplew.writeInt(itemId);
-////                       mplew.writeShort(count);
-////                       addExpirationTime(mplew, date);
-////                       mplew.writeMapleAsciiString("");
-////                       mplew.writeInt(0);
-////                   }
-////               }
-////           }
-////       }
-///
-////       if ((flag & 0x2000000000000000L) != 0x0L) {
-////           int nCount = 0;
-////           mplew.writeShort(nCount);
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeInt(0);
-////               mplew.writeShort(0);
-////               // sub_1403B6BE0
-////           }
-////       }
-///
-////       //V.160 new:
-////       /*if ((flag & 0x20000000L) != 0x0L) {
-////           int nCount = 0;
-////           mplew.writeShort(nCount);
-////           for (int i = 0; i < nCount; i++) {
-////               int nnCount = 0;
-////               mplew.writeShort(nnCount);
-////               int a1 = 0;
-////               mplew.writeInt(a1); // 9063002
-////               if (nnCount > 0 && a1 > 0) {
-////                   for (int j = 0; j < nnCount; j++) {
-////                       mplew.writeInt(0); // 9063002
-////                       mplew.writeShort(0); // 36
-////                       mplew.writeInt(0); // 2439267
-////                       mplew.writeShort(0); // 1
-////                       mplew.writeLong(0); // 2019/3/27 下午 5:22
-////                   }
-////               }
-////           }
-////       }*/
-////       //end
-////       if ((flag & 0x20000000L) != 0x0L) {
-////           //獲取複製技能數裝備的技能列表
-////           for (int i = 0; i < 16; i++) {
-////               mplew.writeInt(chr.getStealMemorySkill(i));
-////           }
-////       }
-////       if ((flag & 0x10000000L) != 0x0L) {
-////           //裝備中的技能
-////           int[] p_skills = {幻影俠盜.盜亦有道Ⅰ, 幻影俠盜.盜亦有道Ⅱ, 幻影俠盜.盜亦有道Ⅲ, 幻影俠盜.盜亦有道Ⅳ, 幻影俠盜.盜亦有道H};
-////           for (int i : p_skills) {
-////               mplew.writeInt(chr.getEquippedStealSkill(i));
-////           }
-////       }
-////       if ((flag & 0x80000000L) != 0x0L) {
-////           mplew.writeShort(chr.getInnerSkillSize()); //內在能力技能數量
-////           for (int i = 0; i < chr.getInnerSkillSize(); i++) {
-////               InnerSkillEntry innerSkill = chr.getInnerSkills()[i];
-////               if (innerSkill != null) {
-////                   mplew.write(innerSkill.getPosition()); // key
-////                   mplew.writeInt(innerSkill.getSkillId()); // id 7000000 id ++
-//                   mplew.write(innerSkill.getSkillLevel());  // level
-//                   mplew.write(innerSkill.getRank()); // rank, C, B, A, and S
-//               } else {
-//                   mplew.writeZeroBytes(7);
-//               }
-//           }
-//       }
-//       if ((flag & 0x40000000000000L) != 0x0L) {
-//           mplew.writeShort(chr.getSoulCollection().size());
-//           for (Entry<Integer, Integer> entry : chr.getSoulCollection().entrySet()) {
-//               mplew.writeInt(entry.getKey());
-//               mplew.writeInt(entry.getValue());
-//           }
-//       }
-//       if ((flag & 0x100000000L) != 0x0L) {
-//           mplew.writeInt(1); //榮譽等級//118已經不存在了
-//           mplew.writeInt(chr.getHonor()); //聲望點數
-//       }
-//       /*
-//       if ((flag & 0x4000L) != 0x0L) {//  OX Quiz
-//           int nCount = 0;
-//           mplew.writeShort(nCount);
-//           for (int i = 0; i < nCount; i++) {
-//               mplew.writeInt(0);
-//               mplew.writeInt(0);
-//               mplew.writeMapleAsciiString("");
-//               mplew.write(0);
-//               mplew.writeLong(0);
-//               mplew.writeInt(0);
-//               mplew.writeMapleAsciiString("");
-//               mplew.write(0);
-//               mplew.write(0);
-//               mplew.writeLong(0);
-//               mplew.writeMapleAsciiString("");
-//           }
-//       }
-//       */
-//       if ((flag & 0x800000000000L) != 0x0L) {// 經驗椅子
-//           int nCount = 0;
-//           mplew.writeShort(nCount);
-//           for (int i = 0; i < nCount; i++) {
-//               mplew.writeZeroBytes(20);
-//           }
-//       }
-//       if ((flag & 0x1000000000000L) != 0x0L) {
-//           addRedLeafInfo(mplew, chr); // v258(sub_1403FB2C0)
-//       }
-//       if ((flag & 0x2000000000000L) != 0x0L) {
-//           mplew.writeShort(0);
-//       }
-//       if ((flag & 0x200000000L) != 0x0L) {
-//           mplew.write(1);
-//           mplew.writeShort(0);
-//       }
-//       if ((flag & 0x400000000L) != 0x0L) {
-//           mplew.write(0);
-//           // GW_ItemSlotBase::Decode
-//       }
-//       if ((flag & 0x800000000L) != 0x0L) {
-//           writeDressUpInfo(mplew, chr);
-//       }
-//       if ((flag & 0x20000000000000L) != 0x0L) { // ActiveDamageSkin
-//           mplew.writeInt(0);
-//           mplew.writeInt(0);
-//           mplew.writeLong(getTime(-2L));
-//       }
-//       /*if ((flag & 0x10L) != 0x0L) {
-//           writeEsInfo(mplew, chr);
-//       }*/
-//       if ((flag & 0x20000000000L) != 0x0L) {
-//           mplew.write(0);
-//       }
-//       //V.160 new:
-//       if ((flag & 0x4000000000000000L) != 0x0L) {
-//           mplew.writeInt(-1);
-//           mplew.writeInt(-1157267456);
-//           mplew.writeLong(0L);
-//           mplew.writeInt(0);
-//           mplew.writeInt(0);
-//           mplew.writeShort(0);// V.181 new
-//       }
-//       //end
-//       if ((flag & 0x40000000000L) != 0x0L) {
-//           mplew.writeInt(chr.getLove()); //V.112新增 好感度
-//           mplew.writeLong(getTime(-2)); //00 40 E0 FD 3B 37 4F 01
-//           mplew.writeInt(0);
-//       }
-//       // v133 start RunnerGameRecord
-//       if ((flag & 0x80000000000000L) != 0x0L) {
-//           mplew.writeInt(chr.getId());
-//           mplew.writeInt(0);
-//           mplew.writeInt(0);
-//           mplew.writeInt(0);
-//           mplew.writeLong(PacketHelper.getTime(-2));
-//           mplew.writeInt(10);
-//       }
-//       if ((flag & 0x200000000000000L) != 0x0L) {
-//           mplew.writeInt(0); // -> int byte byte byte
-//           mplew.writeInt(0);
-////           mplew.writeLong(0L);
-///
-////           // sub_1403C4C70
-////           mplew.writeInt(0); // -> int byte byte byte
-////           mplew.writeInt(0);
-////       }
-////       /*
-////         賬號下角色共享任務數據
-////        */
-////       Map<Integer, String> wsInfos = new LinkedHashMap<>();
-////       for (Entry<Integer, String> wsi : chr.getWorldShareInfo().entrySet()) {
-////           if (GameConstants.isWorldShareQuest(wsi.getKey())) {
-////               wsInfos.put(wsi.getKey(), wsi.getValue());
-////           }
-////       }
-////       mplew.writeShort(wsInfos.size());
-////       for (Entry<Integer, String> quest : wsInfos.entrySet()) {
-////           mplew.writeInt(quest.getKey());
-////           mplew.writeMapleAsciiString(quest.getValue() == null ? "" : quest.getValue());
-////       }
-////       // v133 end
-////       if ((flag & 0x100000000000000L) != 0x0L) {
-////           mplew.writeShort(chr.getMobCollection().size());
-////           for (Entry<Integer, String> entry : chr.getMobCollection().entrySet()) {
-////               mplew.writeInt(entry.getKey());
-////               mplew.writeMapleAsciiString(entry.getValue());
-////           }
-////       }
-///
-////       mplew.writeInt(0); // sub_58B140 // v255 - sub_1403DCFF0 -> int str
-///
-////       if ((flag & 0x400000000000000L) != 0x0L) {
-////           mplew.writeShort(0);
-////       }
-////       if ((flag & 0x800000000000000L) != 0x0L) {
-////           // VCoreSkill
-////           VCorePacket.writeVCoreSkillData(mplew, chr);
-////       }
-////       // v258 New
-////       // sub_1403F5620
-////       chr.loadHexSkills();
-////       encodeHexaSkills(mplew, chr);
-////       // sub_1403F5620 end
-///
-////       // v258 Add
-////       // sub_1403F5FD0
-////       chr.loadHexStats();
-////       encodeSixStats(mplew, chr);
-////       // sub_1403F5FD0 end
-///
-////       if ((flag & 0x1000000000000000L) != 0x0L) { // TMS 229 done Achievement
-////           mplew.writeInt(chr.getClient().getAccID());
-////           mplew.writeInt(chr.getId());
-////           mplew.writeInt(0);
-////           mplew.writeInt(-1);
-////           mplew.writeInt(Integer.MAX_VALUE);
-////           mplew.writeLong(getTime(-2));
-////           // sub_1403C7AE0
-////           int a2 = 0;
-////           mplew.writeInt(a2);
-////           for (int i = 0; i < a2; i++) {
-////               mplew.writeInt(0);
-////               mplew.write(0);
-////               mplew.write(0);
-////               mplew.writeLong(DateUtil.getFileTimestamp(System.currentTimeMillis())); // or getTime(-2)
-////               int unk = 41;
-////               mplew.writeInt(unk);
-////               if (unk == 42) {
-////                   mplew.writeMapleAsciiString("");
-////                   // Plugin.script=0;user_lvup=104
-////                   // Plugin.script=0;user_lvup=17
-////                   // Plugin.script=0;field_enter=1
-////                   // union_attacker_power_change=0;Plugin.script=0
-////               } else {
-////                   mplew.writeLong(0); // int int
-////               }
-////           }
-////           int v6 = 0;
-////           mplew.writeInt(v6);
-////           for (int i = 0; i < v6; i++) {
-////               mplew.writeInt(0);
-////               mplew.write(0);
-////               mplew.writeLong(0);
-////           }
-////       }
-////       if ((flag & 0x20L) != 0x0L) { // TMS 229 done
-////           int v6 = 0;
-////           mplew.writeInt(v6);// 未知，V.144新增
-////           for (int i = 0; i < v6; i++) {
-////               mplew.writeLong(0);
-////               mplew.writeInt(0);
-////               mplew.writeInt(0);
-////               mplew.writeLong(0);
-////               mplew.writeLong(0);
-////               mplew.writeLong(0);
-////           }
-////       }
-//
-////       for (int num = 3; num > 0; num--) { // TMS 229 done
-////           if ((flag & (num <= 2 ? 0x8000000000000000L : 0x10000000L)) != 0x0L) {
-////               encodeCombingRoomInventory(mplew, chr.getSalon().getOrDefault(num, new LinkedList<>()));
-////           }
-////       }
-///
-////       if ((flag & 0x8000000L) != 0x0L) { // TMS 229 done Emoticons
-////           int nCount = 0;
-////           mplew.writeInt(nCount); // Emoticons
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeInt(0);
-////               mplew.writeZeroBytes(14);
-////           }
-//
-////           nCount = 0;
-////           mplew.writeInt(nCount); //EmoticonTabs
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeShort(0);
-////               mplew.writeInt(0);
-////           }
-////           mplew.writeShort(8);
-//
-////           nCount = 0;
-////           mplew.writeInt(nCount); // SavedEmoticon
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeShort(0);
-////               mplew.writeZeroBytes(25);
-////           }
-///
-////           nCount = 0;
-////           mplew.writeInt(nCount); //SavedEmoticon
-////           for (int i = 0; i < nCount; i++) {
-////               mplew.writeMapleAsciiString("");
-////               mplew.writeZeroBytes(25);
-////           }
-////       }
-////       if ((flag & 0x2000000000000000L) != 0x0L) { // TMS 238 done
-////           mplew.writeInt(pets.size());
-////           for (MaplePet pet : pets) {
-////               mplew.writeLong(pet.getUniqueId());
-////               int a2 = 0;
-////               mplew.writeInt(a2);
-////               for (int j = 0; j < a2; j++) {
-////                   mplew.writeInt(0);
-////               }
-////           }
-////       }
-////       if ((flag & 0x4000000000000L) != 0x0L) { // TMS 229 done
-////           mplew.write(1);
-////           String string = chr.getOneInfo(17008, "T");
-////           String string2 = chr.getOneInfo(17008, "L");
-////           String string3 = chr.getOneInfo(17008, "E");
-////           mplew.write(string == null ? 0 : Integer.valueOf(string));
-////           mplew.writeInt(string2 == null ? 1 : Integer.valueOf(string2));
-////           mplew.writeInt(string3 == null ? 0 : Integer.valueOf(string3));
-////           mplew.writeInt(100 - chr.getPQLog("航海能量"));
-////           mplew.writeLong(getTime(System.currentTimeMillis()));
-//
-////           String questinfo = chr.getInfoQuest(17018);
-////           String[] questinfos = questinfo.split(";");
-////           mplew.writeShort(!questinfo.isEmpty() ? questinfos.length : 0);
-////           for (String questinfo1 : questinfos) {
-////               if (!questinfo1.isEmpty()) {
-////                   String[] split = questinfo1.split("=");
-////                   mplew.write(Integer.valueOf(split[0]));
-////                   mplew.writeInt(Integer.valueOf(split[1]));
-////                   mplew.writeInt(0);
-////               }
-////           }
-////           mplew.writeShort(ItemConstants.航海材料.length);
-////           for (int i : ItemConstants.航海材料) {
-////               mplew.writeInt(i);
-////               mplew.writeInt(chr.getPQLog(String.valueOf(i)));
-////               mplew.writeLong(getTime(System.currentTimeMillis()));
-////           }
-////       }
-////       if ((flag & 0x8000000000000L) != 0x0L) { // TMS 229 done
-////           mplew.write(0);
-////       }
-////       if ((flag & 0x8000000000000L) != 0x0L) { // TMS 229 done
-////           // 內面耀光技能
-////           List<Integer> buffs = new LinkedList<>();
-////           if (chr.getKeyValue("InnerGlareBuffs") != null) {
-////               for (String s : chr.getKeyValue("InnerGlareBuffs").split(",")) {
-////                   if (s.isEmpty()) {
-////                       continue;
-////                   }
-////                   buffs.add(Integer.parseInt(s));
-////               }
-////           }
-////           mplew.writeReversedVarints(buffs.size());
-////           for (int buffId : buffs) {
-////               mplew.writeInt(buffId);
-////           }
-                }
+            List<Item> Inbudy = iv.newList();
+            Collections.sort(Inbudy);
+            for (short slotEquip = 0; slotEquip <= 128; slotEquip = (short)(slotEquip + 1)) {
+                if (iv.getItem(slotEquip) == null) continue;
+                mplew.writeShort(iv.getItem(slotEquip).getPosition());
+                mplew.write(iv.getItem(slotEquip).getType());
+                mplew.writeInt(iv.getItem(slotEquip).getItemId());
+                mplew.write(0);
+                mplew.writeLong(150842304000000000L);
+                mplew.writeInt(iv.getItem(slotEquip).getExtendSlot());
+                mplew.writeBool(false);
+                mplew.writeShort(0);
             }
         }
     }
@@ -3308,24 +1174,23 @@ public class PacketHelper {
     public static void encodeHexaSkills(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
         mplew.writeInt(chr.getHexaSkills().size());
         for (MapleHexaSkill mhs : chr.getHexaSkills().values()) {
-            mplew.writeInt(mhs.getId()); // id
-            mplew.writeInt(mhs.getSkilllv()); // level
+            mplew.writeInt(mhs.getId());
+            mplew.writeInt(mhs.getSkilllv());
             mplew.write(1);
             mplew.write(0);
         }
         mplew.write(0);
         int HEXA2_Size = 0;
         mplew.writeInt(HEXA2_Size);
-        for (int i = 0; i < HEXA2_Size; i++) {
+        for (int i = 0; i < HEXA2_Size; ++i) {
             mplew.writeInt(0);
         }
     }
 
     public static void encodeSixStats(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
         mplew.writeInt(chr.getHexaStats().size());
-        for (Entry<Integer, MapleHexaStat> msss : chr.getHexaStats().entrySet()) {
+        for (Map.Entry<Integer, MapleHexaStat> msss : chr.getHexaStats().entrySet()) {
             mplew.writeInt(msss.getValue().getSolt());
-            // preset0
             mplew.writeInt(msss.getValue().getSolt());
             mplew.writeInt(0);
             mplew.writeInt(1);
@@ -3335,7 +1200,6 @@ public class PacketHelper {
             mplew.writeInt(msss.getValue().getAddit0S1Lv());
             mplew.writeInt(msss.getValue().getAddit0S2());
             mplew.writeInt(msss.getValue().getAddit0S2Lv());
-            //preset1
             mplew.writeInt(msss.getValue().getMain1() == -1 ? 0 : msss.getValue().getSolt());
             mplew.writeInt(msss.getValue().getMain1() == -1 ? 0 : 1);
             mplew.writeInt(msss.getValue().getMain1() == -1 ? 0 : 1);
@@ -3347,20 +1211,20 @@ public class PacketHelper {
             mplew.writeInt(msss.getValue().getMain1() == -1 ? 0 : msss.getValue().getAddit1S2Lv());
         }
         mplew.writeInt(chr.getHexaStats().size());
-        for (Entry<Integer, MapleHexaStat> msss : chr.getHexaStats().entrySet()) {
+        for (Map.Entry<Integer, MapleHexaStat> msss : chr.getHexaStats().entrySet()) {
             mplew.writeInt(msss.getValue().getSolt());
             mplew.writeInt(msss.getValue().getSolt());
             mplew.writeInt(msss.getValue().getPreset());
         }
         int HEXA5_Size = 0;
         mplew.writeInt(HEXA5_Size);
-        for (int i = 0; i < HEXA5_Size; i++) {
+        for (int i = 0; i < HEXA5_Size; ++i) {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
         int HEXA6_Size = 0;
         mplew.writeInt(HEXA6_Size);
-        for (int i = 0; i < HEXA6_Size; i++) {
+        for (int i = 0; i < HEXA6_Size; ++i) {
             mplew.writeInt(0);
         }
     }
@@ -3368,11 +1232,10 @@ public class PacketHelper {
     public static void encodeCombingRoomInventory(MaplePacketLittleEndianWriter mplew, List<Integer> styles) {
         mplew.write(styles.size());
         mplew.write(styles.size());
-        for (int i = 1; i <= 102; i++) { // TMS 232 9 -> 102
+        for (int i = 1; i <= 102; ++i) {
             mplew.write(styles.size() >= i);
-            if (styles.size() >= i) {
-                encodeCombingRoomSlot(mplew, styles.get(i - 1));
-            }
+            if (styles.size() < i) continue;
+            PacketHelper.encodeCombingRoomSlot(mplew, styles.get(i - 1));
         }
     }
 
@@ -3388,93 +1251,86 @@ public class PacketHelper {
         mplew.writeInt(chr.getId());
         mplew.writeInt(idarr.length);
         mplew.writeInt(0);
-        for (int i = 0; i < idarr.length; i++) {
+        for (int i = 0; i < idarr.length; ++i) {
             mplew.writeInt(idarr[i]);
             mplew.writeInt(chr.getFriendShipPoints()[i]);
         }
     }
 
     public static void encodeInventory(MaplePacketLittleEndianWriter mplew, List<Item> list, MapleCharacter chr) {
-        List<Item> items = new LinkedList<>(list);
+        LinkedList<Item> items = new LinkedList<Item>(list);
         items.add(null);
         for (Item item : items) {
-            addItemPosition(mplew, item, false, false);
-            if (item == null) {
-                break;
-            }
-            GW_ItemSlotBase_Encode(mplew, item);
+            PacketHelper.addItemPosition(mplew, item, false, false);
+            if (item == null) break;
+            PacketHelper.GW_ItemSlotBase_Encode(mplew, item);
         }
     }
 
     public static void addShopInfo(MaplePacketLittleEndianWriter mplew, MapleShop shop, MapleClient c) {
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        mplew.writeInt(0); // 固定數值
-        mplew.writeInt(2025021205); // 當前時間戳
+        mplew.writeInt(0);
+        mplew.writeInt(2025021205);
         mplew.writeInt(0);
         mplew.writeInt(0);
         mplew.writeShort(0);
         List<MapleShopItem> shopItems = shop.getItems(c);
-        mplew.writeShort(shopItems.size()); // 商品總數量
+        mplew.writeShort(shopItems.size());
         for (MapleShopItem item : shopItems) {
-            mplew.writeInt(0); // 未知填充數據
             mplew.writeInt(0);
-            mplew.writeInt(item.getItemId()); // 物品ID
             mplew.writeInt(0);
-            mplew.writeInt(0); // 可能是物品唯一標識符
+            mplew.writeInt(item.getItemId());
             mplew.writeInt(0);
-            mplew.writeLong(94354848000000000L); // 開始時間
-            mplew.writeInt(0); // 潛能等級
-            mplew.writeInt(item.getPrice()); // 售價
-            mplew.writeInt(0); // v264+ unk
-            mplew.writeInt(0); // v264+ unk
-            mplew.writeInt(0); // v264+ unk
-            mplew.writeInt(item.getPointQuestID()); // 點數兌換任務
-            mplew.writeInt(0); // v264+未知
-            mplew.writeInt(item.getPointPrice()); // 點數價格
-            mplew.writeInt(item.getBuyLimitWorldAccount()); // 帳戶購買限制
-            mplew.writeInt(item.getMinLevel()); // 最低等級
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeLong(94354848000000000L);
+            mplew.writeInt(0);
+            mplew.writeInt(item.getPrice());
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(item.getPointQuestID());
+            mplew.writeInt(0);
+            mplew.writeInt(item.getPointPrice());
+            mplew.writeInt(item.getBuyLimitWorldAccount());
+            mplew.writeInt(item.getMinLevel());
             mplew.writeShort(0);
-            mplew.writeShort((short) item.getMinLevel()); // 4.5
-            mplew.writeInt(0); // v264+未知
-            mplew.write(0);
-            mplew.write(0);
-            mplew.write(0);
-            mplew.writeLong(94354848000000000L); // 開始時間
-            mplew.writeLong(150842304000000000L); // 結束時間
-            mplew.writeInt(0); // 任務額外值
-
-            mplew.writeInt(0);
             mplew.writeShort(0);
             mplew.writeInt(0);
-
-            mplew.writeInt(1); // V.160 新增
-            mplew.writeInt(0); // 任務ID
-            mplew.writeShort(0); // 未知
-            mplew.writeShort(0); // 未知
-            mplew.write(0); // V.151 新增
-            mplew.writeInt(0); // 任務額外ID
-            mplew.writeMapleAsciiString(""); // 任務額外鍵值
-            mplew.writeInt(0); // 任務額外值
-            mplew.writeInt(0); // V.160 新增
-            mplew.write(0); // TMS V.220 新增
-            mplew.writeMapleAsciiString(""); // 未知
-
-            int slotMax = ii.getSlotMax(item.getItemId());
+            mplew.write(0);
+            mplew.write(0);
+            mplew.write(0);
+            mplew.writeLong(94354848000000000L);
+            mplew.writeLong(150842304000000000L);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeShort(0);
+            mplew.writeInt(0);
+            mplew.writeInt(1);
+            mplew.writeInt(0);
+            mplew.writeShort(0);
+            mplew.writeShort(0);
+            mplew.write(0);
+            mplew.writeInt(0);
+            mplew.writeMapleAsciiString("");
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.write(0);
+            mplew.writeMapleAsciiString("");
+            short slotMax = ii.getSlotMax(item.getItemId());
             if (ItemConstants.類型.可充值道具(item.getItemId())) {
                 mplew.writeDouble(ii.getUnitPrice(item.getItemId()));
             } else {
-                int quantity = item.getQuantity() == 0 ? slotMax : item.getQuantity();
-                mplew.writeShort(quantity); // 數量
-                slotMax = quantity > 1 ? 1 : item.getBuyable() == 0 ? slotMax : item.getBuyable(); // 可購買數量
+                short quantity = item.getQuantity() == 0 ? slotMax : item.getQuantity();
+                mplew.writeShort(quantity);
+                slotMax = quantity > 1 ? (short)1 : (item.getBuyable() == 0 ? slotMax : item.getBuyable());
             }
-            mplew.writeShort(slotMax); //
+            mplew.writeShort(slotMax);
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.writeMapleAsciiString("1900010100");
             mplew.writeMapleAsciiString("2079010100");
-
-            // 可能是額外限制或任務數據
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 4; ++i) {
                 mplew.writeInt(0);
             }
             mplew.writeInt(9410165);
@@ -3487,41 +1343,33 @@ public class PacketHelper {
             mplew.writeInt(0);
             mplew.writeInt(9410198);
             mplew.writeInt(0);
-
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.write(0);
             mplew.write(0);
             mplew.write(0);
-
-            // 回購欄的道具信息
             Item rebuy = item.getRebuy();
             mplew.write(rebuy == null ? 0 : 1);
-            if (rebuy != null) {
-                GW_ItemSlotBase_Encode(mplew, rebuy);
-            }
+            if (rebuy == null) continue;
+            PacketHelper.GW_ItemSlotBase_Encode(mplew, rebuy);
         }
     }
-
 
     public static void addJaguarInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
         if (JobConstants.is狂豹獵人(chr.getJob())) {
-            mplew.write(chr.getIntNoRecord(GameConstants.JAGUAR));
-//            mplew.writeHexString("F8 76 12 00 72 CE 20 00 31 95 4E 00 1D 5D 7C 00 00 00 00 00");
-            for (int i = 1; i <= 5; i++) {
-                mplew.writeInt(0); //probably mobID of the 5 mobs that can be captured.
+            mplew.write(chr.getIntNoRecord(111112));
+            for (int i = 1; i <= 5; ++i) {
+                mplew.writeInt(0);
             }
         }
     }
 
-
     public static void addSkillPets(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
-        //mplew.write(JobConstants.is陰陽師(chr.getJob()) ? 1 : 0);
         if (JobConstants.is陰陽師(chr.getJob()) && chr.getHaku() != null) {
             mplew.write(1);
             mplew.writeInt(chr.getHaku().getObjectId());
-            mplew.writeInt(陰陽師.花狐的同行);
-            mplew.write(1);//chr.getLittleWhite().isShow() ? 1 : 2
+            mplew.writeInt(40020109);
+            mplew.write(1);
             mplew.writePos(chr.getHaku().getPosition());
             mplew.write(0);
             mplew.writeShort(chr.getHaku().getStance());
@@ -3536,33 +1384,33 @@ public class PacketHelper {
         mplew.writeInt(bl2 ? player.getSecondFace() : 0);
         mplew.writeInt(bl2 ? player.getSecondHair() : 0);
         mplew.writeInt(bl2 ? Integer.valueOf(player.getKeyValue("Longcoat")) : 0);
-        mplew.write(bl2 ? player.getSecondSkinColor() : 0);
+        mplew.write(bl2 ? player.getSecondSkinColor() : (byte)0);
         mplew.writeInt(0);
         mplew.write(0);
         mplew.writeInt(0);
     }
 
     public static void write劍刃之壁(MaplePacketLittleEndianWriter mplew, MapleCharacter player, int sourceid) {
-        ArrayList<Integer> arrayList = new ArrayList<>();
+        ArrayList<Integer> arrayList = new ArrayList<Integer>();
         int n4 = 0;
         switch (sourceid) {
-            case 凱撒.意志之劍: {
+            case 61101002: {
                 n4 = 1;
                 break;
             }
-            case 凱撒.進階意志之劍: {
+            case 61120007: {
                 n4 = 2;
                 break;
             }
-            case 凱撒.意志之劍_變身: {
+            case 61110211: {
                 n4 = 3;
                 break;
             }
-            case 凱撒.進階意志之劍_變身: {
+            case 61121217: {
                 n4 = 4;
             }
         }
-        int n5 = sourceid == 凱撒.意志之劍 || sourceid == 凱撒.意志之劍_變身 ? 3 : (sourceid == 0 ? 0 : 5);
+        int n5 = sourceid == 61101002 || sourceid == 61110211 ? 3 : (sourceid == 0 ? 0 : 5);
         for (int i2 = 0; i2 < n5; ++i2) {
             arrayList.add(0);
         }
@@ -3585,11 +1433,10 @@ public class PacketHelper {
     public static void writeEsInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
         MapleInventory inventory = chr.getInventory(MapleInventoryType.ELAB);
         List<Item> list = inventory.newList();
-        List<Item> list2 = new ArrayList<>();
+        ArrayList<Item> list2 = new ArrayList<Item>();
         for (Item item : list) {
-            if (item.getESPos() != 0) {
-                list2.add(item);
-            }
+            if (item.getESPos() == 0) continue;
+            list2.add(item);
         }
         mplew.writeShort(list2.size());
         for (Item item : list2) {
@@ -3608,28 +1455,32 @@ public class PacketHelper {
     public static void addDamageSkinInfo(MaplePacketLittleEndianWriter mplew, MapleCharacter chr) {
         int skinId = chr.getDamageSkin();
         mplew.writeInt(chr.getDamSkinList().size());
-        for (int id : chr.getDamSkinList()) {
-            addDamageSkinInfo0(mplew, id, id >= 0 ? MapleItemInformationProvider.getInstance().getDamageSkinItemId(id) : 0, 0, "");
+        if (chr.isGm()) {
+            chr.dropMessage(40, "[GM] 傷害字型總數欄位:" + chr.getDamSkinList().size() + ", 選擇的字型已經變更儲存。");
         }
-
-        addDamageSkinInfo0(mplew, skinId, skinId >= 0 ? MapleItemInformationProvider.getInstance().getDamageSkinItemId(skinId) : 0, 0, ""); // 預設: 2438159 這是基本傷害字型。\r\n\r\n\r\n\r\n\r\n
-        addDamageSkinInfo0(mplew, -1, 0, 1, "");
-        addDamageSkinInfo0(mplew, -1, 0, 1, ""); // TMS 229
+        Iterator<Integer> iterator = chr.getDamSkinList().iterator();
+        while (iterator.hasNext()) {
+            int id = 0;
+            PacketHelper.addDamageSkinInfo0(mplew, id, (id = iterator.next().intValue()) >= 0 ? MapleItemInformationProvider.getInstance().getDamageSkinItemId(id) : 0, 0, "");
+        }
+        PacketHelper.addDamageSkinInfo0(mplew, skinId, skinId >= 0 ? MapleItemInformationProvider.getInstance().getDamageSkinItemId(skinId) : 0, 0, "");
+        PacketHelper.addDamageSkinInfo0(mplew, -1, 0, 1, "");
+        PacketHelper.addDamageSkinInfo0(mplew, -1, 0, 1, "");
     }
 
     private static void addDamageSkinInfo0(MaplePacketLittleEndianWriter mplew, int skinId, int skinItemId, int b, String s) {
         mplew.writeInt(skinId);
         mplew.writeInt(skinItemId);
-        mplew.writeLong(PacketHelper.getTime(-2)); // Zero Timer ->
+        mplew.writeLong(PacketHelper.getTime(-2L));
     }
 
     public static void addChaterName(MaplePacketLittleEndianWriter mplew, String speekerName, String text) {
-        addChaterName(mplew, speekerName, text, 0);
+        PacketHelper.addChaterName(mplew, speekerName, text, 0);
     }
 
     public static void addChaterName(MaplePacketLittleEndianWriter mplew, String speekerName, String text, int chrId) {
-        mplew.writeMapleAsciiString(speekerName);//V.153 new
-        mplew.writeMapleAsciiString(text);//V.153 new
+        mplew.writeMapleAsciiString(speekerName);
+        mplew.writeMapleAsciiString(text);
         mplew.writeInt(Randomizer.nextInt());
         mplew.writeInt(Randomizer.nextInt());
         mplew.writeShort(6);
@@ -3639,25 +1490,25 @@ public class PacketHelper {
         mplew.writeInt(0);
         mplew.writeShort(0);
         mplew.write(0);
-        mplew.write(0x03);
-        mplew.write(0x00);
-        mplew.write(0x06);
+        mplew.write(3);
+        mplew.write(0);
+        mplew.write(6);
     }
 
     public static List<Pair<SecondaryStat, Pair<Integer, Integer>>> sortBuffStats(Map<SecondaryStat, Pair<Integer, Integer>> statups) {
         boolean changed;
-        List<Pair<SecondaryStat, Pair<Integer, Integer>>> statvals = new ArrayList<>();
-        for (Entry<SecondaryStat, Pair<Integer, Integer>> stat : statups.entrySet()) {
-            statvals.add(new Pair<>(stat.getKey(), stat.getValue()));
+        ArrayList<Pair<SecondaryStat, Pair<Integer, Integer>>> statvals = new ArrayList<Pair<SecondaryStat, Pair<Integer, Integer>>>();
+        for (Map.Entry<SecondaryStat, Pair<Integer, Integer>> stat : statups.entrySet()) {
+            statvals.add(new Pair<SecondaryStat, Pair<Integer, Integer>>(stat.getKey(), stat.getValue()));
         }
         do {
             changed = false;
             int i = 0;
             int k = 1;
-            for (int iter = 0; iter < statvals.size() - 1; iter++) {
+            for (int iter = 0; iter < statvals.size() - 1; ++iter) {
                 Pair<SecondaryStat, Pair<Integer, Integer>> a = statvals.get(i);
                 Pair<SecondaryStat, Pair<Integer, Integer>> b = statvals.get(k);
-                if (a != null && b != null && a.left.getFlag() > b.left.getFlag()) {
+                if (a != null && b != null && ((SecondaryStat)a.left).getFlag() > ((SecondaryStat)b.left).getFlag()) {
                     Pair<SecondaryStat, Pair<Integer, Integer>> swap = new Pair<>(a.left, a.right);
                     statvals.remove(i);
                     statvals.add(i, b);
@@ -3665,10 +1516,11 @@ public class PacketHelper {
                     statvals.add(k, swap);
                     changed = true;
                 }
-                i++;
-                k++;
+                ++i;
+                ++k;
             }
         } while (changed);
         return statvals;
     }
 }
+

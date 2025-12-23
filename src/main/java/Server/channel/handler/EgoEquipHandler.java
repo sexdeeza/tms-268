@@ -9,7 +9,7 @@ import Config.constants.ItemConstants;
 import Config.constants.JobConstants;
 import Net.server.MapleInventoryManipulator;
 import Net.server.MapleItemInformationProvider;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.MaplePacketLittleEndianWriter;

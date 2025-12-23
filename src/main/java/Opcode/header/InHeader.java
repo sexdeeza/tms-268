@@ -1,18 +1,21 @@
-package Opcode.Headler;
+/*
+ * Decompiled with CFR 0.152.
+ */
+package Opcode.header;
 
 import Server.ExternalCodeTableGetter;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.util.Properties;
+import java.util.Timer;
+import java.util.TimerTask;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.WritableIntValueHolder;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
-import java.io.*;
-import java.security.Key;
-import java.util.Properties;
-import java.util.Timer;
-import java.util.TimerTask;
-public enum InHeader implements WritableIntValueHolder {
+public enum InHeader implements WritableIntValueHolder
+{
     CP_AutoBuff,
     BOSS_KALOS_ONPACKET,
     MUKHYUN_SYSTERM_LOCK,
@@ -1119,7 +1122,6 @@ public enum InHeader implements WritableIntValueHolder {
     UserSetCustomizeEffect,
     USE_CONTENT_MAP_MINI,
     USE_CONTENT_MAP,
-    GUID_MOVE,
     CombingRoomActionReq,
     UserNonTargetForceAtomAttack,
     UserRunScript,
@@ -1338,22 +1340,21 @@ public enum InHeader implements WritableIntValueHolder {
     UNKNOWN,
     CP_ChangeMapCheckingPacket;
 
-    private static final Logger log = LoggerFactory.getLogger(InHeader.class);
-    private short code = -2;
-    private static long lastModifiedTime = 0L;
+    private static final Logger log;
+    private short code = (short)-2;
+    private static long lastModifiedTime;
     private static final String ALGORITHM = "AES";
-    private static final byte[] KEY = "sAGlLlC3iCiIVnQ2".getBytes();
-
-    private InHeader() {
-    }
+    private static final byte[] KEY;
 
     public static void main(String[] args) throws Exception {
-        new File("res/InHeader.properties");
+        File inputFile = new File("res/InHeader.properties");
     }
 
     public static void startCheck() {
         Timer timer = new Timer();
-        timer.schedule(new TimerTask() {
+        timer.schedule(new TimerTask(){
+
+            @Override
             public void run() {
                 InHeader.checkForChanges();
             }
@@ -1365,73 +1366,65 @@ public enum InHeader implements WritableIntValueHolder {
             File file = new File("res/InHeader.properties");
             long currentModifiedTime = file.lastModified();
             if (currentModifiedTime > lastModifiedTime) {
-                reloadValues();
+                InHeader.reloadValues();
                 log.info("[InHeader]已套用新的資訊。");
                 lastModifiedTime = currentModifiedTime;
             }
-
-        } catch (Exception var3) {
-            Exception e = var3;
+        }
+        catch (Exception e) {
             throw new RuntimeException("Failed to load InHeader", e);
         }
     }
 
     public static Properties getDefaultProperties() throws IOException {
         Properties props = new Properties();
-        FileInputStream fileInputStream = new FileInputStream("res/InHeader.properties");
-
-        try {
+        try (FileInputStream fileInputStream = new FileInputStream("res/InHeader.properties");){
             props.load(fileInputStream);
-        } catch (Throwable var5) {
-            try {
-                fileInputStream.close();
-            } catch (Throwable var4) {
-                var5.addSuppressed(var4);
-            }
-
-            throw var5;
         }
-
-        fileInputStream.close();
         return props;
     }
 
     public static final void reloadValues() {
         try {
-            ExternalCodeTableGetter.populateValues(getDefaultProperties(), values());
-        } catch (IOException var1) {
-            IOException e = var1;
+            ExternalCodeTableGetter.populateValues((Properties)InHeader.getDefaultProperties(), (Enum[])InHeader.values());
+        }
+        catch (IOException e) {
             throw new RuntimeException("Failed to load InHeader", e);
         }
     }
 
     public static String getOpcodeName(int value) {
-        InHeader[] var1 = values();
-        int var2 = var1.length;
-
-        for(int var3 = 0; var3 < var2; ++var3) {
-            InHeader opcode = var1[var3];
-            if (opcode.getValue() == value) {
-                return opcode.name();
-            }
+        for (InHeader opcode : InHeader.values()) {
+            if (opcode.getValue() != value) continue;
+            return opcode.name();
         }
-
         return "UNKNOWN";
     }
 
+    @Override
     public final short getValue() {
         return this.code;
     }
 
+    @Override
     public short getCode() {
         return 0;
     }
 
+    @Override
     public void setValue(short code) {
         this.code = code;
     }
 
+    @Override
     public void setValue(Short code) {
         this.code = code;
     }
+
+    static {
+        log = LoggerFactory.getLogger(InHeader.class);
+        lastModifiedTime = 0L;
+        KEY = "sAGlLlC3iCiIVnQ2".getBytes();
+    }
 }
+

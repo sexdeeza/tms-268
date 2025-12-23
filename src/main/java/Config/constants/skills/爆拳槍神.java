@@ -1,12 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 爆拳槍神 {
-
     public static final int 自由精神_爆拳槍神 = 30000077;
     public static final int 自由精神_爆拳槍神_傳授 = 80000378;
-    /*
-     * 1轉技能
-     */
     public static final int 連發重擊 = 37001000;
     public static final int 旋轉加農砲 = 37001001;
     public static final int 釋能衝擊椎 = 37001002;
@@ -21,9 +20,6 @@ public class 爆拳槍神 {
     public static final int 釋能衝擊椎_2 = 37000011;
     public static final int 釋能衝擊椎_3 = 37000012;
     public static final int 釋能衝擊椎_4 = 37000013;
-    /*
-     * 2轉技能
-     */
     public static final int 雙重棒 = 37101000;
     public static final int 王之子 = 37101001;
     public static final int 王之子_1 = 37100002;
@@ -34,9 +30,6 @@ public class 爆拳槍神 {
     public static final int 強化旋轉加農砲 = 37100007;
     public static final int 旋轉加農砲_雙重棒 = 37100008;
     public static final int 釋能衝擊椎_5 = 37100009;
-    /*
-     * 3轉技能
-     */
     public static final int 錘之碎擊 = 37111000;
     public static final int 錘之碎擊_1 = 37110001;
     public static final int 錘之碎擊_2 = 37110002;
@@ -49,9 +42,6 @@ public class 爆拳槍神 {
     public static final int 組合訓練 = 37110009;
     public static final int 釋能衝擊椎_6 = 37110010;
     public static final int 雙重壓迫_1 = 37110011;
-    /*
-     * 4轉技能
-     */
     public static final int 衝擊波動 = 37121000;
     public static final int 衝擊波動_1 = 37120001;
     public static final int 二段游移 = 37120002;
@@ -75,9 +65,6 @@ public class 爆拳槍神 {
     public static final int 旋轉衝擊椎_5 = 37120018;
     public static final int 旋轉衝擊椎_6 = 37120019;
     public static final int 颶風混裂_2 = 37120024;
-    /*
-     * 超級技能 被動
-     */
     public static final int 重擊_衝擊波動攻擊加成 = 37120045;
     public static final int 重擊_強化傷害 = 37120043;
     public static final int 重擊_無視防禦 = 37120044;
@@ -87,9 +74,6 @@ public class 爆拳槍神 {
     public static final int 續航防盾_額外治癒 = 37120049;
     public static final int 颶風混裂_冷卻減免 = 37120051;
     public static final int 超級耐久_冷卻減免 = 37120050;
-    /*
-     * 超級技能 主動
-     */
     public static final int 神聖連發重擊 = 37121052;
     public static final int 自由意志 = 37121053;
     public static final int 極大加農 = 37121054;
@@ -98,13 +82,10 @@ public class 爆拳槍神 {
     public static final int 神聖連發重擊_3 = 37120057;
     public static final int 神聖連發重擊_4 = 37120058;
     public static final int 神聖連發重擊_5 = 37120059;
-
     public static final int 毀滅左輪 = 400011017;
     public static final int 衝擊椎破壞者 = 400011019;
-
     public static final int 火神重擊 = 400011028;
     public static final int 火神重擊_1 = 400010028;
-
     public static final int 燃燒破壞者 = 400011091;
     public static final int 燃燒破壞者_1 = 400011092;
     public static final int 燃燒破壞者_2 = 400011093;
@@ -113,8 +94,8 @@ public class 爆拳槍神 {
     public static final int 燃燒破壞者_5 = 400011096;
     public static final int 燃燒破壞者_6 = 400011097;
     public static final int 燃燒破壞者_7 = 400011103;
-
     public static final int 殘影衝擊 = 400011116;
     public static final int 殘影衝擊_1 = 400011117;
     public static final int 殘影衝擊_2 = 400011133;
 }
+

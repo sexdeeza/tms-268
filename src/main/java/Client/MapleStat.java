@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 public enum MapleStat {
@@ -21,49 +24,44 @@ public enum MapleStat {
     POPULARITY(131072L),
     MONEY(262144L),
     FATIGUE(524288L),
-    CHARISMA(1048576L),
-    INSIGHT(2097152L),
-    WILL(4194304L),
-    CRAFT(8388608L),
-    SENSE(16777216L),
-    CHARM(33554432L),
-    BATTLE_EXP(268435456L),
-    BATTLE_RANK(536870912L),
-    BATTLE_POINTS(1073741824L),
-    ICE_GAGE(536870912L),
-    VIRTUE(1073741824L),
-    RECOVERY_POTION_WITH_HP(67109888L),
-    RECOVERY_POTION_WITH_MP(67112960L),
-    RECOVERY_POTION_WITH_HP_MP(67113984L),
-    TEMP_EXP(4294967296L),
-    GENDER(8589934592L),
+    CHARISMA(0x100000L),
+    INSIGHT(0x200000L),
+    WILL(0x400000L),
+    CRAFT(0x800000L),
+    SENSE(0x1000000L),
+    CHARM(0x2000000L),
+    TRAIT_LIMIT(0x4000000L),
+    BATTLE_EXP(0x10000000L),
+    BATTLE_RANK(0x20000000L),
+    BATTLE_POINTS(0x40000000L),
+    ICE_GAGE(0x20000000L),
+    VIRTUE(0x40000000L),
+    RECOVERY_POTION_WITH_HP(0x4000400L),
+    RECOVERY_POTION_WITH_MP(0x4001000L),
+    RECOVERY_POTION_WITH_HP_MP(0x4001400L),
+    TEMP_EXP(0x100000000L),
+    GENDER(0x200000000L),
     TODAYS_TRAITS(0x4000000), //今日獲得
-    TRAIT_LIMIT(0x8000000),
     性別(0x200000000L),
     PET(1572872),
     RECOVERY_POTION_WITH_HPMP(67113984);
-    ;
-
-
-
 
     private final long i;
 
-    MapleStat(long i) {
+    private MapleStat(long i) {
         this.i = i;
     }
 
     public static MapleStat getByValue(long value) {
-        for (final MapleStat stat : MapleStat.values()) {
-            if (stat.i == value) {
-                return stat;
-            }
+        for (MapleStat stat : MapleStat.values()) {
+            if (stat.i != value) continue;
+            return stat;
         }
         return null;
     }
 
     public long getValue() {
-        return i;
+        return this.i;
     }
 
     public enum Temp {
@@ -91,3 +89,4 @@ public enum MapleStat {
         }
     }
 }
+

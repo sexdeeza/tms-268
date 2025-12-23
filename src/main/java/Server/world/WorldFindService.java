@@ -1,48 +1,45 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Server.world.CharacterIdChannelPair
  */
 package Server.world;
 
 import Client.MapleCharacter;
 import Server.channel.ChannelServer;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import Server.world.CharacterIdChannelPair;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * @author PlayDK
- */
 public class WorldFindService {
-
     private static final Logger log = LoggerFactory.getLogger(WorldFindService.class);
-    private final ReentrantReadWriteLock lock;
-    private final HashMap<Integer, Integer> idToChannel;
-    private final HashMap<String, Integer> nameToChannel;
+    private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+    private final HashMap<Integer, Integer> idToChannel = new HashMap();
+    private final HashMap<String, Integer> nameToChannel = new HashMap();
 
     private WorldFindService() {
-        //log.info("正在啟動[WorldFindService]");
-        lock = new ReentrantReadWriteLock();
-        idToChannel = new HashMap<>();
-        nameToChannel = new HashMap<>();
     }
 
     public static WorldFindService getInstance() {
         return SingletonHolder.instance;
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public void register(int chrId, String chrName, int channel) {
-        lock.writeLock().lock();
+        this.lock.writeLock().lock();
         try {
-            idToChannel.put(chrId, channel);
-            nameToChannel.put(chrName.toLowerCase(), channel);
-        } finally {
-            lock.writeLock().unlock();
+            this.idToChannel.put(chrId, channel);
+            this.nameToChannel.put(chrName.toLowerCase(), channel);
+        }
+        finally {
+            this.lock.writeLock().unlock();
         }
         if (channel == -10) {
             System.out.println("玩家連接 - 角色ID: " + chrId + " 名字: " + chrName + " 進入購物商場");
@@ -56,67 +53,69 @@ public class WorldFindService {
     }
 
     public void forceDeregister(int chrId) {
-        lock.writeLock().lock();
+        this.lock.writeLock().lock();
         try {
-            idToChannel.remove(chrId);
-        } finally {
-            lock.writeLock().unlock();
+            this.idToChannel.remove(chrId);
+        }
+        finally {
+            this.lock.writeLock().unlock();
         }
         System.out.println("玩家離開 - 角色ID: " + chrId);
     }
 
     public void forceDeregister(String chrName) {
-        lock.writeLock().lock();
+        this.lock.writeLock().lock();
         try {
             if (chrName != null) {
-                nameToChannel.remove(chrName.toLowerCase());
+                this.nameToChannel.remove(chrName.toLowerCase());
             }
-        } finally {
-            lock.writeLock().unlock();
+        }
+        finally {
+            this.lock.writeLock().unlock();
         }
         System.out.println("玩家離開 - 角色名字: " + chrName);
     }
 
     public void forceDeregister(int chrId, String chrName) {
-        lock.writeLock().lock();
+        this.lock.writeLock().lock();
         try {
-            idToChannel.remove(chrId);
+            this.idToChannel.remove(chrId);
             if (chrName != null) {
-                nameToChannel.remove(chrName.toLowerCase());
+                this.nameToChannel.remove(chrName.toLowerCase());
             }
-        } finally {
-            lock.writeLock().unlock();
+        }
+        finally {
+            this.lock.writeLock().unlock();
         }
         System.out.println("玩家離開 - 角色ID: " + chrId + " 名字: " + chrName);
     }
 
     public void forceDeregisterEx(int chrId, String chrName) {
-        lock.writeLock().lock();
+        this.lock.writeLock().lock();
         try {
-            idToChannel.remove(chrId);
+            this.idToChannel.remove(chrId);
             if (chrName != null) {
-                nameToChannel.remove(chrName.toLowerCase());
+                this.nameToChannel.remove(chrName.toLowerCase());
             }
-        } finally {
-            lock.writeLock().unlock();
+        }
+        finally {
+            this.lock.writeLock().unlock();
         }
         System.out.println("清理卡號玩家 - 角色ID: " + chrId + " 名字: " + chrName);
     }
 
-    /*
-     * 通過角色的ID 找到角色的頻道
-     */
     public int findChannel(int chrId) {
         Integer ret;
-        lock.readLock().lock();
+        this.lock.readLock().lock();
         try {
-            ret = idToChannel.get(chrId);
-        } finally {
-            lock.readLock().unlock();
+            ret = this.idToChannel.get(chrId);
+        }
+        finally {
+            this.lock.readLock().unlock();
         }
         if (ret != null) {
-            if (ret != -10 && ret != -20 && ChannelServer.getInstance(ret) == null) { //wha
-                forceDeregister(chrId);
+            if (ret != -10 && ret != -20 && ChannelServer.getInstance(ret) == null) {
+                this.forceDeregister(chrId);
                 return -1;
             }
             return ret;
@@ -124,23 +123,18 @@ public class WorldFindService {
         return -1;
     }
 
-    /*
-     * 通過角色的名字 找到角色的頻道
-     */
     public int findChannel(String chrName) {
         Integer ret;
-        lock.readLock().lock();
+        this.lock.readLock().lock();
         try {
-            ret = chrName == null ? null : nameToChannel.get(chrName.toLowerCase());
-        } finally {
-            lock.readLock().unlock();
+            ret = chrName == null ? null : this.nameToChannel.get(chrName.toLowerCase());
+        }
+        finally {
+            this.lock.readLock().unlock();
         }
         if (ret != null) {
-            /*
-             * 如果找到了這個角色 但是這個頻道是空的 就刪除這個角色註冊到服務端的信息 返回 -1
-             */
             if (ret != -10 && ret != -20 && ChannelServer.getInstance(ret) == null) {
-                forceDeregister(chrName);
+                this.forceDeregister(chrName);
                 return -1;
             }
             return ret;
@@ -148,37 +142,27 @@ public class WorldFindService {
         return -1;
     }
 
-    /*
-     * 好友列表獲取 好友的在線信息
-     */
     public CharacterIdChannelPair[] multiBuddyFind(int charIdFrom, int[] characterIds) {
-        List<CharacterIdChannelPair> foundsChars = new ArrayList<>(characterIds.length);
+        ArrayList<CharacterIdChannelPair> foundsChars = new ArrayList<CharacterIdChannelPair>(characterIds.length);
         for (int i : characterIds) {
-            int channel = findChannel(i);
-            if (channel > 0) {
-                foundsChars.add(new CharacterIdChannelPair(i, channel));
-            }
+            int channel = this.findChannel(i);
+            if (channel <= 0) continue;
+            foundsChars.add(new CharacterIdChannelPair(i, channel));
         }
         Collections.sort(foundsChars);
         return foundsChars.toArray(new CharacterIdChannelPair[foundsChars.size()]);
     }
 
-    /*
-     * 通過角色名字 找到角色信息
-     */
     public MapleCharacter findCharacterByName(String name) {
-        int ch = findChannel(name);
+        int ch = this.findChannel(name);
         if (ch > 0) {
             return ChannelServer.getInstance(ch).getPlayerStorage().getCharacterByName(name);
         }
         return null;
     }
 
-    /*
-     * 通過角色ID 找到角色信息
-     */
     public MapleCharacter findCharacterById(int id) {
-        int ch = findChannel(id);
+        int ch = this.findChannel(id);
         if (ch > 0) {
             return ChannelServer.getInstance(ch).getPlayerStorage().getCharacterById(id);
         }
@@ -186,7 +170,10 @@ public class WorldFindService {
     }
 
     private static class SingletonHolder {
-
         protected static final WorldFindService instance = new WorldFindService();
+
+        private SingletonHolder() {
+        }
     }
 }
+

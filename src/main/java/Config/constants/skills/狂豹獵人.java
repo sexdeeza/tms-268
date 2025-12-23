@@ -1,22 +1,13 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Config.constants.skills;
 
-/**
- * @author PlayDK
- */
 public class 狂豹獵人 {
-
     public static final int 自由精神_狂豹獵人 = 30000075;
     public static final int 自由精神_狂豹獵人_傳授 = 80000334;
-
     public static final int 捕獲 = 30001061;
     public static final int 獵人的呼喚 = 30001062;
-    /*
-     * 1轉技能
-     */
     public static final int 雙重射擊 = 33001105;
     public static final int 雙重射擊_美洲豹 = 33001205;
     public static final int 連續跳躍 = 33001102;
@@ -41,9 +32,6 @@ public class 狂豹獵人 {
     public static final int 召喚美洲豹_攻擊 = 33000035;
     public static final int 另一個咬擊 = 33000036;
     public static final int 召喚美洲豹_捕獲 = 33000038;
-    /*
-     * 2轉技能
-     */
     public static final int 三重射擊 = 33101113;
     public static final int 三重射擊_美洲豹 = 33101213;
     public static final int 歧路 = 33101115;
@@ -56,10 +44,6 @@ public class 狂豹獵人 {
     public static final int 終極攻擊 = 33100009;
     public static final int 體能訓練 = 33100010;
     public static final int 美洲豹精通 = 33100014;
-
-    /*
-     * 3轉技能
-     */
     public static final int 瘋狂射擊 = 33111112;
     public static final int 瘋狂射擊_美洲豹 = 33111212;
     public static final int 音暴 = 33111015;
@@ -70,9 +54,6 @@ public class 狂豹獵人 {
     public static final int 障礙 = 33111011;
     public static final int 迴避 = 33110008;
     public static final int 美洲豹連接 = 33110014;
-    /*
-     * 4轉技能
-     */
     public static final int 狂野機關砲 = 33121114;
     public static final int 狂野機關砲_美洲豹 = 33121214;
     public static final int 狂野機關砲_1 = 33121019;
@@ -89,9 +70,6 @@ public class 狂豹獵人 {
     public static final int 自然之力 = 33120015;
     public static final int 化學彈丸 = 33121005;
     public static final int 狂野機關砲TypeP = 33121220;
-    /*
-     * 超級技能 進階技能
-     */
     public static final int 狂獸附體_強化傷害 = 33120043;
     public static final int 狂獸附體_最大HP增加 = 33120044;
     public static final int 狂獸附體_快速攻擊 = 33120045;
@@ -101,25 +79,17 @@ public class 狂豹獵人 {
     public static final int 狂野機關砲_強化傷害 = 33120049;
     public static final int 狂野機關砲_無視防禦 = 33120050;
     public static final int 狂野機關砲_魔王剋星 = 33120051;
-    /*
-     * 超級技能 主動技能
-     */
     public static final int 閃光雨 = 33121155;
     public static final int 狂豹之怒 = 33121255;
     public static final int 狂豹之怒_1 = 33120056;
     public static final int 自由意志 = 33121053;
     public static final int 寧靜狂暴 = 33121054;
-    /*
-     * 5轉技能
-     */
     public static final int 美洲豹風暴 = 400031005;
-
     public static final int 豹魂嵐擊 = 400031012;
     public static final int 豹魂嵐擊_1 = 400031013;
     public static final int 豹魂嵐擊_2 = 400031014;
-
     public static final int 狂暴榴彈 = 400031032;
     public static final int 狂暴榴彈_1 = 400031033;
-
     public static final int 狂野機關砲_TypeX = 400031046;
 }
+

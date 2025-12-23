@@ -1,11 +1,22 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Packet.AuctionPacket
+ */
 package Server.auction;
 
 import Client.MapleCharacter;
-import Client.inventory.*;
+import Client.inventory.Equip;
+import Client.inventory.Item;
+import Client.inventory.ItemAttribute;
+import Client.inventory.ItemLoader;
+import Client.inventory.MapleInventoryIdentifier;
+import Client.inventory.MapleInventoryType;
 import Config.configs.ServerConfig;
 import Config.constants.ItemConstants;
 import Database.DatabaseException;
-import Database.DatabaseLoader.DatabaseConnection;
+import Database.DatabaseLoader;
 import Database.mapper.AuctionItemMapper;
 import Database.tools.SqlTool;
 import Net.server.MapleInventoryManipulator;
@@ -14,45 +25,33 @@ import Net.server.Timer;
 import Packet.AuctionPacket;
 import Packet.MaplePacketCreator;
 import Server.ServerType;
+import Server.auction.AuctionItem;
 import Server.channel.PlayerStorage;
 import Server.netty.ServerConnection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import tools.Pair;
-
 import java.sql.ResultSet;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.Pair;
 
-import static Server.auction.AuctionItemState.*;
-
-/**
- * 拍賣伺服器
- *
- * @author Ethan
- */
 public class AuctionServer {
-
-    public static final Map<Integer, Map<Integer, Map<Integer, Map<Integer, Pair<Integer, Integer>>>>> auctions = new HashMap<>();
+    public static final Map<Integer, Map<Integer, Map<Integer, Map<Integer, Pair<Integer, Integer>>>>> auctions = new HashMap<Integer, Map<Integer, Map<Integer, Map<Integer, Pair<Integer, Integer>>>>>();
     public static final AtomicLong runningSNID;
-    private static final Logger log = LoggerFactory.getLogger(AuctionServer.class);
-    private static final AuctionServer instance = new AuctionServer();
-
-    static {
-        runningSNID = new AtomicLong(DatabaseConnection.domain(con -> {
-            ResultSet rs = SqlTool.query(con, "SELECT MAX(id) FROM `auction`");
-            if (rs.next()) {
-                return rs.getLong(1);
-            }
-            return 0L;
-        }, "讀取MaxAuctionId異常", true) + 1);
-    }
-
-    public final Map<Long, AuctionItem> items = new TreeMap<>(Comparator.reverseOrder());
-    private final Map<Integer, List<Integer>> collections = new HashMap<>();
+    private static final Logger log;
+    private static final AuctionServer instance;
+    public final Map<Long, AuctionItem> items = new TreeMap(Comparator.reverseOrder());
+    private final Map<Integer, List<Integer>> collections = new HashMap<Integer, List<Integer>>();
     public final ReentrantLock lock = new ReentrantLock();
     private final ReentrantLock sqlLock = new ReentrantLock();
     private ServerConnection init;
@@ -68,97 +67,108 @@ public class AuctionServer {
     }
 
     public void init() {
-        port = ServerConfig.AUCTION_PORT;
-        world = 0;
-        this.channel = -20;
-        players = new PlayerStorage(-20);
-        schedule = Timer.ExpiredTimer.getInstance().schedule(new ExpiredCheckThread(), 60000);
-
-        lock.lock();
-        List<AuctionItem> auctionItems = SqlTool.queryAndGetList("SELECT * FROM `auction` WHERE `world` = ?", new AuctionItemMapper(), world);
+        this.port = ServerConfig.AUCTION_PORT;
+        this.world = 0;
+        this.channel = (short)-20;
+        this.players = new PlayerStorage(-20);
+        this.schedule = Timer.ExpiredTimer.getInstance().schedule(new ExpiredCheckThread(), 60000L);
+        this.lock.lock();
+        List<AuctionItem> auctionItems = SqlTool.queryAndGetList("SELECT * FROM `auction` WHERE `world` = ?", new AuctionItemMapper(), this.world);
         try {
             for (AuctionItem ai : auctionItems) {
+                Iterator<Pair<Item, MapleInventoryType>> iterator;
                 Map<Long, Pair<Item, MapleInventoryType>> map = ItemLoader.拍賣道具.loadItems(false, ai.id);
-                if (!map.isEmpty()) {
-                    Iterator<Pair<Item, MapleInventoryType>> iterator = map.values().iterator();
-                    if (iterator.hasNext()) { //應該只存在一個
-                        ai.item = iterator.next().left;
-                    }
+                if (!map.isEmpty() && (iterator = map.values().iterator()).hasNext()) {
+                    ai.item = (Item)iterator.next().left;
                 }
                 this.items.put(ai.id, ai);
             }
-        } catch (Exception e) {
-            throw new DatabaseException(e);
-        } finally {
-            lock.unlock();
         }
-        run();
+        catch (Exception e) {
+            throw new DatabaseException(e);
+        }
+        finally {
+            this.lock.unlock();
+        }
+        this.run();
     }
 
     public void run() {
         try {
-            init = new ServerConnection(port, 0, -20, ServerType.AuctionServer);
-            init.run();
-            //log.info("拍賣場伺服器綁定連接埠: " + port + ".");
-        } catch (final Exception e) {
-            throw new RuntimeException("拍賣場伺服器綁定連接埠 " + port + " 失敗", e);
+            this.init = new ServerConnection(this.port, 0, -20, ServerType.AuctionServer);
+            this.init.run();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("拍賣場伺服器綁定連接埠 " + this.port + " 失敗", e);
         }
     }
 
-    public void updateAuctionItem(final AuctionItem auctionItem) {
-        lock.lock();
+    public void updateAuctionItem(AuctionItem auctionItem) {
+        this.lock.lock();
         try {
             SqlTool.update("UPDATE `auction` SET `number` = ?, `other_id` = ?, `other` = ?, `state` = ?, `startdate` = ?, `expiredate` = ?, `donedate` = ? WHERE `id` = ?", auctionItem.number, auctionItem.other_id, auctionItem.other, auctionItem.state, auctionItem.startdate, auctionItem.expiredate, auctionItem.donedate, auctionItem.id);
-        } finally {
-            lock.unlock();
+        }
+        finally {
+            this.lock.unlock();
         }
     }
 
-    public final void changeAuctionItemWorld(final AuctionItem auctionItem) {
-        DatabaseConnection.domain(con -> {
-            sqlLock.lock();
+    public final void changeAuctionItemWorld(AuctionItem auctionItem) {
+        DatabaseLoader.DatabaseConnection.domain(con -> {
+            this.sqlLock.lock();
             try {
                 SqlTool.update(con, "DELETE FROM `auction` WHERE `id` = ? ", auctionItem.id);
-                SqlTool.update(con, "INSERT INTO `auction` (`id`, `world`, `accounts_id`, `characters_id`, `owner`, `other_id`, `other`, `itemid`, `number`, `type`, `price`, `state`, `startdate`, `expiredate`, `donedate`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", auctionItem.id, world, auctionItem.accounts_id, auctionItem.characters_id, auctionItem.owner, auctionItem.other_id, auctionItem.other, auctionItem.itemid, auctionItem.number, auctionItem.type, auctionItem.price, auctionItem.state, auctionItem.startdate, auctionItem.expiredate, auctionItem.donedate);
+                SqlTool.update(con, "INSERT INTO `auction` (`id`, `world`, `accounts_id`, `characters_id`, `owner`, `other_id`, `other`, `itemid`, `number`, `type`, `price`, `state`, `startdate`, `expiredate`, `donedate`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", auctionItem.id, this.world, auctionItem.accounts_id, auctionItem.characters_id, auctionItem.owner, auctionItem.other_id, auctionItem.other, auctionItem.itemid, auctionItem.number, auctionItem.type, auctionItem.price, auctionItem.state, auctionItem.startdate, auctionItem.expiredate, auctionItem.donedate);
                 if (auctionItem.item != null) {
-                    ItemLoader.拍賣道具.saveItems(con, Collections.singletonList(new Pair<>(auctionItem.item, ItemConstants.getInventoryType(auctionItem.itemid))), auctionItem.id);
+                    ItemLoader.拍賣道具.saveItems(con, Collections.singletonList(new Pair<Item, MapleInventoryType>(auctionItem.item, ItemConstants.getInventoryType(auctionItem.itemid))), auctionItem.id);
                 }
-            } finally {
-                sqlLock.unlock();
+            }
+            finally {
+                this.sqlLock.unlock();
             }
             return null;
         });
     }
 
-    public final AuctionItem terminateById(final MapleCharacter player, final long n) {
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public final AuctionItem terminateById(MapleCharacter player, long n) {
         this.lock.lock();
         try {
             AuctionItem auctionItem = this.items.get(n);
-            if (auctionItem != null && auctionItem.characters_id == player.getId() && auctionItem.state == ONSALE) {
-                auctionItem.state = TERMINATE;
+            if (auctionItem != null && auctionItem.characters_id == player.getId() && auctionItem.state == 0) {
+                auctionItem.state = 4;
                 auctionItem.donedate = System.currentTimeMillis();
-                return auctionItem;
+                AuctionItem auctionItem2 = auctionItem;
+                return auctionItem2;
             }
-            return null;
-        } finally {
+            AuctionItem auctionItem3 = null;
+            return auctionItem3;
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
-    public final List<AuctionItem> getAllOnsaleItemByPlayerId(final int n) {
+    public final List<AuctionItem> getAllOnsaleItemByPlayerId(int n) {
         this.lock.lock();
         try {
-            return items.values().parallelStream().filter(item -> item.characters_id == n && item.state == ONSALE).collect(Collectors.toList());
-        } finally {
+            List<AuctionItem> list = this.items.values().parallelStream().filter(item -> item.characters_id == n && item.state == 0).collect(Collectors.toList());
+            return list;
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
-    public final List<AuctionItem> getAllCollectionItemByPlayerId(final int n) {
+    public final List<AuctionItem> getAllCollectionItemByPlayerId(int n) {
         this.lock.lock();
         try {
-            return items.values().parallelStream().filter(item -> item.characters_id == n && item.state == ONSALE).collect(Collectors.toList());
-        } finally {
+            List<AuctionItem> list = this.items.values().parallelStream().filter(item -> item.characters_id == n && item.state == 0).collect(Collectors.toList());
+            return list;
+        }
+        finally {
             this.lock.unlock();
         }
     }
@@ -166,17 +176,21 @@ public class AuctionServer {
     public final int getItemCountByPlayerId(int n) {
         this.lock.lock();
         try {
-            return (int) items.values().parallelStream().filter(item -> item.characters_id == n && (item.state == ONSALE || item.state == TERMINATE)).count();
-        } finally {
+            int n2 = (int)this.items.values().parallelStream().filter(item -> item.characters_id == n && (item.state == 0 || item.state == 4)).count();
+            return n2;
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
-    public final List<AuctionItem> getAllNotOnsaleItemByPlayerId(final int n) {
+    public final List<AuctionItem> getAllNotOnsaleItemByPlayerId(int n) {
         this.lock.lock();
         try {
-            return items.values().parallelStream().filter(item -> item.characters_id == n && item.state > ONSALE).collect(Collectors.toList());
-        } finally {
+            List<AuctionItem> list = this.items.values().parallelStream().filter(item -> item.characters_id == n && item.state > 0).collect(Collectors.toList());
+            return list;
+        }
+        finally {
             this.lock.unlock();
         }
     }
@@ -184,110 +198,114 @@ public class AuctionServer {
     public final int getAllNotOnsaleItemCountByPlayerId(int n) {
         this.lock.lock();
         try {
-            return (int) items.values().parallelStream().filter(item -> item.characters_id == n && item.state > ONSALE && item.state <= DIFFERENCE).count();
-        } finally {
+            int n2 = (int)this.items.values().parallelStream().filter(item -> item.characters_id == n && item.state > 0 && item.state <= 5).count();
+            return n2;
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
-    public final List<AuctionItem> findItem(final String fstr, final int minItemId, final int maxItemId, final int minLevel, final int maxLevel, final int grade) {
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public final List<AuctionItem> findItem(String fstr, int minItemId, int maxItemId, int minLevel, int maxLevel, int grade) {
         this.lock.lock();
         try {
-
-            final List<AuctionItem> list = new ArrayList<>();
-            final MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
+            ArrayList<AuctionItem> list = new ArrayList<AuctionItem>();
+            MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
             for (AuctionItem item : this.items.values()) {
-                if (item.state == 0 && item.item != null && (fstr.isEmpty() || ii.getName(item.itemid).contains(fstr)) && ii.getReqLevel(item.itemid) >= minLevel && ii.getReqLevel(item.itemid) <= maxLevel && item.itemid >= minItemId && item.itemid <= maxItemId) {
-                    if (grade != -1 && item.item instanceof Equip) {
-                        if ((((Equip) item.item).getState(false) & grade) == 0x0) {
-                            list.add(item);
-                        }
-                    } else {
-                        list.add(item);
-                    }
-                }
-            }
-            return list;
-        } finally {
-            this.lock.unlock();
-        }
-    }
-
-    public final List<AuctionItem> findBuyerItemByLevel(final int minLevel, final int maxLevel) {
-        this.lock.lock();
-        try {
-
-            final List<AuctionItem> list = new ArrayList<>();
-            final MapleItemInformationProvider s283 = MapleItemInformationProvider.getInstance();
-            for (AuctionItem item : this.items.values()) {
-                if (item.state == BUYER_DONE && s283.getReqLevel(item.itemid) >= minLevel && s283.getReqLevel(item.itemid) <= maxLevel) {
+                if (item.state != 0 || item.item == null || !fstr.isEmpty() && !ii.getName(item.itemid).contains(fstr) || ii.getReqLevel(item.itemid) < minLevel || ii.getReqLevel(item.itemid) > maxLevel || item.itemid < minItemId || item.itemid > maxItemId) continue;
+                if (grade != -1 && item.item instanceof Equip) {
+                    if ((((Equip)item.item).getState(false) & grade) != 0) continue;
                     list.add(item);
+                    continue;
                 }
+                list.add(item);
             }
-            return list;
-        } finally {
+            ArrayList<AuctionItem> arrayList = list;
+            return arrayList;
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
-    public final AuctionItem getItemBySN(final long n) {
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public final List<AuctionItem> findBuyerItemByLevel(int minLevel, int maxLevel) {
         this.lock.lock();
         try {
-            return this.items.get(n);
-        } finally {
+            ArrayList<AuctionItem> list = new ArrayList<AuctionItem>();
+            MapleItemInformationProvider s283 = MapleItemInformationProvider.getInstance();
+            for (AuctionItem item : this.items.values()) {
+                if (item.state != 2 || s283.getReqLevel(item.itemid) < minLevel || s283.getReqLevel(item.itemid) > maxLevel) continue;
+                list.add(item);
+            }
+            ArrayList<AuctionItem> arrayList = list;
+            return arrayList;
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
-    public final void buy(final MapleCharacter player, final int auctionOptType, final long n, int number) {
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public final AuctionItem getItemBySN(long n) {
+        this.lock.lock();
+        try {
+            AuctionItem auctionItem = this.items.get(n);
+            return auctionItem;
+        }
+        finally {
+            this.lock.unlock();
+        }
+    }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
+    public final void buy(MapleCharacter player, int auctionOptType, long n, int number) {
         if (number < 0 || number > Short.MAX_VALUE) {
             player.getClient().getSession().close();
         }
         this.lock.lock();
         try {
-            final AuctionItem ai;
-            if ((ai = this.items.get(n)) != null && ai.characters_id != player.getId() && ai.state == 0 && ai.item != null) {
-                final long n2 = ai.price * number;
-                if (((ai.type == 2) ? player.getCSPoints(2) : player.getMeso()) < ai.price) {
-                    player.getClient().announce(AuctionPacket.auctionResult(auctionOptType, (ai.type == 2) ? 900 : 106));
+            AuctionItem ai = this.items.get(n);
+            if (ai != null && ai.characters_id != player.getId() && ai.state == 0 && ai.item != null) {
+                long n2 = ai.price * (long)number;
+                if ((ai.type == 2 ? (long)player.getCSPoints(2) : player.getMeso()) < ai.price) {
+                    player.getClient().announce(AuctionPacket.auctionResult((int)auctionOptType, (int)(ai.type == 2 ? 900 : 106)));
                     return;
                 }
                 if (!MapleInventoryManipulator.checkSpace(player.getClient(), ai.itemid, number, "")) {
-                    player.getClient().announce(AuctionPacket.auctionResult(auctionOptType, 1));
+                    player.getClient().announce(AuctionPacket.auctionResult((int)auctionOptType, (int)1));
                     return;
                 }
                 if (number > ai.number) {
-                    player.getClient().announce(AuctionPacket.auctionResult(auctionOptType, 102));
+                    player.getClient().announce(AuctionPacket.auctionResult((int)auctionOptType, (int)102));
                     return;
                 }
-                if (/*ai.type == 1 &&*/player.getMeso() < n2) {
-                    player.getClient().announce(AuctionPacket.auctionResult(auctionOptType, 106));
+                if (player.getMeso() < n2) {
+                    player.getClient().announce(AuctionPacket.auctionResult((int)auctionOptType, (int)106));
                     return;
                 }
-//                if (ai.type == 2 && player.getCSPoints(2) < n2) {
-//                    player.getClient().announce(AuctionPacket.auctionResult(auctionOptType, 900));
-//                    return;
-//                }
-//                if (ai.type == 1) {
                 player.gainMeso(-n2, false);
-//                } else {
-//                    if (ai.type != 2) {
-//                        return;
-//                    }
-//                    player.modifyCSPoints(2, -(int) n2);
-//                }
-                final Item copy = ai.item.copy();
+                Item copy = ai.item.copy();
                 boolean b584 = false;
-                final long akd = ai.price;
+                long akd = ai.price;
                 if (number < ai.item.getQuantity() && copy.getType() == 2 && !ItemConstants.類型.可充值道具(copy.getItemId())) {
-                    copy.setQuantity((short) number);
-                    ai.item.setQuantity((short) (ai.item.getQuantity() - number));
+                    copy.setQuantity((short)number);
+                    ai.item.setQuantity((short)(ai.item.getQuantity() - number));
                     ai.number = ai.item.getQuantity();
                     b584 = true;
                 } else {
-                    ai.state = SELLER_DONE;
+                    ai.state = 3;
                     ai.item = null;
-                    ai.price = akd * ai.number;
+                    ai.price = akd * (long)ai.number;
                     ai.number = 0;
                 }
                 if (ItemAttribute.TradeOnce.check(copy.getAttribute())) {
@@ -299,12 +317,12 @@ public class AuctionServer {
                 if (copy.getType() == 2) {
                     copy.setSN(MapleInventoryIdentifier.getInstance());
                 }
-                final AuctionItem b586 = new AuctionItem();
-                (b586).id = AuctionServer.runningSNID.getAndIncrement();
+                AuctionItem b586 = new AuctionItem();
+                b586.id = runningSNID.getAndIncrement();
                 b586.accounts_id = player.getAccountID();
                 b586.characters_id = player.getId();
                 b586.owner = player.getName();
-                b586.state = BUYER_DONE;
+                b586.state = 2;
                 b586.type = ai.type;
                 b586.itemid = copy.getItemId();
                 if (ItemConstants.類型.可充值道具(copy.getItemId())) {
@@ -312,7 +330,7 @@ public class AuctionServer {
                     b586.price = akd;
                 } else {
                     b586.number = copy.getQuantity();
-                    b586.price = akd * copy.getQuantity();
+                    b586.price = akd * (long)copy.getQuantity();
                 }
                 b586.startdate = ai.startdate;
                 b586.expiredate = System.currentTimeMillis() + 31536000000L;
@@ -321,15 +339,15 @@ public class AuctionServer {
                 b586.other_id = ai.characters_id;
                 b586.other = ai.owner;
                 if (b584) {
-                    final AuctionItem ain;
-                    (ain = new AuctionItem()).id = AuctionServer.runningSNID.getAndIncrement();
+                    AuctionItem ain = new AuctionItem();
+                    new AuctionItem().id = runningSNID.getAndIncrement();
                     ain.accounts_id = ai.accounts_id;
                     ain.characters_id = ai.characters_id;
                     ain.owner = ai.owner;
-                    ain.state = SELLER_DONE;
+                    ain.state = 3;
                     ain.type = ai.type;
                     ain.itemid = copy.getItemId();
-                    ain.price = ai.price * copy.getQuantity();
+                    ain.price = ai.price * (long)copy.getQuantity();
                     ain.startdate = ai.startdate;
                     ain.expiredate = System.currentTimeMillis() + 31536000000L;
                     ain.donedate = System.currentTimeMillis();
@@ -345,74 +363,92 @@ public class AuctionServer {
                 this.changeAuctionItemWorld(b586);
                 this.items.put(b586.id, b586);
                 player.getClient().announce(MaplePacketCreator.showCharCash(player));
-                player.getClient().announce(AuctionPacket.updateAuctionItemInfo(auctionOptType, b586));
+                player.getClient().announce(AuctionPacket.updateAuctionItemInfo((int)auctionOptType, (AuctionItem)b586));
             } else {
-                player.getClient().announce(AuctionPacket.auctionResult(auctionOptType, 102));
+                player.getClient().announce(AuctionPacket.auctionResult((int)auctionOptType, (int)102));
             }
-        } finally {
+        }
+        finally {
             this.lock.unlock();
         }
     }
 
     public PlayerStorage getPlayerStorage() {
-        return players;
+        return this.players;
     }
 
     public short getPort() {
-        return port;
+        return this.port;
     }
 
     public void shutdown() {
-        if (finishedShutdown) {
+        if (this.finishedShutdown) {
             return;
         }
         log.info("正在關閉拍賣場伺服器...");
-        players.disconnectAll();
+        this.players.disconnectAll();
         log.info("拍賣場伺服器解除連接埠綁定...");
-        init.close();
-        if (schedule != null) {
-            schedule.cancel(false);
-            schedule = null;
+        this.init.close();
+        if (this.schedule != null) {
+            this.schedule.cancel(false);
+            this.schedule = null;
         }
-        finishedShutdown = true;
+        this.finishedShutdown = true;
     }
 
-    private final class ExpiredCheckThread implements Runnable {
+    static {
+        log = LoggerFactory.getLogger(AuctionServer.class);
+        instance = new AuctionServer();
+        runningSNID = new AtomicLong(DatabaseLoader.DatabaseConnection.domain(con -> {
+            ResultSet rs = SqlTool.query(con, "SELECT MAX(id) FROM `auction`");
+            if (rs.next()) {
+                return rs.getLong(1);
+            }
+            return 0L;
+        }, "讀取MaxAuctionId異常", true) + 1L);
+    }
 
+    private final class ExpiredCheckThread
+    implements Runnable {
+        private ExpiredCheckThread() {
+        }
+
+        /*
+         * WARNING - Removed try catching itself - possible behaviour change.
+         */
         @Override
         public void run() {
-            lock.lock();
+            AuctionServer.this.lock.lock();
             try {
-                List<Long> expiredItems = new ArrayList<>();
-                final long currentTimeMillis = System.currentTimeMillis();
-                items.forEach((n5, auctionItem) -> {
-                    if (auctionItem.state == ONSALE) {
+                ArrayList expiredItems = new ArrayList();
+                long currentTimeMillis = System.currentTimeMillis();
+                AuctionServer.this.items.forEach((n5, auctionItem) -> {
+                    if (auctionItem.state == 0) {
                         if (currentTimeMillis >= auctionItem.expiredate) {
-                            auctionItem.state = TERMINATE;
+                            auctionItem.state = 4;
                             auctionItem.donedate = currentTimeMillis;
-                            auctionItem.expiredate = currentTimeMillis + 31536000000L;//一年後
-                            changeAuctionItemWorld(auctionItem);
-                        } else {
+                            auctionItem.expiredate = currentTimeMillis + 31536000000L;
+                            AuctionServer.this.changeAuctionItemWorld((AuctionItem)auctionItem);
                         }
-                    } else {
-                        if (currentTimeMillis >= auctionItem.expiredate) {
-                            expiredItems.add(n5);
-                        } else {
-                        }
+                    } else if (currentTimeMillis >= auctionItem.expiredate) {
+                        expiredItems.add(n5);
                     }
                 });
                 expiredItems.forEach(id -> {
-                    items.remove(id);
-                    sqlLock.lock();
+                    AuctionServer.this.items.remove(id);
+                    AuctionServer.this.sqlLock.lock();
                     try {
                         SqlTool.update("DELETE FROM `auction` WHERE `id` = ? ", id);
-                    } finally {
-                        sqlLock.unlock();
+                    }
+                    finally {
+                        AuctionServer.this.sqlLock.unlock();
                     }
                 });
-            } finally {
-                lock.unlock();
+            }
+            finally {
+                AuctionServer.this.lock.unlock();
             }
         }
     }
 }
+

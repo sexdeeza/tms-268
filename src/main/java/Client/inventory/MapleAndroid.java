@@ -1,7 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Packet.AndroidPacket
+ */
 package Client.inventory;
 
 import Client.MapleCharacter;
-import Database.DatabaseLoader.DatabaseConnectionEx;
+import Client.inventory.MapleInventoryIdentifier;
+import Database.DatabaseLoader;
 import Net.server.MapleItemInformationProvider;
 import Net.server.StructAndroid;
 import Net.server.movement.LifeMovement;
@@ -9,19 +16,23 @@ import Net.server.movement.LifeMovementFragment;
 import Net.server.movement.MovementNormal;
 import Packet.AndroidPacket;
 import Packet.PacketHelper;
+import com.alibaba.druid.pool.DruidPooledConnection;
 import connection.OutPacket;
+import java.awt.Point;
+import java.io.Serializable;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Timestamp;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.Randomizer;
 import tools.data.MaplePacketLittleEndianWriter;
 
-import java.awt.*;
-import java.io.Serializable;
-import java.sql.*;
-import java.util.List;
-
-public class MapleAndroid implements Serializable {
-
+public class MapleAndroid
+implements Serializable {
     private static final Logger log = LoggerFactory.getLogger(MapleAndroid.class);
     private static final long serialVersionUID = 9179541993413738569L;
     private final int uniqueid;
@@ -45,10 +56,12 @@ public class MapleAndroid implements Serializable {
     }
 
     /*
-     * 加載機器人信息
+     * Enabled aggressive block sorting
+     * Enabled unnecessary exception pruning
+     * Enabled aggressive exception aggregation
      */
     public static MapleAndroid loadFromDb(int itemid, int uniqueid) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection()) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
             MapleAndroid ret = new MapleAndroid(itemid, uniqueid);
             PreparedStatement ps = con.prepareStatement("SELECT * FROM androids WHERE uniqueid = ?");
             ps.setInt(1, uniqueid);
@@ -56,17 +69,18 @@ public class MapleAndroid implements Serializable {
             if (!rs.next()) {
                 rs.close();
                 ps.close();
-                return null;
+                MapleAndroid mapleAndroid = null;
+                return mapleAndroid;
             }
             int type = rs.getInt("type");
             int gender = rs.getInt("gender");
             boolean fix = false;
-            if (type < 1) { //修復以前錯誤的設置 機器人的外形ID默認是從1開始
+            if (type < 1) {
                 MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-                type = ii.getAndroidType(itemid);
-                StructAndroid aInfo = ii.getAndroidInfo(type);
-                if (aInfo == null) { //如果沒有這個類型就返回空
-                    return null;
+                StructAndroid aInfo = ii.getAndroidInfo(type = ii.getAndroidType(itemid));
+                if (aInfo == null) {
+                    MapleAndroid mapleAndroid = null;
+                    return mapleAndroid;
                 }
                 gender = aInfo.gender;
                 fix = true;
@@ -78,25 +92,23 @@ public class MapleAndroid implements Serializable {
             ret.setFace(rs.getInt("face"));
             ret.setName(rs.getString("name"));
             ret.setAntennaUsed(rs.getByte("antennaUsed") == 1);
-            ret.setShopTime(rs.getTimestamp("shopTime") == null ? -1 : rs.getTimestamp("shopTime").getTime());
+            ret.setShopTime(rs.getTimestamp("shopTime") == null ? -1L : rs.getTimestamp("shopTime").getTime());
             ret.changed = fix;
             rs.close();
             ps.close();
-            return ret;
-        } catch (SQLException ex) {
+            MapleAndroid mapleAndroid = ret;
+            return mapleAndroid;
+        }
+        catch (SQLException ex) {
             log.error("加載機器人信息出錯", ex);
             return null;
         }
     }
 
-    /*
-     * 創建1個機器人信息
-     * 也就是使用1個新機器人的道具
-     */
     public static MapleAndroid create(int itemid, int uniqueid) {
+        int type;
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        int type = ii.getAndroidType(itemid);
-        StructAndroid aInfo = ii.getAndroidInfo(type);
+        StructAndroid aInfo = ii.getAndroidInfo(type = ii.getAndroidType(itemid));
         if (aInfo == null) {
             return null;
         }
@@ -104,10 +116,10 @@ public class MapleAndroid implements Serializable {
         int skin = aInfo.skin.get(Randomizer.nextInt(aInfo.skin.size()));
         int hair = aInfo.hair.get(Randomizer.nextInt(aInfo.hair.size()));
         int face = aInfo.face.get(Randomizer.nextInt(aInfo.face.size()));
-        if (uniqueid <= -1) { //修復唯一ID小於-1的情況
+        if (uniqueid <= -1) {
             uniqueid = MapleInventoryIdentifier.getInstance();
         }
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection()) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
             PreparedStatement pse = con.prepareStatement("INSERT INTO androids (uniqueid, type, gender, skin, hair, face, name) VALUES (?, ?, ?, ?, ?, ?, ?)");
             pse.setInt(1, uniqueid);
             pse.setInt(2, type);
@@ -118,7 +130,8 @@ public class MapleAndroid implements Serializable {
             pse.setString(7, "機器人");
             pse.executeUpdate();
             pse.close();
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             log.error("創建機器人信息出錯", ex);
             return null;
         }
@@ -130,54 +143,54 @@ public class MapleAndroid implements Serializable {
         and.setFace(face);
         and.setName("機器人");
         and.setAntennaUsed(false);
-        and.setShopTime(-1);
+        and.setShopTime(-1L);
         return and;
     }
 
-    /**
-     * 保存機器人信息到SQL
-     */
     public void saveToDb() {
-        saveToDb(null);
+        this.saveToDb(null);
     }
 
-    /**
-     * 保存機器人信息到SQL
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
      */
     public void saveToDb(Connection con) {
-        if (!changed) {
+        if (!this.changed) {
             return;
         }
         boolean needclose = false;
         try {
             if (con == null) {
                 needclose = true;
-                con = DatabaseConnectionEx.getInstance().getConnection();
+                con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();
             }
             PreparedStatement ps = con.prepareStatement("UPDATE androids SET type = ?, gender = ?, skin = ?, hair = ?, face = ?, name = ?, antennaUsed = ?, shopTime = ? WHERE uniqueid = ?");
-            ps.setInt(1, type); //外形ID
-            ps.setInt(2, gender); //性別
-            ps.setInt(3, skin); //皮膚
-            ps.setInt(4, hair); //髮型
-            ps.setInt(5, face); //臉型
-            ps.setString(6, name); //名字
-            ps.setByte(7, (byte) (antennaUsed ? 1 : 0)); // 透明機器人耳飾感應器
-            if (shopTime >= 0) {
-                ps.setTimestamp(8, new Timestamp(shopTime));
+            ps.setInt(1, this.type);
+            ps.setInt(2, this.gender);
+            ps.setInt(3, this.skin);
+            ps.setInt(4, this.hair);
+            ps.setInt(5, this.face);
+            ps.setString(6, this.name);
+            ps.setByte(7, (byte)(this.antennaUsed ? 1 : 0));
+            if (this.shopTime >= 0L) {
+                ps.setTimestamp(8, new Timestamp(this.shopTime));
             } else {
-                ps.setNull(8, Types.TIMESTAMP);
+                ps.setNull(8, 93);
             }
-            ps.setInt(9, uniqueid); //唯一的ID
+            ps.setInt(9, this.uniqueid);
             ps.executeUpdate();
             ps.close();
-            changed = false;
-        } catch (SQLException ex) {
+            this.changed = false;
+        }
+        catch (SQLException ex) {
             log.error("保存機器人信息出錯", ex);
-        } finally {
+        }
+        finally {
             if (needclose) {
                 try {
                     con.close();
-                } catch (SQLException e) {
+                }
+                catch (SQLException e) {
                     log.error("保存機器人信息出錯", e);
                 }
             }
@@ -185,15 +198,15 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getItemId() {
-        return itemid;
+        return this.itemid;
     }
 
     public int getUniqueId() {
-        return uniqueid;
+        return this.uniqueid;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String n) {
@@ -202,7 +215,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getType() {
-        return type;
+        return this.type;
     }
 
     public void setType(int t) {
@@ -211,7 +224,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getGender() {
-        return gender;
+        return this.gender;
     }
 
     public void setGender(int g) {
@@ -220,7 +233,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getSkin() {
-        return skin;
+        return this.skin;
     }
 
     public void setSkin(int s) {
@@ -229,7 +242,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getHair() {
-        return hair;
+        return this.hair;
     }
 
     public void setHair(int h) {
@@ -238,7 +251,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getFace() {
-        return face;
+        return this.face;
     }
 
     public void setFace(int f) {
@@ -247,7 +260,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public boolean isAntennaUsed() {
-        return antennaUsed;
+        return this.antennaUsed;
     }
 
     public void setAntennaUsed(boolean a) {
@@ -256,7 +269,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public long getShopTime() {
-        return shopTime;
+        return this.shopTime;
     }
 
     public void setShopTime(long s) {
@@ -264,11 +277,8 @@ public class MapleAndroid implements Serializable {
         this.changed = true;
     }
 
-    /*
-     * 移動相關信息
-     */
     public int getFh() {
-        return Fh;
+        return this.Fh;
     }
 
     public void setFh(int Fh) {
@@ -276,7 +286,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public Point getPos() {
-        return pos;
+        return this.pos;
     }
 
     public void setPos(Point pos) {
@@ -284,7 +294,7 @@ public class MapleAndroid implements Serializable {
     }
 
     public int getStance() {
-        return stance;
+        return this.stance;
     }
 
     public void setStance(int stance) {
@@ -293,64 +303,69 @@ public class MapleAndroid implements Serializable {
 
     public void updatePosition(List<LifeMovementFragment> movement) {
         for (LifeMovementFragment move : movement) {
-            if (move instanceof LifeMovement) {
-                if (move instanceof MovementNormal) {
-                    setPos(((MovementNormal) move).getPosition());
-                    setFh(((MovementNormal) move).getFH());
-                }
-                setStance(((LifeMovement) move).getMoveAction());
+            if (!(move instanceof LifeMovement)) continue;
+            if (move instanceof MovementNormal) {
+                this.setPos(((MovementNormal)move).getPosition());
+                this.setFh(((MovementNormal)move).getFH());
             }
+            this.setStance(((LifeMovement)move).getMoveAction());
         }
     }
 
     public void showEmotion(MapleCharacter chr, String emotion) {
-        byte speak;
+        int speak;
         byte animation = 0;
         switch (emotion) {
-            case "hello":
+            case "hello": {
                 speak = 0;
-                animation = (byte) Randomizer.rand(1, 17);
+                animation = (byte)Randomizer.rand(1, 17);
                 break;
-            case "levelup":
+            }
+            case "levelup": {
                 speak = 1;
-                animation = (byte) Randomizer.rand(1, 17);
+                animation = (byte)Randomizer.rand(1, 17);
                 break;
-            case "dead":
+            }
+            case "dead": {
                 speak = 2;
-                animation = (byte) Randomizer.rand(1, 17);
+                animation = (byte)Randomizer.rand(1, 17);
                 break;
-            case "bye":
+            }
+            case "bye": {
                 speak = 3;
                 break;
-            case "job":
+            }
+            case "job": {
                 speak = 4;
                 break;
-            case "alert":
+            }
+            case "alert": {
                 speak = 5;
-                animation = (byte) (Randomizer.isSuccess(10) ? 0 : 1);
-                if (animation == 1) {
-                    return;
-                }
-                break;
-            default:
+                animation = (byte)(!Randomizer.isSuccess(10) ? 1 : 0);
+                if (animation != 1) break;
                 return;
+            }
+            default: {
+                return;
+            }
         }
-        chr.getMap().broadcastMessage(AndroidPacket.showAndroidEmotion(chr.getId(), speak, animation));
+        chr.getMap().broadcastMessage(AndroidPacket.showAndroidEmotion((int)chr.getId(), (int)speak, (int)animation));
     }
 
     public void encodeAndroidLook(MaplePacketLittleEndianWriter mplew) {
         OutPacket outPacket = new OutPacket();
-        encodeAndroidLook(outPacket);
+        this.encodeAndroidLook(outPacket);
         mplew.write(outPacket.getData());
     }
 
     public void encodeAndroidLook(OutPacket outPacket) {
-        outPacket.encodeShort(getSkin() >= 2000 ? getSkin() - 2000 : getSkin());
-        outPacket.encodeInt(getHair());
-        outPacket.encodeInt(getFace());
-        outPacket.encodeString(getName());
-        outPacket.encodeInt(isAntennaUsed() ? 2892000 : 0);
-        outPacket.encodeLong(PacketHelper.getTime(getShopTime() < 0 ? -2 : getShopTime()));
+        outPacket.encodeShort(this.getSkin() >= 2000 ? this.getSkin() - 2000 : this.getSkin());
+        outPacket.encodeInt(this.getHair());
+        outPacket.encodeInt(this.getFace());
+        outPacket.encodeString(this.getName());
+        outPacket.encodeInt(this.isAntennaUsed() ? 2892000 : 0);
+        outPacket.encodeLong(PacketHelper.getTime(this.getShopTime() < 0L ? -2L : this.getShopTime()));
         outPacket.encodeInt(0);
     }
 }
+

@@ -9,7 +9,7 @@ import Net.server.life.MobSkill;
 import Net.server.life.MobSkillFactory;
 import Net.server.maps.MapleAffectedArea;
 import Net.server.maps.MapleFoothold;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.EffectPacket;
 import Packet.MaplePacketCreator;
 import Packet.MobPacket;

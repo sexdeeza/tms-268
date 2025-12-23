@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.阿尼瑪族;
 
 import Client.MapleCharacter;
@@ -5,21 +8,18 @@ import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.阿尼瑪族通用;
+import Config.constants.skills.通用V核心;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 
-import static Config.constants.skills.通用V核心.阿尼瑪族通用.花中君子;
-import static Config.constants.skills.通用V核心.阿尼瑪族通用.花中君子_1;
-
-public class 阿尼瑪族 extends AbstractSkillHandler {
-
+public class 阿尼瑪族
+extends AbstractSkillHandler {
     public 阿尼瑪族() {
-        for (Field field : 阿尼瑪族通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.阿尼瑪族通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -32,14 +32,14 @@ public class 阿尼瑪族 extends AbstractSkillHandler {
 
     @Override
     public int getLinkedSkillID(int skillId) {
-        if (skillId == 花中君子_1) {
-            return 花中君子;
+        if (skillId == 400001062) {
+            return 400001061;
         }
         return -1;
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -74,3 +74,4 @@ public class 阿尼瑪族 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

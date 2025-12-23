@@ -1,7 +1,7 @@
 package Server.BossEventHandler.Jin;
 
 import Client.MapleCharacter;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.data.MaplePacketLittleEndianWriter;
 
 /**

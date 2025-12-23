@@ -1,34 +1,46 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.movement;
 
+import Net.server.movement.LifeMovement;
+import java.awt.Point;
 import tools.data.MaplePacketLittleEndianWriter;
 
-import java.awt.*;
-
-public class MovementBase implements LifeMovement {
-
-    private Point position, pixelsPerSecond, offset;
-    private int elapse, moveAction, command, fh, stat, unk2, unk3;
-    private short footStart, unk1;
+public class MovementBase
+implements LifeMovement {
+    private Point position;
+    private Point pixelsPerSecond;
+    private Point offset;
+    private int elapse;
+    private int moveAction;
+    private int command;
+    private int fh;
+    private int stat;
+    private int unk2;
+    private int unk3;
+    private short footStart;
+    private short unk1;
     private byte forcedStop;
 
     public MovementBase(int command, int stat) {
-        setCommand(command);
-        setStat(stat);
+        this.setCommand(command);
+        this.setStat(stat);
     }
 
     public MovementBase(int command, int moveAction, int elapse, byte forcedStop) {
-        setCommand(command);
-        setMoveAction(moveAction);
-        setElapse(elapse);
-        setForcedStop(forcedStop);
+        this.setCommand(command);
+        this.setMoveAction(moveAction);
+        this.setElapse(elapse);
+        this.setForcedStop(forcedStop);
     }
 
     @Override
-    public void serialize(final MaplePacketLittleEndianWriter mplew) {
-        mplew.write(getCommand());
-        mplew.write(getMoveAction());
-        mplew.writeShort(getElapse());
-        mplew.write(getForcedStop());
+    public void serialize(MaplePacketLittleEndianWriter mplew) {
+        mplew.write(this.getCommand());
+        mplew.write(this.getMoveAction());
+        mplew.writeShort(this.getElapse());
+        mplew.write(this.getForcedStop());
     }
 
     public final int getCommand() {
@@ -39,16 +51,18 @@ public class MovementBase implements LifeMovement {
         this.command = command;
     }
 
+    @Override
     public final int getElapse() {
-        return elapse;
+        return this.elapse;
     }
 
     public final void setElapse(int elapse) {
         this.elapse = elapse;
     }
 
+    @Override
     public final int getMoveAction() {
-        return moveAction;
+        return this.moveAction;
     }
 
     public final void setMoveAction(int moveAction) {
@@ -56,7 +70,7 @@ public class MovementBase implements LifeMovement {
     }
 
     public final byte getForcedStop() {
-        return forcedStop;
+        return this.forcedStop;
     }
 
     public final void setForcedStop(byte forcedStop) {
@@ -64,7 +78,7 @@ public class MovementBase implements LifeMovement {
     }
 
     public Point getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(Point position) {
@@ -72,7 +86,7 @@ public class MovementBase implements LifeMovement {
     }
 
     public Point getPixelsPerSecond() {
-        return pixelsPerSecond;
+        return this.pixelsPerSecond;
     }
 
     public void setPixelsPerSecond(Point wobble) {
@@ -88,7 +102,7 @@ public class MovementBase implements LifeMovement {
     }
 
     public int getFH() {
-        return fh;
+        return this.fh;
     }
 
     public void setFH(short fh) {
@@ -99,7 +113,7 @@ public class MovementBase implements LifeMovement {
         return this.footStart;
     }
 
-    public void setFootStart(final short footStart) {
+    public void setFootStart(short footStart) {
         this.footStart = footStart;
     }
 
@@ -116,11 +130,11 @@ public class MovementBase implements LifeMovement {
     }
 
     public short getUnk1() {
-        return unk1;
+        return this.unk1;
     }
 
     public int getUnk2() {
-        return unk2;
+        return this.unk2;
     }
 
     public void setUnk2(int unk2) {
@@ -128,11 +142,11 @@ public class MovementBase implements LifeMovement {
     }
 
     public int getUnk3() {
-        return unk3;
+        return this.unk3;
     }
 
     public void setUnk3(int unk3) {
         this.unk3 = unk3;
     }
-
 }
+

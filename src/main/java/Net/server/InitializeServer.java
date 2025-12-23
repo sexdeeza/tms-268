@@ -1,12 +1,15 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
 
 import Client.force.MapleForceFactory;
 import Client.hexa.HexaFactory;
-import Config.constants.ServerConstants;
 import Database.DatabaseException;
-import Database.DatabaseLoader.DatabaseConnection;
-import Database.DatabaseLoader.DatabaseConnectionEx;
+import Database.DatabaseLoader;
 import Database.tools.SqlTool;
+import Net.server.MapleItemInformationProvider;
+import Net.server.MapleUnionData;
 import Net.server.cashshop.CashItemFactory;
 import Net.server.life.MapleLifeFactory;
 import Net.server.life.MapleMonsterInformationProvider;
@@ -21,102 +24,122 @@ import Plugin.provider.MapleDataProviderFactory;
 import Plugin.provider.loaders.SkillData;
 import Plugin.provider.loaders.StringData;
 import Plugin.script.ReactorManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.alibaba.druid.pool.DruidPooledConnection;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class InitializeServer {
-    private static final Logger log = LoggerFactory.getLogger(InitializeServer.class);
+    private static final Logger logger = LoggerFactory.getLogger(InitializeServer.class);
     private static final ExecutorService executor = Executors.newWorkStealingPool(2);
     private static final String LOG_TABLE_NAME = "systemupdatelog";
+    public static boolean InitDataFinished = false;
 
     public static boolean initServer() {
         CompletableFuture<Boolean> initSettingFuture = CompletableFuture.supplyAsync(InitializeServer::initializeSetting, executor);
         CompletableFuture<Boolean> initUpdateLogFuture = CompletableFuture.supplyAsync(InitializeServer::initializeUpdateLog, executor);
         CompletableFuture<Boolean> initMySQLFuture = CompletableFuture.supplyAsync(InitializeServer::initializeMySQL, executor);
-
-        CompletableFuture<Void> combinedFuture = CompletableFuture.allOf(initSettingFuture, initUpdateLogFuture, initMySQLFuture);
-        combinedFuture.join();
-        initSettingFuture.join();
-        initUpdateLogFuture.join();
-        initMySQLFuture.join();
+        CompletableFuture.allOf(initSettingFuture, initUpdateLogFuture, initMySQLFuture).join();
         executor.shutdown();
         return true;
     }
 
-    private static boolean executeSql(String sql, Object... params) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            for (int i = 0; i < params.length; i++) {
-                ps.setObject(i + 1, params[i]);
+    /*
+     * Enabled aggressive exception aggregation
+     */
+    private static boolean executeSql(String sql, Object ... params) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
+            boolean bl;
+            block15: {
+                PreparedStatement ps = con.prepareStatement(sql);
+                try {
+                    for (int i = 0; i < params.length; ++i) {
+                        ps.setObject(i + 1, params[i]);
+                    }
+                    ps.executeUpdate();
+                    bl = true;
+                    if (ps == null) break block15;
+                }
+                catch (Throwable throwable) {
+                    if (ps != null) {
+                        try {
+                            ps.close();
+                        }
+                        catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                    }
+                    throw throwable;
+                }
+                ps.close();
             }
-            ps.executeUpdate();
-            return true;
-        } catch (SQLException ex) {
-            log.error("[EXCEPTION] Please check if the SQL server is active.", ex);
+            return bl;
+        }
+        catch (SQLException ex) {
+            logger.error("[EXCEPTION] SQL执行错误，请检查SQL服务器是否正常。", ex);
             return false;
         }
     }
 
     private static boolean initializeSetting() {
-        return executeSql("UPDATE `accounts` SET `loggedin` = 0, `check` = 0");
+        return InitializeServer.executeSql("UPDATE `accounts` SET `loggedin` = 0, `check` = 0", new Object[0]);
     }
 
     private static boolean initializeUpdateLog() {
-        if (!checkTableExists(LOG_TABLE_NAME)) {
-            createTable(LOG_TABLE_NAME, "id INT(11) NOT NULL AUTO_INCREMENT, patchname VARCHAR(50) NOT NULL, "
-                    + "lasttime TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (id)");
+        if (!InitializeServer.checkTableExists(LOG_TABLE_NAME)) {
+            InitializeServer.createTable(LOG_TABLE_NAME, "id INT(11) NOT NULL AUTO_INCREMENT, patchname VARCHAR(50) NOT NULL, lasttime TIMESTAMP NOT NULL ON UPDATE CURRENT_TIMESTAMP, PRIMARY KEY (id)");
         }
-        return checkTableExists(LOG_TABLE_NAME);
+        return InitializeServer.checkTableExists(LOG_TABLE_NAME);
     }
 
+    /*
+     * Exception decompiling
+     */
     private static boolean checkTableExists(String tableName) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection();
+        try (Connection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement("SHOW TABLES LIKE ?")) {
             ps.setString(1, tableName);
             try (ResultSet rs = ps.executeQuery()) {
                 return rs.next();
             }
         } catch (SQLException e) {
-            log.error("Error checking table existence: " + tableName, e);
+            logger.error("Error checking table existence: " + tableName, e);
             return false;
         }
     }
 
     private static void createTable(String tableName, String tableDefinition) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement("CREATE TABLE IF NOT EXISTS " + tableName + " (" + tableDefinition + ")")) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement("CREATE TABLE IF NOT EXISTS " + tableName + " (" + tableDefinition + ")");){
             ps.executeUpdate();
-        } catch (SQLException e) {
-            log.error("Error creating table: " + tableName, e);
+        }
+        catch (SQLException e) {
+            logger.error("创建表[" + tableName + "]时出错。", e);
         }
     }
 
     private static boolean checkTableExists_wz() {
-        return DatabaseConnection.domain(con -> {
+        return DatabaseLoader.DatabaseConnection.domain(con -> {
             boolean exist = false;
             try (PreparedStatement ps = con.prepareStatement("SHOW TABLES LIKE 'wztosqllog'");
-                 ResultSet rs = ps.executeQuery()) {
+                 ResultSet rs = ps.executeQuery();){
                 exist = rs.next();
-            } catch (SQLException e) {
-                log.error("Error checking wztosqllog table existence.", e);
+            }
+            catch (SQLException e) {
+                logger.error("检查wztosqllog表时出错。", e);
             }
             if (!exist) {
                 SqlTool.update(con, "DROP TABLE IF EXISTS `wztosqllog`");
-                StringBuilder s = new StringBuilder("CREATE TABLE `wztosqllog` (")
-                        .append("`version` SMALLINT NOT NULL, ")
-                        .append("`hotfix_check` VARCHAR(40) NULL DEFAULT NULL, ");
+                StringBuilder s = new StringBuilder("CREATE TABLE `wztosqllog` (").append("`version` SMALLINT NOT NULL, ").append("`hotfix_check` VARCHAR(40) NULL DEFAULT NULL, ");
                 for (String name : WzSqlName.names()) {
                     s.append("`").append(name).append("` BOOLEAN NOT NULL, ");
                 }
@@ -130,378 +153,411 @@ public class InitializeServer {
     private static boolean initializeMySQL() {
         boolean allSuccess = true;
         for (UPDATE_PATCH patch : UPDATE_PATCH.values()) {
-            if (!checkIsAppliedSQLPatch(patch.name())
-                    && (!applySQLPatch(patch.getSQL()) || !insertUpdateLog(patch.name()))) {
-                allSuccess = false;
-            }
+            if (InitializeServer.checkIsAppliedSQLPatch(patch.name()) || InitializeServer.applySQLPatch(patch.getSQL()) && InitializeServer.insertUpdateLog(patch.name())) continue;
+            allSuccess = false;
         }
         return allSuccess;
     }
 
+    /*
+     * Enabled aggressive block sorting
+     * Enabled unnecessary exception pruning
+     * Enabled aggressive exception aggregation
+     */
     private static boolean checkIsAppliedSQLPatch(String name) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement("SELECT id FROM systemupdatelog WHERE patchname = ?")) {
-            ps.setString(1, name);
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) {
-                    return true;
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();
+             PreparedStatement ps = con.prepareStatement("SELECT id FROM systemupdatelog WHERE patchname = ?");){
+            ResultSet rs;
+            block25: {
+                ps.setString(1, name);
+                try {
+                    boolean bl;
+                    rs = ps.executeQuery();
+                    try {
+                        if (!rs.next()) break block25;
+                        bl = true;
+                        if (rs == null) return bl;
+                    }
+                    catch (Throwable throwable) {
+                        if (rs == null) throw throwable;
+                        try {
+                            rs.close();
+                            throw throwable;
+                        }
+                        catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                        throw throwable;
+                    }
+                    rs.close();
+                    return bl;
                 }
-            } catch (Exception ex) {
-                SqlTool.update(con, "DROP TABLE IF EXISTS `systemupdatelog`");
-                initializeUpdateLog();
-                return checkIsAppliedSQLPatch(name);
+                catch (Exception ex) {
+                    SqlTool.update(con, "DROP TABLE IF EXISTS `systemupdatelog`");
+                    InitializeServer.initializeUpdateLog();
+                    boolean bl = InitializeServer.checkIsAppliedSQLPatch(name);
+                    if (ps != null) {
+                        ps.close();
+                    }
+                    if (con == null) return bl;
+                    con.close();
+                    return bl;
+                }
             }
-        } catch (SQLException e) {
-            log.error("Error checking SQL patch: " + name, e);
+            if (rs == null) return false;
+            rs.close();
+            return false;
+        }
+        catch (SQLException e) {
+            logger.error("检查SQL补丁[" + name + "]是否已应用时出错。", e);
         }
         return false;
     }
 
-    private static boolean insertUpdateLog(String patchname) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(
-                     "INSERT INTO systemupdatelog(id, patchname, lasttime) VALUES (DEFAULT, ?, CURRENT_TIMESTAMP)")) {
-            ps.setString(1, patchname);
-            ps.executeUpdate();
-            return true;
-        } catch (SQLException ex) {
-            log.error("Error inserting update log: " + patchname, ex);
-            return false;
-        }
-    }
-
-    private static boolean applySQLPatch(String sql) {
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection();
-             PreparedStatement ps = con.prepareStatement(sql)) {
-            ps.executeUpdate();
-            return true;
-        } catch (SQLException e) {
-            log.error("Error applying SQL patch: " + sql, e);
-            return false;
-        }
-    }
-
-    public static boolean InitDataFinished = false;
-
-    /**
-     * 初始化所有資料 (共 23 項)。
-     *
-     * @param listener 每完成一項就會呼叫一次 listener.next(now, total)
+    /*
+     * Enabled aggressive exception aggregation
      */
+    private static boolean insertUpdateLog(String patchname) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
+            boolean bl;
+            block14: {
+                PreparedStatement ps = con.prepareStatement("INSERT INTO systemupdatelog(id, patchname, lasttime) VALUES (DEFAULT, ?, CURRENT_TIMESTAMP)");
+                try {
+                    ps.setString(1, patchname);
+                    ps.executeUpdate();
+                    bl = true;
+                    if (ps == null) break block14;
+                }
+                catch (Throwable throwable) {
+                    if (ps != null) {
+                        try {
+                            ps.close();
+                        }
+                        catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                    }
+                    throw throwable;
+                }
+                ps.close();
+            }
+            return bl;
+        }
+        catch (SQLException ex) {
+            logger.error("插入更新日志[" + patchname + "]时出错。", ex);
+            return false;
+        }
+    }
+
+    /*
+     * Enabled aggressive exception aggregation
+     */
+    private static boolean applySQLPatch(String sql) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
+            boolean bl;
+            block14: {
+                PreparedStatement ps = con.prepareStatement(sql);
+                try {
+                    ps.executeUpdate();
+                    bl = true;
+                    if (ps == null) break block14;
+                }
+                catch (Throwable throwable) {
+                    if (ps != null) {
+                        try {
+                            ps.close();
+                        }
+                        catch (Throwable throwable2) {
+                            throwable.addSuppressed(throwable2);
+                        }
+                    }
+                    throw throwable;
+                }
+                ps.close();
+            }
+            return bl;
+        }
+        catch (SQLException e) {
+            logger.error("应用SQL补丁时出错： " + sql, e);
+            return false;
+        }
+    }
+
     public static void initAllData(DataCacheListener listener) {
         AtomicInteger count = new AtomicInteger(0);
         AtomicInteger total = new AtomicInteger(0);
-        ExecutorService executor = Executors.newWorkStealingPool();
-        List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-        // Task 1
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                MapleItemInformationProvider.getInstance().runItems();
-            } catch (Exception e) {
-                log.error("[TASK] runItems() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "runItems");
-            }
-        }, executor));
-
-        // Task 2
+        ExecutorService executorService = Executors.newWorkStealingPool();
+        ArrayList<CompletableFuture<Void>> futures = new ArrayList<CompletableFuture<Void>>();
+        if (!"true".equalsIgnoreCase(System.getProperty("low.performance"))) {
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    MapleItemInformationProvider.getInstance().runItems();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] runItems() 出错：", e);
+                }
+                finally {
+                    listener.next("Item", count.incrementAndGet(), total);
+                }
+            }, executorService));
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    MapleItemInformationProvider.getInstance().loadPotentialData();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] loadPotentialData() 出错：", e);
+                }
+                finally {
+                    listener.next("Potential", count.incrementAndGet(), total);
+                }
+            }, executorService));
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    MapleMapFactory.loadAllLinkNpc();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] MapleMapFactory.loadAllLinkNpc() 出错：", e);
+                }
+                finally {
+                    listener.next("LinkNpc", count.incrementAndGet(), total);
+                }
+            }, executorService));
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    MapleMapFactory.loadAllMapName();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] MapleMapFactory.loadAllMapName() 出错：", e);
+                }
+                finally {
+                    listener.next("MapName", count.incrementAndGet(), total);
+                }
+            }, executorService));
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    CashItemFactory.getInstance().initialize();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] CashItemFactory.initialize() 出错：", e);
+                }
+                finally {
+                    listener.next("CashItem", count.incrementAndGet(), total);
+                }
+            }, executorService));
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    MapleMonsterInformationProvider.getInstance().load();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] MapleMonsterInformationProvider.load() 出错：", e);
+                }
+                finally {
+                    listener.next("Monster", count.incrementAndGet(), total);
+                }
+            }, executorService));
+            futures.add(CompletableFuture.runAsync(() -> {
+                try {
+                    MapleLifeFactory.loadQuestCounts();
+                }
+                catch (Exception e) {
+                    logger.error("[TASK] MapleLifeFactory.loadQuestCounts() 出错：", e);
+                }
+                finally {
+                    listener.next("QuestCounts", count.incrementAndGet(), total);
+                }
+            }, executorService));
+        }
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 StringData.load();
-            } catch (Exception e) {
-                log.error("[TASK] StringData.load() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "StringData.load()");
             }
-        }, executor));
-
-        // Task 3
+            catch (Exception e) {
+                logger.error("[TASK] StringData.load() 出错：", e);
+            }
+            finally {
+                listener.next("String", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleItemInformationProvider.getInstance().loadSetItemData();
-            } catch (Exception e) {
-                log.error("[TASK] loadSetItemData() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "loadSetItemData()");
             }
-        }, executor));
-
-        // Task 4
+            catch (Exception e) {
+                logger.error("[TASK] loadSetItemData() 出错：", e);
+            }
+            finally {
+                listener.next("SetItem", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleItemInformationProvider.getInstance().loadFamiliarItems();
-            } catch (Exception e) {
-                log.error("[TASK] loadFamiliarItems() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "loadFamiliarItems()");
             }
-        }, executor));
-
-        // Task 5
+            catch (Exception e) {
+                logger.error("[TASK] loadFamiliarItems() 出错：", e);
+            }
+            finally {
+                listener.next("FamiliarItem", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleItemInformationProvider.getInstance().runEtc();
-            } catch (Exception e) {
-                log.error("[TASK] runEtc() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "run戒指佩戴等信息");
             }
-        }, executor));
-
-        // Task 6
+            catch (Exception e) {
+                logger.error("[TASK] runEtc() 出错：", e);
+            }
+            finally {
+                listener.next("Etc", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleForceFactory.getInstance().initialize();
-            } catch (Exception e) {
-                log.error("[TASK] MapleForceFactory.initialize() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleForceFactory.initialize()");
             }
-        }, executor));
-
-        // Task 7
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                MapleItemInformationProvider.getInstance().loadPotentialData();
-            } catch (Exception e) {
-                log.error("[TASK] loadPotentialData() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "loadPotentialData()");
+            catch (Exception e) {
+                logger.error("[TASK] MapleForceFactory.initialize() 出错：", e);
             }
-        }, executor));
-
-        // Task 8
+            finally {
+                listener.next("ForceSkill", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleShopFactory.getInstance().loadShopData();
-            } catch (Exception e) {
-                log.error("[TASK] MapleShopFactory.loadShopData() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleShopFactory.loadShopData()");
             }
-        }, executor));
-
-        // Task 9
+            catch (Exception e) {
+                logger.error("[TASK] MapleShopFactory.loadShopData() 出错：", e);
+            }
+            finally {
+                listener.next("Shop", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MobSkillFactory.initialize();
-            } catch (Exception e) {
-                log.error("[TASK] MobSkillFactory.initialize() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MobSkillFactory.initialize()");
             }
-        }, executor));
-
-        // Task 10
+            catch (Exception e) {
+                logger.error("[TASK] MobSkillFactory.initialize() 出错：", e);
+            }
+            finally {
+                listener.next("MobSkill", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleUnionData.getInstance().init();
-            } catch (Exception e) {
-                log.error("[TASK] MapleUnionData.init() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleUnionData");
             }
-        }, executor));
-
-        // Task 11
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                MapleMapFactory.loadAllLinkNpc();
-            } catch (Exception e) {
-                log.error("[TASK] MapleMapFactory.loadAllLinkNpc() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleMapFactory.loadAllLinkNpc()");
+            catch (Exception e) {
+                logger.error("[TASK] MapleUnionData.init() 出错：", e);
             }
-        }, executor));
-
-        // Task 12
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                MapleMapFactory.loadAllMapName();
-            } catch (Exception e) {
-                log.error("[TASK] MapleMapFactory.loadAllMapName() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleMapFactory.loadAllMapName()");
+            finally {
+                listener.next("MapleUnion", count.incrementAndGet(), total);
             }
-        }, executor));
-
-        // Task 13
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                CashItemFactory.getInstance().initialize();
-            } catch (Exception e) {
-                log.error("[TASK] CashItemFactory.initialize() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "CashItemFactory.initialize()");
-            }
-        }, executor));
-
-        // Task 14
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleLifeFactory.initEliteMonster();
-            } catch (Exception e) {
-                log.error("[TASK] MapleLifeFactory.initEliteMonster() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleLifeFactory.initEliteMonster()");
             }
-        }, executor));
-
-        // Task 15
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                MapleMonsterInformationProvider.getInstance().load();
-            } catch (Exception e) {
-                log.error("[TASK] MapleMonsterInformationProvider.load() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total , "MapleMonsterInformationProvider");
+            catch (Exception e) {
+                logger.error("[TASK] MapleLifeFactory.initEliteMonster() 出错：", e);
             }
-        }, executor));
-
-        // Task 16
+            finally {
+                listener.next("EliteMonster", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 ReactorManager.getInstance().loadDrops();
-            } catch (Exception e) {
-                log.error("[TASK] ReactorManager.loadDrops() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "ReactorManager.loadDrops()");
             }
-        }, executor));
-
-        // Task 17
-        futures.add(CompletableFuture.runAsync(() -> {
-            try {
-                MapleLifeFactory.loadQuestCounts();
-            } catch (Exception e) {
-                log.error("[TASK] MapleLifeFactory.loadQuestCounts() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleLifeFactory.loadQuestCounts()");
+            catch (Exception e) {
+                logger.error("[TASK] ReactorManager.loadDrops() 出错：", e);
             }
-        }, executor));
-
-        // Task 18
+            finally {
+                listener.next("Drops", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 MapleQuestDumper.getInstance().loadQuest();
-            } catch (Exception e) {
-                log.error("[TASK] MapleQuestDumper.loadQuest() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "MapleQuestDumper");
             }
-        }, executor));
-
-        // Task 19
+            catch (Exception e) {
+                logger.error("[TASK] MapleQuestDumper.loadQuest() 出错：", e);
+            }
+            finally {
+                listener.next("Quest", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 BossWillField.init();
-            } catch (Exception e) {
-                log.error("[TASK] BossWillField.init() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "BossWillField.init()");
             }
-        }, executor));
-
-        // Task 20
+            catch (Exception e) {
+                logger.error("[TASK] BossWillField.init() 出错：", e);
+            }
+            finally {
+                listener.next("WillField", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 BossLucidField.init();
-            } catch (Exception e) {
-                log.error("[TASK] BossLucidField.init() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "BossLucidField.init()");
             }
-        }, executor));
-
-        // Task 21
+            catch (Exception e) {
+                logger.error("[TASK] BossLucidField.init() 出错：", e);
+            }
+            finally {
+                listener.next("LucidField", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 ActionBarField.init();
-            } catch (Exception e) {
-                log.error("[TASK] ActionBarField.init() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "ActionBarField.init()");
             }
-        }, executor));
-
-        // Task 22
+            catch (Exception e) {
+                logger.error("[TASK] ActionBarField.init() 出错：", e);
+            }
+            finally {
+                listener.next("ActionBarField", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 HexaFactory.loadAllHexaSkill();
-            } catch (Exception e) {
-                log.error("[TASK] HexaFactory.loadAllHexaSkill() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "HexaFactory.loadAllHexaSkill()");
             }
-        }, executor));
-
-        // Task 23
+            catch (Exception e) {
+                logger.error("[TASK] HexaFactory.loadAllHexaSkill() 出错：", e);
+            }
+            finally {
+                listener.next("HexaSkill", count.incrementAndGet(), total);
+            }
+        }, executorService));
         futures.add(CompletableFuture.runAsync(() -> {
             try {
                 SkillData.loadAllSkills();
-            } catch (Exception e) {
-                log.error("[TASK] SkillData.loadAllSkills() error:", e);
-            } finally {
-                listener.next(count.incrementAndGet(), total, "SkillData.loadAllSkills()");
             }
-        }, executor));
-
+            catch (Exception e) {
+                logger.error("[TASK] SkillData.loadAllSkills() 出错：", e);
+            }
+            finally {
+                listener.next("Skill", count.incrementAndGet(), total);
+            }
+        }, executorService));
         total.set(futures.size());
-        CompletableFuture<Void> allFutures = CompletableFuture.allOf(futures.toArray(new CompletableFuture[0]));
-        long start = System.currentTimeMillis();
-
-        allFutures.whenComplete((result, error) -> {
+        CompletableFuture.allOf(futures.toArray(new CompletableFuture[0])).whenComplete((result, error) -> {
             if (error != null) {
-                log.error("One or more tasks completed exceptionally: ", error);
-            } else {
-                long sec = (System.currentTimeMillis() - start)/ 1000;
-                log.info("All {} tasks completed successfully. cost: {}s", futures.size(), sec);
+                logger.error("Error：", (Throwable)error);
             }
-            executor.shutdown();
+            executorService.shutdown();
         });
     }
 
-    /**
-     * Listener 介面，用於在每完成一項任務時更新進度。
-     * 例如：listener.next(5, total) => "5 / 23"
-     *
-     * update :通知哪一项加载完成
-     */
-    @FunctionalInterface
-    public interface DataCacheListener {
-        void next(int now, AtomicInteger total, String msg);
-    }
-
-    /**
-     * 補丁列表
-     */
-    enum UPDATE_PATCH {
-        真實符文屬性("ALTER TABLE `inventoryequipment` ADD COLUMN `aut` smallint(6) NOT NULL DEFAULT 0 AFTER `arclevel`"
-                + ", ADD COLUMN `autexp` int(6) NOT NULL DEFAULT 0 AFTER `aut`"
-                + ", ADD COLUMN `autlevel` smallint(6) NOT NULL DEFAULT 0 AFTER `autexp`"),
+    static enum UPDATE_PATCH {
+        真實符文屬性("ALTER TABLE `inventoryequipment` ADD COLUMN `aut` smallint(6) NOT NULL DEFAULT 0 AFTER `arclevel`, ADD COLUMN `autexp` int(6) NOT NULL DEFAULT 0 AFTER `aut`, ADD COLUMN `autlevel` smallint(6) NOT NULL DEFAULT 0 AFTER `autexp`"),
         寵物第二BUFF欄位("ALTER TABLE `pets` ADD COLUMN `skillid2` int(11) NOT NULL DEFAULT '0' AFTER `skillid`"),
-        公會V240擴充職位欄位("ALTER TABLE `guilds` MODIFY COLUMN `rank1authority` int(10) NOT NULL DEFAULT -1 AFTER `rank5title`"
-                + ", MODIFY COLUMN `rank2authority` int(10) NOT NULL DEFAULT 1663 AFTER `rank1authority`"
-                + ", MODIFY COLUMN `rank3authority` int(10) NOT NULL DEFAULT 1024 AFTER `rank2authority`"
-                + ", MODIFY COLUMN `rank4authority` int(10) NOT NULL DEFAULT 1024 AFTER `rank3authority`"
-                + ", MODIFY COLUMN `rank5authority` int(10) NOT NULL DEFAULT 1024 AFTER `rank4authority`"
-                + ", ADD COLUMN `rank6title` varchar(45) NOT NULL AFTER `rank5title`"
-                + ", ADD COLUMN `rank7title` varchar(45) NOT NULL AFTER `rank6title`"
-                + ", ADD COLUMN `rank8title` varchar(45) NOT NULL AFTER `rank7title`"
-                + ", ADD COLUMN `rank9title` varchar(45) NOT NULL AFTER `rank8title`"
-                + ", ADD COLUMN `rank10title` varchar(45) NOT NULL AFTER `rank9title`"
-                + ", ADD COLUMN `rank6authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank5authority`"
-                + ", ADD COLUMN `rank7authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank6authority`"
-                + ", ADD COLUMN `rank8authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank7authority`"
-                + ", ADD COLUMN `rank9authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank8authority`"
-                + ", ADD COLUMN `rank10authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank9authority`"),
+        公會V240擴充職位欄位("ALTER TABLE `guilds` MODIFY COLUMN `rank1authority` int(10) NOT NULL DEFAULT -1 AFTER `rank5title`, MODIFY COLUMN `rank2authority` int(10) NOT NULL DEFAULT 1663 AFTER `rank1authority`, MODIFY COLUMN `rank3authority` int(10) NOT NULL DEFAULT 1024 AFTER `rank2authority`, MODIFY COLUMN `rank4authority` int(10) NOT NULL DEFAULT 1024 AFTER `rank3authority`, MODIFY COLUMN `rank5authority` int(10) NOT NULL DEFAULT 1024 AFTER `rank4authority`, ADD COLUMN `rank6title` varchar(45) NOT NULL AFTER `rank5title`, ADD COLUMN `rank7title` varchar(45) NOT NULL AFTER `rank6title`, ADD COLUMN `rank8title` varchar(45) NOT NULL AFTER `rank7title`, ADD COLUMN `rank9title` varchar(45) NOT NULL AFTER `rank8title`, ADD COLUMN `rank10title` varchar(45) NOT NULL AFTER `rank9title`, ADD COLUMN `rank6authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank5authority`, ADD COLUMN `rank7authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank6authority`, ADD COLUMN `rank8authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank7authority`, ADD COLUMN `rank9authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank8authority`, ADD COLUMN `rank10authority` int(10) NOT NULL DEFAULT '1024' AFTER `rank9authority`"),
         移除商城道具extra_flags屬性("ALTER TABLE `cashshop_modified_items` DROP COLUMN `extra_flags`"),
-        公會職位預設值("ALTER TABLE `guilds` MODIFY COLUMN `rank6title` varchar(45) NOT NULL DEFAULT '公會成員4' AFTER `rank5title`"
-                + ", MODIFY COLUMN `rank7title` varchar(45) NOT NULL DEFAULT '' AFTER `rank6title`"
-                + ", MODIFY COLUMN `rank8title` varchar(45) NOT NULL DEFAULT '' AFTER `rank7title`"
-                + ", MODIFY COLUMN `rank9title` varchar(45) NOT NULL DEFAULT '' AFTER `rank8title`"
-                + ", MODIFY COLUMN `rank10title` varchar(45) NOT NULL DEFAULT '' AFTER `rank9title`"),
+        公會職位預設值("ALTER TABLE `guilds` MODIFY COLUMN `rank6title` varchar(45) NOT NULL DEFAULT '公會成員4' AFTER `rank5title`, MODIFY COLUMN `rank7title` varchar(45) NOT NULL DEFAULT '' AFTER `rank6title`, MODIFY COLUMN `rank8title` varchar(45) NOT NULL DEFAULT '' AFTER `rank7title`, MODIFY COLUMN `rank9title` varchar(45) NOT NULL DEFAULT '' AFTER `rank8title`, MODIFY COLUMN `rank10title` varchar(45) NOT NULL DEFAULT '' AFTER `rank9title`"),
         鍵位欄位擴充補丁("ALTER TABLE `keymap` ADD COLUMN `slot` tinyint(3) unsigned NOT NULL DEFAULT 0 AFTER `characterid`"),
         移除pokemon和monsterbook表("DROP TABLE IF EXISTS `pokemon`, `monsterbook`"),
         寵物Buff欄屬性("ALTER TABLE `pets` DROP COLUMN `skillid`, DROP COLUMN `skillid2`"),
@@ -518,16 +574,21 @@ public class InitializeServer {
 
         private final String sql;
 
-        UPDATE_PATCH(String sql) {
+        private UPDATE_PATCH(String sql) {
             this.sql = sql;
         }
 
         public String getSQL() {
-            return sql;
+            return this.sql;
         }
     }
 
-    public enum WzSqlName {
+    @FunctionalInterface
+    public static interface DataCacheListener {
+        public void next(String var1, int var2, AtomicInteger var3);
+    }
+
+    public static enum WzSqlName {
         wz_delays,
         wz_skilldata,
         wz_skillsbyjob,
@@ -549,56 +610,92 @@ public class InitializeServer {
         wz_npcnames,
         wz_mobskilldata;
 
+
         static String[] names() {
-            WzSqlName[] values = values();
+            WzSqlName[] values = WzSqlName.values();
             String[] names = new String[values.length];
-            for (int i = 0; i < values.length; i++) {
+            for (int i = 0; i < values.length; ++i) {
                 names[i] = values[i].name();
             }
             return names;
         }
 
+        /*
+         * Enabled aggressive block sorting
+         * Enabled unnecessary exception pruning
+         * Enabled aggressive exception aggregation
+         * Converted monitor instructions to comments
+         * Lifted jumps to return sites
+         */
         public boolean check(Connection con) {
-            synchronized (WzSqlName.class) {
-                try (PreparedStatement ps = con.prepareStatement("SELECT * FROM `wztosqllog` WHERE `version` = ?")) {
-                    String hfc = MapleDataProviderFactory.getHotfixCheck();
-                    ps.setInt(1, ServerConstants.MapleMajor);
-                    try (ResultSet rs = ps.executeQuery()) {
-                        if (rs.next()) {
-                            if (Objects.equals(rs.getString("hotfix_check"), hfc)) {
-                                return rs.getBoolean(this.name());
-                            } else {
-                                SqlTool.update(con, "DELETE FROM `wztosqllog` WHERE `version` = " + ServerConstants.MapleMajor);
+            Class<WzSqlName> clazz = WzSqlName.class;
+            // MONITORENTER : Net.server.InitializeServer$WzSqlName.class
+            try {
+                boolean bl = false;
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM `wztosqllog` WHERE `version` = ?");
+                try {
+                    String hotfixCheck;
+                    block24: {
+                        hotfixCheck = MapleDataProviderFactory.getHotfixCheck();
+                        ps.setInt(1, 268);
+                        try {
+                            ResultSet rs;
+                            block25: {
+                                rs = ps.executeQuery();
+                                if (!rs.next()) break block24;
+                                if (!Objects.equals(rs.getString("hotfix_check"), hotfixCheck)) break block25;
+                                bl = rs.getBoolean(this.name());
+                                if (rs == null) return bl;
+                                rs.close();
+                                return bl;
+                            }
+                            try {
+                                SqlTool.update(con, "DELETE FROM `wztosqllog` WHERE `version` = 268");
+                            }
+                            finally {
+                                if (rs != null) {
+                                    rs.close();
+                                }
                             }
                         }
-                    } catch (Exception e) {
-                        SqlTool.update(con, "DROP TABLE IF EXISTS `wztosqllog`");
-                        checkTableExists_wz();
+                        catch (Exception e) {
+                            SqlTool.update(con, "DROP TABLE IF EXISTS `wztosqllog`");
+                            InitializeServer.checkTableExists_wz();
+                        }
                     }
-                    StringBuilder s = new StringBuilder("INSERT INTO `wztosqllog` VALUES(")
-                            .append(ServerConstants.MapleMajor).append(",")
-                            .append(hfc == null ? "NULL" : "\"" + hfc + "\"");
-                    for (String name : names()) {
+                    StringBuilder s = new StringBuilder("INSERT INTO `wztosqllog` VALUES(").append(268).append(",").append((String)(hotfixCheck == null ? "NULL" : "\"" + hotfixCheck + "\""));
+                    for (String name : WzSqlName.names()) {
                         s.append(",false");
                     }
                     try {
                         SqlTool.update(con, s.append(")").toString());
-                    } catch (DatabaseException e) {
+                    }
+                    catch (DatabaseException e) {
                         SqlTool.update(con, "DROP TABLE IF EXISTS `wztosqllog`");
                     }
-                    return false;
-                } catch (SQLException e) {
-                    throw new DatabaseException(e);
+                    boolean bl2 = false;
+                    return bl2;
                 }
+                finally {
+                    if (ps == null) {
+                        // MONITOREXIT : clazz
+                        return bl;
+                    }
+                    ps.close();
+                }
+            }
+            catch (SQLException e) {
+                throw new DatabaseException(e);
             }
         }
 
         public synchronized void update(Connection con) {
-            SqlTool.update(con, "UPDATE `wztosqllog` SET `" + name() + "` = ? WHERE `version` = ?", true, ServerConstants.MapleMajor);
+            SqlTool.update(con, "UPDATE `wztosqllog` SET `" + this.name() + "` = ? WHERE `version` = ?", true, (short)268);
         }
 
         public synchronized void drop(Connection con) {
-            SqlTool.update(con, "DROP TABLE IF EXISTS `" + name() + "`");
+            SqlTool.update(con, "DROP TABLE IF EXISTS `" + this.name() + "`");
         }
     }
 }
+

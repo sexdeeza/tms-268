@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
 import Client.MapleCharacter;
@@ -7,15 +10,17 @@ import Client.inventory.Item;
 import Client.inventory.MapleInventoryType;
 import Config.constants.GameConstants;
 import Config.constants.ItemConstants;
+import Net.server.maps.MapleMap;
+import Net.server.maps.MapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.InventoryPacket;
-import tools.Randomizer;
-
-import java.awt.*;
+import java.awt.Point;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import tools.Randomizer;
 
-public class MapleMapItem extends MapleMapObject {
-
+public class MapleMapItem
+extends MapleMapObject {
     private final int ownerID;
     private final boolean playerDrop;
     private final ReentrantLock lock = new ReentrantLock();
@@ -26,7 +31,8 @@ public class MapleMapItem extends MapleMapObject {
     protected int questid = -1;
     private byte ownType;
     private boolean pickedUp = false;
-    private long nextExpiry = 0, nextFFA = 0;
+    private long nextExpiry = 0L;
+    private long nextFFA = 0L;
     private int skill;
     private byte enterType = 1;
     private int delay;
@@ -40,7 +46,7 @@ public class MapleMapItem extends MapleMapObject {
     private boolean bCollisionPickUp = false;
 
     public MapleMapItem(Item item, Point position, MapleMapObject dropper, MapleCharacter owner, byte ownType, boolean playerDrop) {
-        setPosition(position);
+        this.setPosition(position);
         this.item = item;
         this.dropper = dropper;
         this.ownerID = owner.getId();
@@ -49,7 +55,7 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public MapleMapItem(Item item, Point position, MapleMapObject dropper, MapleCharacter owner, byte ownType, boolean playerDrop, int questid) {
-        setPosition(position);
+        this.setPosition(position);
         this.item = item;
         this.dropper = dropper;
         this.ownerID = owner.getId();
@@ -59,7 +65,7 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public MapleMapItem(int meso, Point position, MapleMapObject dropper, MapleCharacter owner, byte ownType, boolean playerDrop) {
-        setPosition(position);
+        this.setPosition(position);
         this.item = null;
         this.dropper = dropper;
         this.ownerID = owner.getId();
@@ -69,7 +75,7 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public MapleMapItem(int pointType, Item item, Point position, MapleMapObject dropper, MapleCharacter owner, byte ownType, boolean playerDrop) {
-        setPosition(position);
+        this.setPosition(position);
         this.item = item;
         this.dropper = dropper;
         this.ownerID = owner.getId();
@@ -79,16 +85,16 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public MapleMapItem(Item item, Point position) {
-        setPosition(position);
+        this.setPosition(position);
         this.item = item;
         this.ownerID = 0;
-        this.ownType = 2;
+        this.ownType = (byte)2;
         this.playerDrop = false;
         this.nRand = Randomizer.nextInt(150) + 50;
     }
 
     public Item getItem() {
-        return item;
+        return this.item;
     }
 
     public void setItem(Item z) {
@@ -96,37 +102,37 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public int getQuest() {
-        return questid;
+        return this.questid;
     }
 
     public int getItemId() {
-        if (getMeso() > 0) {
-            return meso;
+        if (this.getMeso() > 0) {
+            return this.meso;
         }
-        if(item == null){
+        if (this.item == null) {
             return -1;
         }
-        return item.getItemId();
+        return this.item.getItemId();
     }
 
     public MapleMapObject getDropper() {
-        return dropper;
+        return this.dropper;
     }
 
     public int getOwnerID() {
-        return ownerID;
+        return this.ownerID;
     }
 
     public int getMeso() {
-        return meso;
+        return this.meso;
     }
 
     public boolean isPlayerDrop() {
-        return playerDrop;
+        return this.playerDrop;
     }
 
     public boolean isPickedUp() {
-        return pickedUp;
+        return this.pickedUp;
     }
 
     public void setPickedUp(boolean pickedUp) {
@@ -134,7 +140,7 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public byte getOwnType() {
-        return ownType;
+        return this.ownType;
     }
 
     public void setOwnType(byte z) {
@@ -153,46 +159,46 @@ public class MapleMapItem extends MapleMapObject {
 
     @Override
     public void sendSpawnData(MapleClient client) {
-        if ((getMeso() > 0 || (getMeso() <= 0 && item != null)) && (questid <= 0 || (client.getPlayer().getQuestStatus(questid) == 1 && client.getPlayer().needQuestItem(questid, item.getItemId())))) {
-            if (getOnlySelfID() >= 0 && (client == null || client.getPlayer() == null || client.getPlayer().getId() != getOnlySelfID())) {
+        if ((this.getMeso() > 0 || this.getMeso() <= 0 && this.item != null) && (this.questid <= 0 || client.getPlayer().getQuestStatus(this.questid) == 1 && client.getPlayer().needQuestItem(this.questid, this.item.getItemId()))) {
+            if (this.getOnlySelfID() >= 0 && (client == null || client.getPlayer() == null || client.getPlayer().getId() != this.getOnlySelfID())) {
                 return;
             }
-            client.announce(InventoryPacket.dropItemFromMapObject(this, this.getPosition(), getPosition(), (byte) 2));
+            client.announce(InventoryPacket.dropItemFromMapObject(this, this.getPosition(), this.getPosition(), (byte)2));
         }
     }
 
     @Override
     public void sendDestroyData(MapleClient client) {
-        client.announce(InventoryPacket.removeItemFromMap(getObjectId(), getAnimation(), getPickUpID()));
+        client.announce(InventoryPacket.removeItemFromMap(this.getObjectId(), this.getAnimation(), this.getPickUpID()));
     }
 
     public Lock getLock() {
-        return lock;
+        return this.lock;
     }
 
     public void registerExpire(long time) {
-        nextExpiry = System.currentTimeMillis() + time;
+        this.nextExpiry = System.currentTimeMillis() + time;
     }
 
     public void registerFFA(long time) {
-        nextFFA = System.currentTimeMillis() + time;
+        this.nextFFA = System.currentTimeMillis() + time;
     }
 
     public boolean shouldExpire(long now) {
-        return !pickedUp && nextExpiry > 0 && nextExpiry < now;
+        return !this.pickedUp && this.nextExpiry > 0L && this.nextExpiry < now;
     }
 
     public boolean shouldFFA(long now) {
-        return !pickedUp && ownType < 2 && nextFFA > 0 && nextFFA < now;
+        return !this.pickedUp && this.ownType < 2 && this.nextFFA > 0L && this.nextFFA < now;
     }
 
     public boolean hasFFA() {
-        return nextFFA > 0;
+        return this.nextFFA > 0L;
     }
 
     public void expire(MapleMap map) {
-        pickedUp = true;
-        map.broadcastMessage(InventoryPacket.removeItemFromMap(getObjectId(), 0, 0));
+        this.pickedUp = true;
+        map.broadcastMessage(InventoryPacket.removeItemFromMap(this.getObjectId(), 0, 0));
         map.removeMapObject(this);
     }
 
@@ -200,14 +206,14 @@ public class MapleMapItem extends MapleMapObject {
         if (this.getMeso() > 0) {
             return 0;
         }
-        if (ItemConstants.getInventoryType(item.getItemId(), false) != MapleInventoryType.EQUIP) {
+        if (ItemConstants.getInventoryType(this.item.getItemId(), false) != MapleInventoryType.EQUIP) {
             return 0;
         }
-        Equip equip = (Equip) item;
+        Equip equip = (Equip)this.item;
         int state = equip.getState(false);
         int addstate = equip.getState(true);
         if (state <= 0 || state >= 17) {
-            state = (state -= 16) < 0 ? 0 : state;
+            int n = state = (state -= 16) < 0 ? 0 : state;
         }
         if (addstate <= 0 || addstate >= 17) {
             addstate = (addstate -= 16) < 0 ? 0 : addstate;
@@ -220,11 +226,11 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public int getSkill() {
-        return skill;
+        return this.skill;
     }
 
     public byte getEnterType() {
-        return enterType;
+        return this.enterType;
     }
 
     public void setEnterType(byte enterType) {
@@ -236,11 +242,11 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public int getDelay() {
-        return delay;
+        return this.delay;
     }
 
     public int getAnimation() {
-        return animation;
+        return this.animation;
     }
 
     public void setAnimation(int animation) {
@@ -252,7 +258,7 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public int getPickUpID() {
-        return pickUpID;
+        return this.pickUpID;
     }
 
     public void setOnlySelfID(int onlySelfID) {
@@ -260,54 +266,55 @@ public class MapleMapItem extends MapleMapObject {
     }
 
     public int getOnlySelfID() {
-        return onlySelfID;
+        return this.onlySelfID;
     }
 
     public int getDropMotionType() {
-        return nDropMotionType;
+        return this.nDropMotionType;
     }
 
     public void setDropMotionType(int type) {
-        nDropMotionType = type;
+        this.nDropMotionType = type;
     }
 
     public int getDropSpeed() {
-        return nDropSpeed;
+        return this.nDropSpeed;
     }
 
     public void setDropSpeed(int speed) {
-        nDropSpeed = speed;
+        this.nDropSpeed = speed;
     }
 
     public int getRand() {
-        return nRand;
+        return this.nRand;
     }
 
     public void setRand(int rand) {
-        nRand = rand;
+        this.nRand = rand;
     }
 
     public int getSourceOID() {
-        return sourceOID;
+        return this.sourceOID;
     }
 
     public void setSourceOID(int oid) {
-        sourceOID = oid;
+        this.sourceOID = oid;
     }
 
     public boolean isCollisionPickUp() {
-        return bCollisionPickUp;
+        return this.bCollisionPickUp;
     }
 
     public void setCollisionPickUp(boolean b) {
-        bCollisionPickUp = b;
+        this.bCollisionPickUp = b;
     }
 
     public int getPointType() {
-        return pointType;
+        return this.pointType;
     }
 
     public void setPointType(int pointType) {
         this.pointType = pointType;
     }
 }
+

@@ -1,11 +1,15 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
+import Client.SecondaryStat;
 import Server.Buffstat;
-
 import java.io.Serializable;
 
-public enum MapleDisease implements Serializable, Buffstat {
-
+public enum MapleDisease implements Serializable,
+Buffstat
+{
     封印(SecondaryStat.Seal, 120),
     黑暗(SecondaryStat.Darkness, 121),
     虛弱(SecondaryStat.Weakness, 122),
@@ -34,45 +38,45 @@ public enum MapleDisease implements Serializable, Buffstat {
     private final SecondaryStat buffStat;
     private final int disease;
 
-    MapleDisease(SecondaryStat buffStat, int disease) {
+    private MapleDisease(SecondaryStat buffStat, int disease) {
         this.buffStat = buffStat;
         this.disease = disease;
     }
 
     public static MapleDisease getBySkill(int skill) {
         for (MapleDisease d : MapleDisease.values()) {
-            if (d.getDisease() == skill) {
-                return d;
-            }
+            if (d.getDisease() != skill) continue;
+            return d;
         }
         return null;
     }
 
-    public static boolean containsStat(final SecondaryStat stat) {
-        MapleDisease[] values;
-        for (int length = (values = values()).length, i = 0; i < length; ++i) {
-            if (values[i].buffStat == stat) {
-                return true;
-            }
+    public static boolean containsStat(SecondaryStat stat) {
+        MapleDisease[] values = MapleDisease.values();
+        int length = values.length;
+        for (int i = 0; i < length; ++i) {
+            if (values[i].buffStat != stat) continue;
+            return true;
         }
         return false;
     }
 
     public SecondaryStat getBuffStat() {
-        return buffStat;
+        return this.buffStat;
     }
 
     @Override
     public int getPosition() {
-        return buffStat.getPosition();
+        return this.buffStat.getPosition();
     }
 
     @Override
     public int getValue() {
-        return buffStat.getValue();
+        return this.buffStat.getValue();
     }
 
     public int getDisease() {
-        return disease;
+        return this.disease;
     }
 }
+

@@ -1,10 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider;
 
 public interface MapleDataEntity {
+    public String getName();
 
-    String getName();
+    public MapleDataEntity getParent();
 
-    MapleDataEntity getParent();
-
-    String getPath();
+    public String getPath();
 }
+

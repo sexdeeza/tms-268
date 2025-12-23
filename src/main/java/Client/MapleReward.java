@@ -1,24 +1,20 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client;
 
-/**
- * @author Pungin
- */
 public class MapleReward {
-
     public static final int 道具 = 1;
     public static final int 現金道具 = 2;
     public static final int 楓點 = 3;
     public static final int 楓幣 = 4;
     public static final int 經驗 = 5;
-
     private final int id;
     private int type;
     private int itemId;
-    private long amount, from, to;
+    private long amount;
+    private long from;
+    private long to;
     private String desc;
 
     public MapleReward(int id, long start, long end, int type, long amount, int itemId, String desc) {
@@ -56,30 +52,31 @@ public class MapleReward {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public long getReceiveDate() {
-        return from;
+        return this.from;
     }
 
     public long getExpireDate() {
-        return to;
+        return this.to;
     }
 
     public int getType() {
-        return type;
+        return this.type;
     }
 
     public long getAmount() {
-        return amount;
+        return this.amount;
     }
 
     public int getItemId() {
-        return itemId;
+        return this.itemId;
     }
 
     public String getDesc() {
-        return desc;
+        return this.desc;
     }
 }
+

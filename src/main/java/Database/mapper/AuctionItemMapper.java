@@ -1,12 +1,15 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Database.mapper;
 
+import Database.mapper.IMapper;
 import Server.auction.AuctionItem;
-
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class AuctionItemMapper implements IMapper<AuctionItem> {
-
+public class AuctionItemMapper
+implements IMapper<AuctionItem> {
     @Override
     public AuctionItem mapper(ResultSet rs) throws SQLException {
         AuctionItem auctionItem = new AuctionItem();
@@ -27,3 +30,4 @@ public class AuctionItemMapper implements IMapper<AuctionItem> {
         return auctionItem;
     }
 }
+

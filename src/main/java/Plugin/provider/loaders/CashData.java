@@ -1,33 +1,46 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  lombok.Generated
+ */
 package Plugin.provider.loaders;
 
 import Config.configs.Config;
 import Config.constants.ServerConstants;
 import Net.server.cashshop.CashItemInfo;
-import Plugin.provider.*;
+import Plugin.provider.MapleData;
+import Plugin.provider.MapleDataDirectoryEntry;
+import Plugin.provider.MapleDataEntry;
+import Plugin.provider.MapleDataProvider;
+import Plugin.provider.MapleDataProviderFactory;
+import Plugin.provider.MapleDataTool;
 import SwordieX.util.Util;
-import lombok.Getter;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import lombok.Generated;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.util.*;
 
 public class CashData {
     private static final Logger log = LoggerFactory.getLogger(CashData.class);
     private static MapleDataProvider data;
     private static MapleData commodities;
-    @Getter
-    private static Map<Integer, CashItemInfo> itemStats = new HashMap<>(); //商城道具狀態
-    @Getter
-    private static Map<Integer, Integer> idLookup = new HashMap<>(); //商城道具的SN集合
-    @Getter
-    private static Map<Integer, CashItemInfo> oldItemStats = new HashMap<>(); //老版本的商城道具狀態
-    @Getter
-    private static Map<Integer, Integer> oldIdLookup = new HashMap<>(); //老版本的商城道具的SN集合
-    @Getter
-    private static Map<Integer, List<Integer>> itemPackage = new HashMap<>(); //禮包信息
-    @Getter
-    private static List<Integer> blockRefundableItemId = new LinkedList<>(); //禁止使用回購的道具 也就是有些道具有多個SN信息 而每個SN下的價格又不一樣
+    private static Map<Integer, CashItemInfo> itemStats;
+    private static Map<Integer, Integer> idLookup;
+    private static Map<Integer, CashItemInfo> oldItemStats;
+    private static Map<Integer, Integer> oldIdLookup;
+    private static Map<Integer, List<Integer>> itemPackage;
+    private static List<Integer> blockRefundableItemId;
 
     public static boolean isOnSalePackage(int snId) {
         return snId >= 170200002 && snId <= 170200013;
@@ -39,29 +52,29 @@ public class CashData {
         if (!file.getParentFile().exists() && !file.getParentFile().mkdirs()) {
             return;
         }
-        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(file))) {
+        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(file));){
             dataOutputStream.writeInt(itemStats.size());
-            for (Map.Entry<Integer, CashItemInfo> cis : itemStats.entrySet()) {
-                dataOutputStream.writeInt(cis.getKey());
-                dataOutputStream.writeUTF(cis.getValue().getName());
-                dataOutputStream.writeInt(cis.getValue().getItemId());
-                dataOutputStream.writeInt(cis.getValue().getCount());
-                dataOutputStream.writeInt(cis.getValue().getPrice());
-                dataOutputStream.writeInt(cis.getValue().getMeso());
-                dataOutputStream.writeInt(cis.getValue().getOriginalPrice());
-                dataOutputStream.writeInt(cis.getValue().getPeriod());
-                dataOutputStream.writeInt(cis.getValue().getGender());
-                dataOutputStream.writeInt(cis.getValue().getTermStart());
-                dataOutputStream.writeInt(cis.getValue().getTermEnd());
-                dataOutputStream.writeInt(cis.getValue().getMileageRate());
-                dataOutputStream.writeInt(cis.getValue().getLimitMax());
-                dataOutputStream.write(cis.getValue().getCsClass());
-                dataOutputStream.write(cis.getValue().getPriority());
-                dataOutputStream.writeBoolean(cis.getValue().onSale());
-                dataOutputStream.writeBoolean(cis.getValue().isBonus());
-                dataOutputStream.writeBoolean(cis.getValue().isRefundable());
-                dataOutputStream.writeBoolean(cis.getValue().isDiscount());
-                dataOutputStream.writeBoolean(cis.getValue().isOnlyMileage());
+            for (Map.Entry<Integer, CashItemInfo> entry : itemStats.entrySet()) {
+                dataOutputStream.writeInt(entry.getKey());
+                dataOutputStream.writeUTF(entry.getValue().getName());
+                dataOutputStream.writeInt(entry.getValue().getItemId());
+                dataOutputStream.writeInt(entry.getValue().getCount());
+                dataOutputStream.writeInt(entry.getValue().getPrice());
+                dataOutputStream.writeInt(entry.getValue().getMeso());
+                dataOutputStream.writeInt(entry.getValue().getOriginalPrice());
+                dataOutputStream.writeInt(entry.getValue().getPeriod());
+                dataOutputStream.writeInt(entry.getValue().getGender());
+                dataOutputStream.writeInt(entry.getValue().getTermStart());
+                dataOutputStream.writeInt(entry.getValue().getTermEnd());
+                dataOutputStream.writeInt(entry.getValue().getMileageRate());
+                dataOutputStream.writeInt(entry.getValue().getLimitMax());
+                dataOutputStream.write(entry.getValue().getCsClass());
+                dataOutputStream.write(entry.getValue().getPriority());
+                dataOutputStream.writeBoolean(entry.getValue().onSale());
+                dataOutputStream.writeBoolean(entry.getValue().isBonus());
+                dataOutputStream.writeBoolean(entry.getValue().isRefundable());
+                dataOutputStream.writeBoolean(entry.getValue().isDiscount());
+                dataOutputStream.writeBoolean(entry.getValue().isOnlyMileage());
             }
             dataOutputStream.writeInt(idLookup.size());
             for (Map.Entry<Integer, Integer> il : idLookup.entrySet()) {
@@ -69,23 +82,24 @@ public class CashData {
                 dataOutputStream.writeInt(il.getValue());
             }
             dataOutputStream.writeInt(blockRefundableItemId.size());
-            for (Integer dat : blockRefundableItemId) {
-                dataOutputStream.writeInt(dat);
+            for (Integer n : blockRefundableItemId) {
+                dataOutputStream.writeInt(n);
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void loadCashCommodities(File file) {
         if (!file.exists()) {
-            loadDatFromWz();
+            CashData.loadDatFromWz();
             return;
         }
-        try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file))) {
-            // 讀取Cash Commodities總數
+        try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file));){
+            int i;
             int maxcount = dataInputStream.readInt();
-            for (int i = 0; i < maxcount; i++) {
+            for (i = 0; i < maxcount; ++i) {
                 int SN = dataInputStream.readInt();
                 String wzName = dataInputStream.readUTF();
                 int itemId = dataInputStream.readInt();
@@ -109,17 +123,16 @@ public class CashData {
                 CashItemInfo cii = new CashItemInfo(wzName, itemId, count, price, originalPrice, meso, SN, period, gender, csClass, priority, termStart, termEnd, onSale, bonus, refundable, discount, mileageRate, onlyMileage, LimitMax);
                 itemStats.put(SN, cii);
             }
-            // 讀取IdLookup總數
             maxcount = dataInputStream.readInt();
-            for (int i = 0; i < maxcount; i++) {
+            for (i = 0; i < maxcount; ++i) {
                 idLookup.put(dataInputStream.readInt(), dataInputStream.readInt());
             }
-            // 讀取BlockRefundableItemId總數
             maxcount = dataInputStream.readInt();
-            for (int i = 0; i < maxcount; i++) {
+            for (i = 0; i < maxcount; ++i) {
                 blockRefundableItemId.add(dataInputStream.readInt());
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -128,14 +141,12 @@ public class CashData {
         long start = System.currentTimeMillis();
         String dir = ServerConstants.DAT_DIR + "/cash/CashCommodities.dat";
         File f = new File(dir);
-        loadCashCommodities(f);
-        //System.out.println(String.format("Loaded %s ItemStats from data files in %dms.", getSkills().size(), System.currentTimeMillis() - start));
+        CashData.loadCashCommodities(f);
     }
 
     private static void loadCashCommoditiesFromWz() {
         blockRefundableItemId.clear();
-        Map<Integer, Integer> fixId = new HashMap<>(); //檢測WZ中是否有重複價格的道具 [SN] [itemId]
-        //加載商城道具
+        HashMap<Integer, Integer> fixId = new HashMap<Integer, Integer>();
         for (MapleData field : commodities.getChildren()) {
             int SN = MapleDataTool.getIntConvert("SN", field, 0);
             int itemId = MapleDataTool.getIntConvert("ItemId", field, 0);
@@ -145,35 +156,35 @@ public class CashData {
             int originalPrice = MapleDataTool.getIntConvert("originalPrice", field, 0);
             int period = MapleDataTool.getIntConvert("Period", field, 0);
             int gender = MapleDataTool.getIntConvert("Gender", field, 2);
-            byte csClass = (byte) MapleDataTool.getIntConvert("Class", field, 0);
-            byte priority = (byte) MapleDataTool.getIntConvert("Priority", field, 0);
+            byte csClass = (byte)MapleDataTool.getIntConvert("Class", field, 0);
+            byte priority = (byte)MapleDataTool.getIntConvert("Priority", field, 0);
             int termStart = MapleDataTool.getIntConvert("termStart", field, 0);
             int termEnd = MapleDataTool.getIntConvert("termEnd", field, 0);
-            boolean onSale = MapleDataTool.getIntConvert("OnSale", field, 0) > 0 || isOnSalePackage(SN); //道具是否出售
-            boolean bonus = MapleDataTool.getIntConvert("Bonus", field, 0) > 0; //是否有獎金紅利？
-            boolean refundable = MapleDataTool.getIntConvert("Refundable", field, 0) == 0; //道具是否可以回購
-            boolean discount = MapleDataTool.getIntConvert("discount", field, 0) > 0; //是否打折出售
-            int mileageRate = MapleDataTool.getIntConvert("mileageRate", field, 0); // 里程抵扣率
-            boolean onlyMileage = MapleDataTool.getIntConvert("onlyMileage", field, 0) >= 0; //可全里程購買
-            int LimitMax = MapleDataTool.getIntConvert("LimitMax", field, 0); // 限購數量
+            boolean onSale = MapleDataTool.getIntConvert("OnSale", field, 0) > 0 || CashData.isOnSalePackage(SN);
+            boolean bonus = MapleDataTool.getIntConvert("Bonus", field, 0) > 0;
+            boolean refundable = MapleDataTool.getIntConvert("Refundable", field, 0) == 0;
+            boolean discount = MapleDataTool.getIntConvert("discount", field, 0) > 0;
+            int mileageRate = MapleDataTool.getIntConvert("mileageRate", field, 0);
+            boolean onlyMileage = MapleDataTool.getIntConvert("onlyMileage", field, 0) >= 0;
+            int LimitMax = MapleDataTool.getIntConvert("LimitMax", field, 0);
             if (onSale) {
+                // empty if block
             }
             CashItemInfo stats = new CashItemInfo(field.getName(), itemId, count, price, originalPrice, meso, SN, period, gender, csClass, priority, termStart, termEnd, onSale, bonus, refundable, discount, mileageRate, onlyMileage, LimitMax);
-            if (SN > 0) {
-                itemStats.put(SN, stats);
-                if (idLookup.containsKey(itemId)) {
-                    fixId.put(SN, itemId);
-                    blockRefundableItemId.add(itemId);
-                }
-                idLookup.put(itemId, SN);
+            if (SN <= 0) continue;
+            itemStats.put(SN, stats);
+            if (idLookup.containsKey(itemId)) {
+                fixId.put(SN, itemId);
+                blockRefundableItemId.add(itemId);
             }
+            idLookup.put(itemId, SN);
         }
     }
 
     public static void saveCashPackages(String dir) {
         Util.makeDirIfAbsent(dir);
         File file = new File(String.format("%s/CashPackages.dat", dir));
-        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(file))) {
+        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(file));){
             dataOutputStream.writeInt(itemPackage.size());
             for (Map.Entry<Integer, List<Integer>> ip : itemPackage.entrySet()) {
                 dataOutputStream.writeInt(ip.getKey());
@@ -182,31 +193,30 @@ public class CashData {
                     dataOutputStream.writeInt(dat);
                 }
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-
     public static void loadCashPackages(File file) {
         if (!file.exists()) {
-            loadDatFromWz();
+            CashData.loadDatFromWz();
             return;
         }
-        try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file))) {
-            // 讀取Cash Packages總數
+        try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file));){
             int maxcount = dataInputStream.readInt();
-            for (int i = 0; i < maxcount; i++) {
+            for (int i = 0; i < maxcount; ++i) {
                 int key = dataInputStream.readInt();
                 int itemCount = dataInputStream.readInt();
-                List<Integer> packageItems = new ArrayList<>();
-                for (int j = 0; j < itemCount; j++) {
+                ArrayList<Integer> packageItems = new ArrayList<Integer>();
+                for (int j = 0; j < itemCount; ++j) {
                     packageItems.add(dataInputStream.readInt());
                 }
                 itemPackage.put(key, packageItems);
             }
-
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -215,17 +225,14 @@ public class CashData {
         long start = System.currentTimeMillis();
         String dir = ServerConstants.DAT_DIR + "/cash/CashPackages.dat";
         File f = new File(dir);
-        loadCashPackages(f);
-        //System.out.println(String.format("Loaded %s ItemStats from data files in %dms.", getSkills().size(), System.currentTimeMillis() - start));
+        CashData.loadCashPackages(f);
     }
 
     private static void loadCashPackagesFromWz() {
         MapleData packageData = data.getData("CashPackage.img");
         for (MapleData root : packageData.getChildren()) {
-            if (root.getChildByPath("SN") == null) {
-                continue;
-            }
-            List<Integer> packageItems = new ArrayList<>();
+            if (root.getChildByPath("SN") == null) continue;
+            ArrayList<Integer> packageItems = new ArrayList<Integer>();
             for (MapleData dat : root.getChildByPath("SN").getChildren()) {
                 packageItems.add(MapleDataTool.getIntConvert(dat));
             }
@@ -236,49 +243,50 @@ public class CashData {
     public static void saveCashOldCommodities(String dir) {
         Util.makeDirIfAbsent(dir);
         File file = new File(String.format("%s/CashOldCommodities.dat", dir));
-        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(file))) {
+        try (DataOutputStream dataOutputStream = new DataOutputStream(new FileOutputStream(file));){
             dataOutputStream.writeInt(oldItemStats.size());
-            for (Map.Entry<Integer, CashItemInfo> cis : oldItemStats.entrySet()) {
-                dataOutputStream.writeInt(cis.getKey());
-                dataOutputStream.writeUTF(cis.getValue().getName());
-                dataOutputStream.writeInt(cis.getValue().getItemId());
-                dataOutputStream.writeInt(cis.getValue().getCount());
-                dataOutputStream.writeInt(cis.getValue().getPrice());
-                dataOutputStream.writeInt(cis.getValue().getMeso());
-                dataOutputStream.writeInt(cis.getValue().getOriginalPrice());
-                dataOutputStream.writeInt(cis.getValue().getPeriod());
-                dataOutputStream.writeInt(cis.getValue().getGender());
-                dataOutputStream.writeInt(cis.getValue().getTermStart());
-                dataOutputStream.writeInt(cis.getValue().getTermEnd());
-                dataOutputStream.writeInt(cis.getValue().getMileageRate());
-                dataOutputStream.writeInt(cis.getValue().getLimitMax());
-                dataOutputStream.write(cis.getValue().getCsClass());
-                dataOutputStream.write(cis.getValue().getPriority());
-                dataOutputStream.writeBoolean(cis.getValue().onSale());
-                dataOutputStream.writeBoolean(cis.getValue().isBonus());
-                dataOutputStream.writeBoolean(cis.getValue().isRefundable());
-                dataOutputStream.writeBoolean(cis.getValue().isDiscount());
-                dataOutputStream.writeBoolean(cis.getValue().isOnlyMileage());
+            for (Map.Entry<Integer, CashItemInfo> entry : oldItemStats.entrySet()) {
+                dataOutputStream.writeInt(entry.getKey());
+                dataOutputStream.writeUTF(entry.getValue().getName());
+                dataOutputStream.writeInt(entry.getValue().getItemId());
+                dataOutputStream.writeInt(entry.getValue().getCount());
+                dataOutputStream.writeInt(entry.getValue().getPrice());
+                dataOutputStream.writeInt(entry.getValue().getMeso());
+                dataOutputStream.writeInt(entry.getValue().getOriginalPrice());
+                dataOutputStream.writeInt(entry.getValue().getPeriod());
+                dataOutputStream.writeInt(entry.getValue().getGender());
+                dataOutputStream.writeInt(entry.getValue().getTermStart());
+                dataOutputStream.writeInt(entry.getValue().getTermEnd());
+                dataOutputStream.writeInt(entry.getValue().getMileageRate());
+                dataOutputStream.writeInt(entry.getValue().getLimitMax());
+                dataOutputStream.write(entry.getValue().getCsClass());
+                dataOutputStream.write(entry.getValue().getPriority());
+                dataOutputStream.writeBoolean(entry.getValue().onSale());
+                dataOutputStream.writeBoolean(entry.getValue().isBonus());
+                dataOutputStream.writeBoolean(entry.getValue().isRefundable());
+                dataOutputStream.writeBoolean(entry.getValue().isDiscount());
+                dataOutputStream.writeBoolean(entry.getValue().isOnlyMileage());
             }
             dataOutputStream.writeInt(oldIdLookup.size());
-            for (Map.Entry<Integer, Integer> il : oldIdLookup.entrySet()) {
-                dataOutputStream.writeInt(il.getKey());
-                dataOutputStream.writeInt(il.getValue());
+            for (Map.Entry<Integer, Integer> entry : oldIdLookup.entrySet()) {
+                dataOutputStream.writeInt(entry.getKey());
+                dataOutputStream.writeInt((Integer)entry.getValue());
             }
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     public static void loadCashOldCommodities(File file) {
         if (!file.exists()) {
-            loadDatFromWz();
+            CashData.loadDatFromWz();
             return;
         }
-        try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file))) {
-            // 讀取Cash Old Commodities總數
+        try (DataInputStream dataInputStream = new DataInputStream(new FileInputStream(file));){
+            int i;
             int maxcount = dataInputStream.readInt();
-            for (int i = 0; i < maxcount; i++) {
+            for (i = 0; i < maxcount; ++i) {
                 int SN = dataInputStream.readInt();
                 String wzName = dataInputStream.readUTF();
                 int itemId = dataInputStream.readInt();
@@ -302,12 +310,12 @@ public class CashData {
                 CashItemInfo cii = new CashItemInfo(wzName, itemId, count, price, originalPrice, meso, SN, period, gender, csClass, priority, termStart, termEnd, onSale, bonus, refundable, discount, mileageRate, onlyMileage, LimitMax);
                 oldItemStats.put(SN, cii);
             }
-            // 讀取OldIdLookup總數
             maxcount = dataInputStream.readInt();
-            for (int i = 0; i < maxcount; i++) {
+            for (i = 0; i < maxcount; ++i) {
                 oldIdLookup.put(dataInputStream.readInt(), dataInputStream.readInt());
             }
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             e.printStackTrace();
         }
     }
@@ -316,42 +324,38 @@ public class CashData {
         long start = System.currentTimeMillis();
         String dir = ServerConstants.DAT_DIR + "/cash/CashOldCommodities.dat";
         File f = new File(dir);
-        loadCashOldCommodities(f);
-        //System.out.println(String.format("Loaded %s ItemStats from data files in %dms.", getSkills().size(), System.currentTimeMillis() - start));
+        CashData.loadCashOldCommodities(f);
     }
 
     private static void loadCashOldCommoditiesFromWz() {
-        //加載老的商城道具信息
         MapleDataDirectoryEntry root = data.getRoot();
-        for (MapleDataEntry topData : root.getFiles()) {
-            if (topData.getName().startsWith("OldCommodity")) {
-                MapleData Commodity = data.getData(topData.getName());
-                for (MapleData field : Commodity.getChildren()) {
-                    int SN = MapleDataTool.getIntConvert("SN", field, 0);
-                    int itemId = MapleDataTool.getIntConvert("ItemId", field, 0);
-                    int count = MapleDataTool.getIntConvert("Count", field, 1);
-                    int price = MapleDataTool.getIntConvert("Price", field, 0);
-                    int meso = MapleDataTool.getIntConvert("Meso", field, 0);
-                    int originalPrice = MapleDataTool.getIntConvert("originalPrice", field, 0);
-                    int period = MapleDataTool.getIntConvert("Period", field, 0);
-                    int gender = MapleDataTool.getIntConvert("Gender", field, 2);
-                    byte csClass = (byte) MapleDataTool.getIntConvert("Class", field, 0);
-                    byte priority = (byte) MapleDataTool.getIntConvert("Priority", field, 0);
-                    int termStart = MapleDataTool.getIntConvert("termStart", field, 0);
-                    int termEnd = MapleDataTool.getIntConvert("termEnd", field, 0);
-                    boolean onSale = MapleDataTool.getIntConvert("OnSale", field, 0) > 0 || isOnSalePackage(SN); //道具是否出售
-                    boolean bonus = MapleDataTool.getIntConvert("Bonus", field, 0) >= 0; //是否有獎金紅利？
-                    boolean refundable = MapleDataTool.getIntConvert("Refundable", field, 0) == 0; //道具是否可以回購
-                    boolean discount = MapleDataTool.getIntConvert("discount", field, 0) >= 0; //是否打折出售
-                    int mileageRate = MapleDataTool.getIntConvert("mileageRate", field, 0); // 里程抵扣率
-                    boolean onlyMileage = MapleDataTool.getIntConvert("onlyMileage", field, 0) >= 0; //可全里程購買
-                    int LimitMax = MapleDataTool.getIntConvert("LimitMax", field, 0); // 限購數量
-                    CashItemInfo stats = new CashItemInfo(field.getName(), itemId, count, price, originalPrice, meso, SN, period, gender, csClass, priority, termStart, termEnd, onSale, bonus, refundable, discount, mileageRate, onlyMileage, LimitMax);
-                    if (SN > 0) {
-                        oldItemStats.put(SN, stats);
-                        oldIdLookup.put(itemId, SN);
-                    }
-                }
+        for (MapleDataEntry mapleDataEntry : root.getFiles()) {
+            if (!mapleDataEntry.getName().startsWith("OldCommodity")) continue;
+            MapleData Commodity = data.getData(mapleDataEntry.getName());
+            for (MapleData field : Commodity.getChildren()) {
+                int SN = MapleDataTool.getIntConvert("SN", field, 0);
+                int itemId = MapleDataTool.getIntConvert("ItemId", field, 0);
+                int count = MapleDataTool.getIntConvert("Count", field, 1);
+                int price = MapleDataTool.getIntConvert("Price", field, 0);
+                int meso = MapleDataTool.getIntConvert("Meso", field, 0);
+                int originalPrice = MapleDataTool.getIntConvert("originalPrice", field, 0);
+                int period = MapleDataTool.getIntConvert("Period", field, 0);
+                int gender = MapleDataTool.getIntConvert("Gender", field, 2);
+                byte csClass = (byte)MapleDataTool.getIntConvert("Class", field, 0);
+                byte priority = (byte)MapleDataTool.getIntConvert("Priority", field, 0);
+                int termStart = MapleDataTool.getIntConvert("termStart", field, 0);
+                int termEnd = MapleDataTool.getIntConvert("termEnd", field, 0);
+                boolean onSale = MapleDataTool.getIntConvert("OnSale", field, 0) > 0 || CashData.isOnSalePackage(SN);
+                boolean bonus = MapleDataTool.getIntConvert("Bonus", field, 0) >= 0;
+                boolean refundable = MapleDataTool.getIntConvert("Refundable", field, 0) == 0;
+                boolean discount = MapleDataTool.getIntConvert("discount", field, 0) >= 0;
+                int mileageRate = MapleDataTool.getIntConvert("mileageRate", field, 0);
+                boolean onlyMileage = MapleDataTool.getIntConvert("onlyMileage", field, 0) >= 0;
+                int LimitMax = MapleDataTool.getIntConvert("LimitMax", field, 0);
+                CashItemInfo stats = new CashItemInfo(field.getName(), itemId, count, price, originalPrice, meso, SN, period, gender, csClass, priority, termStart, termEnd, onSale, bonus, refundable, discount, mileageRate, onlyMileage, LimitMax);
+                if (SN <= 0) continue;
+                oldItemStats.put(SN, stats);
+                oldIdLookup.put(itemId, SN);
             }
         }
     }
@@ -359,44 +363,80 @@ public class CashData {
     public static void generateDatFiles() {
         System.out.println("Started generating Cash Commodities data.");
         long start = System.currentTimeMillis();
-        loadCashCommoditiesFromWz();
-        saveCashCommodities(ServerConstants.DAT_DIR + "/cash");
+        CashData.loadCashCommoditiesFromWz();
+        CashData.saveCashCommodities(ServerConstants.DAT_DIR + "/cash");
         System.out.println(String.format("Completed generating Cash Commodities data in %dms.", System.currentTimeMillis() - start));
-
         System.out.println("Started generating Cash Packages data.");
         start = System.currentTimeMillis();
-        loadCashPackagesFromWz();
-        saveCashPackages(ServerConstants.DAT_DIR + "/cash");
+        CashData.loadCashPackagesFromWz();
+        CashData.saveCashPackages(ServerConstants.DAT_DIR + "/cash");
         System.out.println(String.format("Completed generating Cash Packages data in %dms.", System.currentTimeMillis() - start));
-
         System.out.println("Started generating Cash Old Commodity data.");
         start = System.currentTimeMillis();
-        loadCashOldCommoditiesFromWz();
-        saveCashOldCommodities(ServerConstants.DAT_DIR + "/cash");
+        CashData.loadCashOldCommoditiesFromWz();
+        CashData.saveCashOldCommodities(ServerConstants.DAT_DIR + "/cash");
         System.out.println(String.format("Completed generating Cash Old Commodity data in %dms.", System.currentTimeMillis() - start));
-
         System.out.println("Started loading Cash common data.");
         start = System.currentTimeMillis();
-        clear();
+        CashData.clear();
         System.out.println(String.format("Completed loaded Cash common data in %dms.", System.currentTimeMillis() - start));
     }
 
     public static void main(String[] args) {
         Config.load();
         MapleDataProviderFactory.init();
-        loadDatFromWz();
+        CashData.loadDatFromWz();
     }
 
     public static void loadDatFromWz() {
         data = MapleDataProviderFactory.getEtc();
         commodities = data.getData("Commodity.img");
-        generateDatFiles();
+        CashData.generateDatFiles();
     }
 
     public static void clear() {
-//        getSkills().clear();
-        loadCashCommodities();
-        loadCashPackages();
-        loadCashOldCommodities();
+        CashData.loadCashCommodities();
+        CashData.loadCashPackages();
+        CashData.loadCashOldCommodities();
+    }
+
+    @Generated
+    public static Map<Integer, CashItemInfo> getItemStats() {
+        return itemStats;
+    }
+
+    @Generated
+    public static Map<Integer, Integer> getIdLookup() {
+        return idLookup;
+    }
+
+    @Generated
+    public static Map<Integer, CashItemInfo> getOldItemStats() {
+        return oldItemStats;
+    }
+
+    @Generated
+    public static Map<Integer, Integer> getOldIdLookup() {
+        return oldIdLookup;
+    }
+
+    @Generated
+    public static Map<Integer, List<Integer>> getItemPackage() {
+        return itemPackage;
+    }
+
+    @Generated
+    public static List<Integer> getBlockRefundableItemId() {
+        return blockRefundableItemId;
+    }
+
+    static {
+        itemStats = new HashMap<Integer, CashItemInfo>();
+        idLookup = new HashMap<Integer, Integer>();
+        oldItemStats = new HashMap<Integer, CashItemInfo>();
+        oldIdLookup = new HashMap<Integer, Integer>();
+        itemPackage = new HashMap<Integer, List<Integer>>();
+        blockRefundableItemId = new LinkedList<Integer>();
     }
 }
+

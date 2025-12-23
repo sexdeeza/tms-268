@@ -1,34 +1,21 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Config.constants.skills;
 
-/**
- * @author PlayDK
- */
 public class 阿戴爾 {
-
     public static final int 貴族 = 150020241;
     public static final int 貴族_傳授 = 80002857;
-
     public static final int 再訪 = 150021000;
     public static final int 獨門咒語 = 150021005;
     public static final int 魔法迴路 = 150020079;
     public static final int 信念 = 150020006;
-
-    /*
-     * 1轉技能
-     */
     public static final int 平砍 = 151001000;
     public static final int 碎片 = 151001001;
     public static final int 跳躍 = 151001002;
     public static final int 跳躍_1 = 151001003;
     public static final int 懸浮 = 151001004;
     public static final int 入門 = 151000005;
-    /*
-     * 2轉技能
-     */
     public static final int 乙太 = 151100017;
     public static final int 乙太結晶 = 151100002;
     public static final int 刺擊 = 151101000;
@@ -45,9 +32,6 @@ public class 阿戴爾 {
     public static final int 精通 = 151100014;
     public static final int 特性培養 = 151100015;
     public static final int 鍛鍊 = 151100016;
-    /*
-     * 3轉技能
-     */
     public static final int 十字斬 = 151111000;
     public static final int 追蹤 = 151111003;
     public static final int 回歸 = 151111002;
@@ -56,9 +40,6 @@ public class 阿戴爾 {
     public static final int 羽翼 = 151111004;
     public static final int 上進 = 151110006;
     public static final int 耐性 = 151110007;
-    /*
-     * 4轉技能
-     */
     public static final int 高級乙太 = 151120012;
     public static final int 切割 = 151121000;
     public static final int 綻放 = 151121003;
@@ -71,10 +52,6 @@ public class 阿戴爾 {
     public static final int 完美 = 151120008;
     public static final int 拆毀 = 151120009;
     public static final int 登峰造極 = 151120010;
-
-    /**
-     * 超技能
-     */
     public static final int 觸發_強化 = 151120031;
     public static final int 觸發_無視防禦 = 151120032;
     public static final int 觸發_BOSS殺手 = 151120033;
@@ -93,19 +70,16 @@ public class 阿戴爾 {
     public static final int 無限 = 400011108;
     public static final int 復原 = 400011109;
     public static final int 乙太風暴 = 400011136;
-
-    /* HEXA主插槽 */
     public static final int HEXA_起源技能 = 80003365;
     public static final int HEXA_無限劍製 = 151141500;
     public static final int HEXA_無限劍製_延伸 = 151141501;
     public static final int HEXA_切割_VI = 151141000;
     public static final int HEXA_切割_VI_延伸 = 151141001;
-    public static final int HEXA_碎片_VI = 151001002;
+    public static final int HEXA_碎片_VI = 151141002;
     public static final int HEXA_奇蹟_VI = 151141003;
-
-    /* HEXA附帶強化效果插槽 */
     public static final int HEXA_強化毀滅 = 500004160;
     public static final int HEXA_強化無限 = 500004161;
     public static final int HEXA_強化復原 = 500004162;
     public static final int HEXA_乙太風暴 = 500004163;
 }
+

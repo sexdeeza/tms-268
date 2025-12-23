@@ -1,7 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills;
 
 public class SkillMacro {
-
     private int macroId;
     private int skill1;
     private int skill2;
@@ -20,7 +22,7 @@ public class SkillMacro {
     }
 
     public int getMacroId() {
-        return macroId;
+        return this.macroId;
     }
 
     public void setMacroId(int macroId) {
@@ -28,7 +30,7 @@ public class SkillMacro {
     }
 
     public int getSkill1() {
-        return skill1;
+        return this.skill1;
     }
 
     public void setSkill1(int skill1) {
@@ -36,7 +38,7 @@ public class SkillMacro {
     }
 
     public int getSkill2() {
-        return skill2;
+        return this.skill2;
     }
 
     public void setSkill2(int skill2) {
@@ -44,7 +46,7 @@ public class SkillMacro {
     }
 
     public int getSkill3() {
-        return skill3;
+        return this.skill3;
     }
 
     public void setSkill3(int skill3) {
@@ -52,7 +54,7 @@ public class SkillMacro {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -60,7 +62,7 @@ public class SkillMacro {
     }
 
     public int getShout() {
-        return shout;
+        return this.shout;
     }
 
     public void setShout(int shout) {
@@ -68,10 +70,11 @@ public class SkillMacro {
     }
 
     public int getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(int position) {
         this.position = position;
     }
 }
+

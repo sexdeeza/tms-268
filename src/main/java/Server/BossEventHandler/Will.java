@@ -5,7 +5,7 @@ import Client.MapleCharacter;
 import Client.MapleClient;
 import Net.server.maps.MapleMap;
 import Net.server.maps.field.BossWillField;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.data.MaplePacketLittleEndianWriter;
 
 import java.util.concurrent.TimeUnit;

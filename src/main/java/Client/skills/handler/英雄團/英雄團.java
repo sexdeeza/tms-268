@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.英雄團;
 
 import Client.MapleCharacter;
@@ -8,24 +11,22 @@ import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.英雄團通用;
+import Config.constants.skills.通用V核心;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-import tools.data.MaplePacketReader;
-
 import java.lang.reflect.Field;
 import java.util.Map;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.通用V核心.英雄團通用.*;
-
-public class 英雄團 extends AbstractSkillHandler {
-
+public class 英雄團
+extends AbstractSkillHandler {
     public 英雄團() {
-        for (Field field : 英雄團通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.英雄團通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -39,13 +40,14 @@ public class 英雄團 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 普力特的祝福_1:
-            case 普力特的祝福_2:
-            case 普力特的祝福_3:
-            case 普力特的祝福_4:
-            case 普力特的祝福_5:
-            case 普力特的祝福_6:
-                return 普力特的祝福;
+            case 400001025: 
+            case 400001026: 
+            case 400001027: 
+            case 400001028: 
+            case 400001029: 
+            case 400001030: {
+                return 400001024;
+            }
         }
         return -1;
     }
@@ -53,30 +55,31 @@ public class 英雄團 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 普力特的祝福_1:
-            case 普力特的祝福_2:
-            case 普力特的祝福_3:
-            case 普力特的祝福_4:
-            case 普力特的祝福_5:
+            case 400001025: 
+            case 400001026: 
+            case 400001027: 
+            case 400001028: 
+            case 400001029: {
                 statups.put(SecondaryStat.FreudBlessing, effect.getSourceId() % 10 - 4);
-                statups.put(SecondaryStat.IndieCooltimeReduce, effect.getInfo().get(MapleStatInfo.indieCooltimeReduce));
-                statups.put(SecondaryStat.IndieStance, effect.getInfo().get(MapleStatInfo.indieStance));
-                statups.put(SecondaryStat.IndieAllStat, effect.getInfo().get(MapleStatInfo.indieAllStat));
-                statups.put(SecondaryStat.IndiePAD, effect.getInfo().get(MapleStatInfo.indiePad));
-                statups.put(SecondaryStat.IndieMAD, effect.getInfo().get(MapleStatInfo.indieMad));
-                statups.put(SecondaryStat.IndieBDR, effect.getInfo().get(MapleStatInfo.indieBDR));
+                statups.put(SecondaryStat.IndieCooltimeReduce, effect.getInfo().get((Object)MapleStatInfo.indieCooltimeReduce));
+                statups.put(SecondaryStat.IndieStance, effect.getInfo().get((Object)MapleStatInfo.indieStance));
+                statups.put(SecondaryStat.IndieAllStat, effect.getInfo().get((Object)MapleStatInfo.indieAllStat));
+                statups.put(SecondaryStat.IndiePAD, effect.getInfo().get((Object)MapleStatInfo.indiePad));
+                statups.put(SecondaryStat.IndieMAD, effect.getInfo().get((Object)MapleStatInfo.indieMad));
+                statups.put(SecondaryStat.IndieBDR, effect.getInfo().get((Object)MapleStatInfo.indieBDR));
                 return 1;
-            case 普力特的祝福_6:
+            }
+            case 400001030: {
                 statups.clear();
                 statups.put(SecondaryStat.FreudBlessing, 6);
-                statups.put(SecondaryStat.IndieCooltimeReduce, effect.getInfo().get(MapleStatInfo.indieCooltimeReduce));
-                statups.put(SecondaryStat.IndieStance, effect.getInfo().get(MapleStatInfo.indieStance));
-                statups.put(SecondaryStat.IndieAllStat, effect.getInfo().get(MapleStatInfo.indieAllStat));
-                statups.put(SecondaryStat.IndiePAD, effect.getInfo().get(MapleStatInfo.indiePad));
-                statups.put(SecondaryStat.IndieMAD, effect.getInfo().get(MapleStatInfo.indieMad));
-                statups.put(SecondaryStat.IndieBDR, effect.getInfo().get(MapleStatInfo.indieBDR));
+                statups.put(SecondaryStat.IndieCooltimeReduce, effect.getInfo().get((Object)MapleStatInfo.indieCooltimeReduce));
+                statups.put(SecondaryStat.IndieStance, effect.getInfo().get((Object)MapleStatInfo.indieStance));
+                statups.put(SecondaryStat.IndieAllStat, effect.getInfo().get((Object)MapleStatInfo.indieAllStat));
+                statups.put(SecondaryStat.IndiePAD, effect.getInfo().get((Object)MapleStatInfo.indiePad));
+                statups.put(SecondaryStat.IndieMAD, effect.getInfo().get((Object)MapleStatInfo.indieMad));
+                statups.put(SecondaryStat.IndieBDR, effect.getInfo().get((Object)MapleStatInfo.indieBDR));
                 statups.put(SecondaryStat.NotDamaged, 1);
-                break;
+            }
         }
         return -1;
     }
@@ -84,21 +87,21 @@ public class 英雄團 extends AbstractSkillHandler {
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 普力特的祝福:
-            case 普力特的祝福_1:
-            case 普力特的祝福_2:
-            case 普力特的祝福_3:
-            case 普力特的祝福_4:
-            case 普力特的祝福_5: {
-                final MapleStatEffect eff;
-                if ((eff = chr.getSkillEffect(普力特的祝福)) != null && !chr.isSkillCooling(eff.getSourceId())) {
+            case 400001024: 
+            case 400001025: 
+            case 400001026: 
+            case 400001027: 
+            case 400001028: 
+            case 400001029: {
+                MapleStatEffect eff = chr.getSkillEffect(400001024);
+                if (eff != null && !chr.isSkillCooling(eff.getSourceId())) {
                     chr.registerSkillCooldown(eff.getSourceId(), eff.getCooldown(chr), true);
                 }
                 return 1;
             }
-            case 普力特的祝福_6: {
-                final MapleStatEffect eff;
-                if ((eff = chr.getSkillEffect(普力特的祝福)) == null) {
+            case 400001030: {
+                MapleStatEffect eff = chr.getSkillEffect(400001024);
+                if (eff == null) {
                     return 1;
                 }
                 if (!chr.isSkillCooling(eff.getSourceId())) {
@@ -117,12 +120,12 @@ public class 英雄團 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 普力特的祝福_1:
-            case 普力特的祝福_2:
-            case 普力特的祝福_3:
-            case 普力特的祝福_4:
-            case 普力特的祝福_5:
-            case 普力特的祝福_6: {
+            case 400001025: 
+            case 400001026: 
+            case 400001027: 
+            case 400001028: 
+            case 400001029: 
+            case 400001030: {
                 applyto.dispelEffect(SecondaryStat.FreudBlessing);
                 return 1;
             }
@@ -131,7 +134,7 @@ public class 英雄團 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -166,3 +169,4 @@ public class 英雄團 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

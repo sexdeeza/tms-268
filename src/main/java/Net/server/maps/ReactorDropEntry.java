@@ -1,7 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
 public class ReactorDropEntry {
-
     public final int itemId;
     public final int chance;
     public final int questid;
@@ -16,3 +18,4 @@ public class ReactorDropEntry {
         this.maximum = maximum;
     }
 }
+

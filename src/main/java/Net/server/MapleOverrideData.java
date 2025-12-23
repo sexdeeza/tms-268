@@ -1,44 +1,36 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
 
-import Database.DatabaseLoader.DatabaseConnection;
+import Database.DatabaseLoader;
 import Database.tools.SqlTool;
-
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- * WZ重載數據的操作類
- */
 public class MapleOverrideData {
-
-    public static final Map<Integer, Map<String, String>> overridedata = new HashMap<>();
+    public static final Map<Integer, Map<String, String>> overridedata = new HashMap<Integer, Map<String, String>>();
 
     public static void init() {
-        DatabaseConnection.domain(con -> {
-            try (PreparedStatement ps = con.prepareStatement("SELECT `skillid`,`key`,`value` FROM `wz_override`")) {
-                try (ResultSet rs = ps.executeQuery()) {
-                    while (rs.next()) {
-                        int skillId = rs.getInt("skillid");
-                        overridedata.computeIfAbsent(skillId, k -> new HashMap<>()).put(rs.getString("key"), rs.getString("value"));
-                    }
+        DatabaseLoader.DatabaseConnection.domain(con -> {
+            try (PreparedStatement ps = con.prepareStatement("SELECT `skillid`,`key`,`value` FROM `wz_override`");
+                 ResultSet rs = ps.executeQuery();){
+                while (rs.next()) {
+                    int skillId = rs.getInt("skillid");
+                    overridedata.computeIfAbsent(skillId, k -> new HashMap()).put(rs.getString("key"), rs.getString("value"));
                 }
             }
             return null;
         });
     }
 
-    /**
-     * 重載的數據保存到文件
-     */
     public static void save() {
-        DatabaseConnection.domain(con -> {
+        DatabaseLoader.DatabaseConnection.domain(con -> {
             SqlTool.update(con, "DROP TABLE IF EXISTS `wz_override`");
             SqlTool.update(con, "CREATE TABLE `wz_override`(`id` int(11) UNSIGNED NOT NULL AUTO_INCREMENT,`skillid` int(11) NOT NULL,`key` varchar(20) NOT NULL,`value` varchar(20) NULL,PRIMARY KEY (`id`))DEFAULT CHARACTER SET=utf8;");
-            overridedata.forEach((s, d) -> d.forEach((k, v) -> {
-                SqlTool.update(con, "INSERT INTO `wz_override`(`skillid`,`key`,`value`) VALUES (?,?,?)", s, k, v);
-            }));
+            overridedata.forEach((s, d) -> d.forEach((k, v) -> SqlTool.update(con, "INSERT INTO `wz_override`(`skillid`,`key`,`value`) VALUES (?,?,?)", s, k, v)));
             return null;
         });
     }
@@ -51,3 +43,4 @@ public class MapleOverrideData {
         return value == null ? "" : value;
     }
 }
+

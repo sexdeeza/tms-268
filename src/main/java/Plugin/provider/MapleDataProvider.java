@@ -1,8 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider;
 
+import Plugin.provider.MapleData;
+import Plugin.provider.MapleDataDirectoryEntry;
+
 public interface MapleDataProvider {
+    public MapleData getData(String var1);
 
-    MapleData getData(String path);
-
-    MapleDataDirectoryEntry getRoot();
+    public MapleDataDirectoryEntry getRoot();
 }
+

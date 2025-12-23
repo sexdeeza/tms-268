@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.enums;
 
 import java.util.Arrays;
@@ -10,13 +13,11 @@ public enum QuestRequestType {
     QuestReq_OpeningScript,
     QuestReq_CompleteScript,
     QuestReq_LaterStep,
-
-    QuestReq_UNK, // TODO: 位置待確定
+    QuestReq_UNK,
     QuestRes_Start_QuestTimer,
     QuestRes_End_QuestTimer,
     QuestRes_Start_TimeKeepQuestTimer,
     QuestRes_End_TimeKeepQuestTimer,
-
     QuestRes_Act_Success,
     QuestRes_Act_Failed_Unknown,
     QuestRes_Act_Failed_Inventory,
@@ -40,24 +41,24 @@ public enum QuestRequestType {
     MakingRes_Fail_NoDecomposer,
     MakingRes_Fail_MesoOverflow,
     MakingRes_Fail_TooHighFee,
-    MakingRes_Fail_NotEnoughMeso,
-    ;
+    MakingRes_Fail_NotEnoughMeso;
 
     private byte val;
 
-    QuestRequestType() {
-        this.val = (byte) this.ordinal();
+    private QuestRequestType() {
+        this.val = (byte)this.ordinal();
     }
 
-    QuestRequestType(int val) {
-        this.val = (byte) val;
+    private QuestRequestType(int val) {
+        this.val = (byte)val;
     }
 
     public byte getVal() {
-        return val;
+        return this.val;
     }
 
     public static QuestRequestType getQTFromByte(byte type) {
-        return Arrays.stream(values()).filter(qt -> qt.getVal() == type).findAny().orElse(null);
+        return Arrays.stream(QuestRequestType.values()).filter(qt -> qt.getVal() == type).findAny().orElse(null);
     }
 }
+

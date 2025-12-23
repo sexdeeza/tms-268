@@ -1,13 +1,17 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Database;
 
+import Database.DatabaseException;
+import Database.DatabaseLoader;
+import java.sql.Connection;
+import java.sql.SQLException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
-public class DatabaseConnection implements AutoCloseable {
-
+public class DatabaseConnection
+implements AutoCloseable {
     private static final Logger log = LoggerFactory.getLogger("Database");
     private final Connection conn;
 
@@ -15,39 +19,42 @@ public class DatabaseConnection implements AutoCloseable {
         this(DatabaseLoader.getConnection());
     }
 
-    public DatabaseConnection(final boolean notAutoCommit) {
+    public DatabaseConnection(boolean notAutoCommit) {
         this(DatabaseLoader.getConnection(), true);
     }
 
-    private DatabaseConnection(final Connection conn) {
+    private DatabaseConnection(Connection conn) {
         this.conn = conn;
     }
 
-    private DatabaseConnection(final Connection conn, final boolean notAutoCommit) {
+    private DatabaseConnection(Connection conn, boolean notAutoCommit) {
         this.conn = conn;
         try {
             this.conn.setAutoCommit(false);
-        } catch (SQLException ex) {
+        }
+        catch (SQLException ex) {
             throw new DatabaseException(ex);
         }
     }
 
     public final Connection getConnection() {
-        return conn;
+        return this.conn;
     }
 
     public final void commit() {
         try {
-            conn.commit();
-        } catch (SQLException ex) {
+            this.conn.commit();
+        }
+        catch (SQLException ex) {
             throw new DatabaseException(ex);
         }
     }
 
     public final void rollback() {
         try {
-            conn.rollback();
-        } catch (SQLException ex) {
+            this.conn.rollback();
+        }
+        catch (SQLException ex) {
             throw new DatabaseException(ex);
         }
     }
@@ -55,28 +62,32 @@ public class DatabaseConnection implements AutoCloseable {
     @Override
     public final void close() {
         try {
-            conn.close();
-        } catch (SQLException ex) {
+            this.conn.close();
+        }
+        catch (SQLException ex) {
             throw new DatabaseException(ex);
         }
     }
 
     public static <T> T domain(DatabaseInterface<T> interfaces) {
-        return domain(interfaces, "資料庫異常", false);
+        return DatabaseConnection.domain(interfaces, "資料庫異常", false);
     }
 
     public static <T> T domain(DatabaseInterface<T> interfaces, String errmsg) {
-        return domain(interfaces, errmsg, false);
+        return DatabaseConnection.domain(interfaces, errmsg, false);
     }
 
     public static <T> T domain(DatabaseInterface<T> interfaces, String errmsg, boolean needShutdown) {
-        T object = null;
-        try (DatabaseConnection con = new DatabaseConnection(true)) {
-            object = interfaces.domain(con.getConnection());
-            con.commit();
-        } catch (Throwable e) {
-            log.error(errmsg, e);
-            if (needShutdown) {
+        T object;
+        block7: {
+            object = null;
+            try (DatabaseConnection con = new DatabaseConnection(true);){
+                object = interfaces.domain(con.getConnection());
+                con.commit();
+            }
+            catch (Throwable e) {
+                log.error(errmsg, e);
+                if (!needShutdown) break block7;
                 System.exit(0);
             }
         }
@@ -85,16 +96,18 @@ public class DatabaseConnection implements AutoCloseable {
 
     public static <T> T domainThrowsException(DatabaseInterface<T> interfaces) throws DatabaseException {
         T object = null;
-        try (DatabaseConnection con = new DatabaseConnection(true)) {
+        try (DatabaseConnection con = new DatabaseConnection(true);){
             object = interfaces.domain(con.getConnection());
             con.commit();
-        } catch (Exception e) {
+        }
+        catch (Exception e) {
             throw new DatabaseException(e);
         }
         return object;
     }
 
-    public interface DatabaseInterface<T> {
-        T domain(Connection con) throws SQLException;
+    public static interface DatabaseInterface<T> {
+        public T domain(Connection var1) throws SQLException;
     }
 }
+

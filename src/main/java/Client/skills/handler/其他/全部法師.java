@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.其他;
 
 import Client.MapleCharacter;
@@ -7,24 +10,21 @@ import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.法師通用;
+import Config.constants.skills.通用V核心;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static Config.constants.skills.通用V核心.法師通用.虛無型態;
-import static Config.constants.skills.通用V核心.法師通用.超載魔力;
-
-public class 全部法師 extends AbstractSkillHandler {
-
+public class 全部法師
+extends AbstractSkillHandler {
     public 全部法師() {
-        for (Field field : 法師通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.法師通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -38,21 +38,22 @@ public class 全部法師 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 超載魔力:
+            case 400021000: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
-                statups.put(SecondaryStat.Wizard_OverloadMana, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.Wizard_OverloadMana, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 虛無型態:
+            }
+            case 400021060: {
                 statups.put(SecondaryStat.EtherealForm, 1);
-
                 return 1;
+            }
         }
         return -1;
     }
 
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 超載魔力) {
+        if (applier.effect.getSourceId() == 400021000) {
             if (applyto.getBuffedValue(SecondaryStat.Wizard_OverloadMana) != null) {
                 applier.overwrite = false;
                 applier.localstatups.clear();
@@ -63,7 +64,7 @@ public class 全部法師 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -98,3 +99,4 @@ public class 全部法師 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

@@ -1,16 +1,22 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Packet.WillPacket
+ */
 package Server.BossEventHandler.spider;
 
 import Client.MapleClient;
 import Net.server.maps.MapleMapObject;
 import Net.server.maps.MapleMapObjectType;
 import Packet.WillPacket;
-import tools.Pair;
-
-import java.awt.*;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
+import tools.Pair;
 
-public class spider extends MapleMapObject {
+public class spider
+extends MapleMapObject {
     private static List<Pair<Integer, Point>> spiderPoint;
     private int pattern;
     private int x1;
@@ -20,8 +26,8 @@ public class spider extends MapleMapObject {
     public void spider(int num) {
         this.num = num;
         this.pattern = spiderPoint.get(num).getLeft();
-        this.x1 = spider.spiderPoint.get(num).getRight().x;
-        this.y1 = spider.spiderPoint.get(num).getRight().y;
+        this.x1 = spider.spiderPoint.get((int)num).getRight().x;
+        this.y1 = spider.spiderPoint.get((int)num).getRight().y;
     }
 
     public static void load() {
@@ -127,23 +133,24 @@ public class spider extends MapleMapObject {
         this.y1 = y1;
     }
 
+    @Override
     public MapleMapObjectType getType() {
         return MapleMapObjectType.WEB;
     }
 
-    /**
-     * @return
-     */
     @Override
     public int getRange() {
         return 0;
     }
 
+    @Override
     public void sendSpawnData(MapleClient client) {
-        client.getSession().writeAndFlush(WillPacket.willSpider(true, this));
+        client.getSession().writeAndFlush(WillPacket.willSpider((boolean)true, (spider)this));
     }
 
+    @Override
     public void sendDestroyData(MapleClient client) {
-        client.getSession().writeAndFlush(WillPacket.willSpider(false, this));
+        client.getSession().writeAndFlush(WillPacket.willSpider((boolean)false, (spider)this));
     }
 }
+

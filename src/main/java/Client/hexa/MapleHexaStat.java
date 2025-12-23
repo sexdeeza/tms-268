@@ -1,17 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.hexa;
 
 import java.io.Serializable;
 
-
-public class MapleHexaStat implements Serializable {
+public class MapleHexaStat
+implements Serializable {
     private int id;
-    /**
-     * 目前套用的核心
-     */
     private int preset;
-    /**
-     * 位置
-     */
     private int solt;
     private int p0stat1;
     private int p0stat1lv;
@@ -19,8 +16,6 @@ public class MapleHexaStat implements Serializable {
     private int p0stat2lv;
     private int p0stat3;
     private int p0stat3lv;
-
-
     private int p1stat1;
     private int p1stat1lv;
     private int p1stat2;
@@ -52,7 +47,7 @@ public class MapleHexaStat implements Serializable {
     }
 
     public int getPreset() {
-        return preset;
+        return this.preset;
     }
 
     public void setPreset(int preset) {
@@ -60,7 +55,7 @@ public class MapleHexaStat implements Serializable {
     }
 
     public int getSolt() {
-        return solt;
+        return this.solt;
     }
 
     public void setSolt(int solt) {
@@ -68,50 +63,51 @@ public class MapleHexaStat implements Serializable {
     }
 
     public int getMain0() {
-        return p0stat1;
+        return this.p0stat1;
     }
 
     public int getMain0Lv() {
-        return p0stat1lv;
+        return this.p0stat1lv;
     }
 
     public int getAddit0S1() {
-        return p0stat2;
+        return this.p0stat2;
     }
 
     public int getAddit0S1Lv() {
-        return p0stat2lv;
+        return this.p0stat2lv;
     }
 
     public int getAddit0S2() {
-        return p0stat3;
+        return this.p0stat3;
     }
 
     public int getAddit0S2Lv() {
-        return p0stat3lv;
+        return this.p0stat3lv;
     }
 
     public int getMain1() {
-        return p1stat1;
+        return this.p1stat1;
     }
 
     public int getMain1Lv() {
-        return p1stat1lv;
+        return this.p1stat1lv;
     }
 
     public int getAddit1S1() {
-        return p1stat2;
+        return this.p1stat2;
     }
 
     public int getAddit1S1Lv() {
-        return p1stat2lv;
+        return this.p1stat2lv;
     }
 
     public int getAddit1S2() {
-        return p1stat3;
+        return this.p1stat3;
     }
 
     public int getAddit1S2Lv() {
-        return p1stat3lv;
+        return this.p1stat3lv;
     }
 }
+

@@ -1,75 +1,89 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Handler.PartyHandler$1
+ *  SwordieX.client.party.Party
+ *  SwordieX.client.party.PartyMember
+ *  SwordieX.client.party.PartyResult
+ *  SwordieX.client.party.PartyType
+ *  connection.packet.WvsContext
+ */
 package Handler;
 
 import Client.MapleCharacter;
-import Config.constants.GameConstants;
+import Handler.Handler;
+import Handler.PartyHandler;
 import Net.server.maps.MapleMap;
 import Net.server.quest.MapleQuest;
+import Opcode.header.InHeader;
 import Server.channel.ChannelServer;
 import Server.world.WorldFindService;
 import SwordieX.client.party.Party;
 import SwordieX.client.party.PartyMember;
 import SwordieX.client.party.PartyResult;
 import SwordieX.client.party.PartyType;
+import SwordieX.world.World;
 import connection.InPacket;
 import connection.packet.WvsContext;
+import java.util.HashSet;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import static Opcode.Headler.InHeader.*;
-
 public class PartyHandler {
-
     private static final Logger log = LoggerFactory.getLogger(PartyHandler.class);
 
-    @Handler(op = CP_PartyInvitableSet)
+    @Handler(op=InHeader.CP_PartyInvitableSet)
     public static void handlePartyInvitableSet(MapleCharacter chr, InPacket inPacket) {
         if (inPacket.decodeByte() > 0) {
-            chr.getQuestRemove(MapleQuest.getInstance(GameConstants.PARTY_INVITE));
+            chr.getQuestRemove(MapleQuest.getInstance(122901));
         } else {
-            chr.getQuestNAdd(MapleQuest.getInstance(GameConstants.PARTY_INVITE));
+            chr.getQuestNAdd(MapleQuest.getInstance(122901));
         }
     }
 
-    @Handler(op = CP_PartyRequest)
+    @Handler(op=InHeader.CP_PartyRequest)
     public static void handlePartyRequest(MapleCharacter chr, InPacket inPacket) {
         byte type = inPacket.decodeByte();
-        PartyType prt = PartyType.getByVal(type);
+        PartyType prt = PartyType.getByVal((byte)type);
         if (prt == null) {
             log.error(String.format("Unknown party request type %d", type));
             return;
         }
         Party party = chr.getParty();
         switch (prt) {
-            case PartyReq_CreateNewParty: { // 創建隊伍
+            case PartyReq_CreateNewParty: {
                 if (party != null) {
                     if (chr.getId() == party.getPartyLeaderID() && party.getMembers().size() == 1) {
-                        chr.write(WvsContext.partyResult(PartyResult.createNewParty(party)));
+                        chr.write(WvsContext.partyResult((PartyResult)PartyResult.createNewParty((Party)party)));
                     } else {
-                        chr.write(WvsContext.partyResult(PartyResult.msg(PartyType.PartyRes_CreateNewParty_Done)));
+                        chr.write(WvsContext.partyResult((PartyResult)PartyResult.msg((PartyType)PartyType.PartyRes_CreateNewParty_Done)));
                     }
                     return;
                 }
                 String name = inPacket.decodeString();
                 boolean appliable = inPacket.decodeByte() != 0;
                 boolean leaderPick = inPacket.decodeByte() != 0;
-                party = Party.createNewParty(appliable, leaderPick, name, chr.getClient().getWorld());
+                party = Party.createNewParty((boolean)appliable, (boolean)leaderPick, (String)name, chr.getClient().getWorld());
                 party.addPartyMember(chr);
-                party.broadcast(WvsContext.partyResult(PartyResult.createNewParty(party)));
+                party.broadcast(WvsContext.partyResult((PartyResult)PartyResult.createNewParty((Party)party)));
                 break;
             }
-            case PartyReq_WithdrawParty: // 退出隊伍
+            case PartyReq_WithdrawParty: {
                 inPacket.decodeByte();
-                        PartyMember leaver = party.getPartyMemberByID(chr.getId());
-                        party.broadcast(WvsContext.partyResult(PartyResult.withdrawParty(party, leaver, true, false)));
-                        party.removePartyMember(leaver);
-                        party.disband();
-                        party.updateFull();
+                if (party == null) break;
+                if (party.hasCharAsLeader(chr)) {
+                    party.disband();
+                    break;
+                }
+                PartyMember leaver = party.getPartyMemberByID(chr.getId());
+                party.broadcast(WvsContext.partyResult((PartyResult)PartyResult.withdrawParty((Party)party, (PartyMember)leaver, (boolean)true, (boolean)false)));
+                party.removePartyMember(leaver);
+                party.updateFull();
                 break;
-            case PartyReq_InviteParty: { // 組隊邀請
+            }
+            case PartyReq_InviteParty: {
                 String invitedName = inPacket.decodeString();
                 int theCh = WorldFindService.getInstance().findChannel(invitedName);
                 MapleCharacter invited = null;
@@ -81,7 +95,8 @@ public class PartyHandler {
                     res = 7;
                 }
                 if (res == 0) {
-                    boolean allowInvite = invited.getQuestNoAdd(MapleQuest.getInstance(GameConstants.PARTY_INVITE)) == null;
+                    boolean allowInvite;
+                    boolean bl = allowInvite = invited.getQuestNoAdd(MapleQuest.getInstance(122901)) == null;
                     if (!allowInvite) {
                         res = 1;
                     } else if (party != null && party.isFull()) {
@@ -90,37 +105,43 @@ public class PartyHandler {
                         res = 10;
                     }
                 }
-                chr.write(WvsContext.partyResult(PartyResult.invitePartySent(res, invitedName)));
-                if (invited != null)
-                    invited.write(WvsContext.partyResult(PartyResult.inviteParty(chr)));
-                if (res != 0) return;
-
-                if (party == null) {
-                    party = Party.createNewParty(false, false, chr.getName() + "的隊伍", chr.getClient().getWorld());
-                    PartyMember pm = new PartyMember(chr);
-                    party.setPartyLeaderID(pm.getCharID());
-                    party.getPartyMembers()[0] = pm;
-                    chr.setParty(party);
-                    chr.write(WvsContext.partyResult(PartyResult.createNewParty(party)));
+                chr.write(WvsContext.partyResult((PartyResult)PartyResult.invitePartySent((int)res, (String)invitedName)));
+                if (invited != null) {
+                    invited.write(WvsContext.partyResult((PartyResult)PartyResult.inviteParty((MapleCharacter)chr)));
                 }
+                if (res != 0) {
+                    return;
+                }
+                if (party != null) break;
+                party = Party.createNewParty((boolean)false, (boolean)false, (String)(chr.getName() + "的隊伍"), (World)chr.getClient().getWorld());
+                PartyMember pm = new PartyMember(chr);
+                party.setPartyLeaderID(pm.getCharID());
+                party.getPartyMembers()[0] = pm;
+                chr.setParty(party);
+                chr.write(WvsContext.partyResult((PartyResult)PartyResult.createNewParty((Party)party)));
                 break;
             }
-            case PartyReq_KickParty: // 驅逐成員
-                if (chr.getId() != party.getPartyLeaderID())
+            case PartyReq_KickParty: {
+                if (chr.getId() != party.getPartyLeaderID()) {
                     return;
+                }
                 int expelID = inPacket.decodeInt();
                 party.expel(expelID);
                 break;
-            case PartyReq_ChangePartyBoss: // 改變隊長
-                if (chr.getId() != party.getPartyLeaderID())
+            }
+            case PartyReq_ChangePartyBoss: {
+                if (chr.getId() != party.getPartyLeaderID()) {
                     return;
+                }
                 int newLeaderID = inPacket.decodeInt();
                 party.changeLeader(newLeaderID, false);
                 break;
-            case PartyReq_ApplyParty: //尋找組隊後退出自己的隊伍然後加入別人的隊伍
+            }
+            case PartyReq_ApplyParty: {
                 int partyID = inPacket.decodeInt();
-                if (party != null)
+                if (party != null) {
                     party.disband();
+                }
                 party = chr.getClient().getWorld().getPartybyId(partyID);
                 MapleCharacter leader = null;
                 int res = 0;
@@ -141,15 +162,17 @@ public class PartyHandler {
                         res = 2;
                     }
                 }
-                chr.write(WvsContext.partyResult(PartyResult.applyPartySent(res, leader == null ? "" : leader.getName())));
-                if (res != 0) return;
-
+                chr.write(WvsContext.partyResult((PartyResult)PartyResult.applyPartySent((int)res, (String)(leader == null ? "" : leader.getName()))));
+                if (res != 0) {
+                    return;
+                }
                 party.setApplyingChar(chr);
-                party.getPartyLeader().getChr().write(WvsContext.partyResult(PartyResult.applyParty(chr)));
+                party.getPartyLeader().getChr().write(WvsContext.partyResult((PartyResult)PartyResult.applyParty((MapleCharacter)chr)));
                 break;
-            case PartyReq_PartySetting: //修改隊伍設置
+            }
+            case PartyReq_PartySetting: {
                 if (party == null || party.getPartyLeaderID() != chr.getId()) {
-                    chr.write(WvsContext.partyResult(PartyResult.msg(PartyType.Unknown)));
+                    chr.write(WvsContext.partyResult((PartyResult)PartyResult.msg((PartyType)PartyType.Unknown)));
                     return;
                 }
                 String name = inPacket.decodeString();
@@ -158,15 +181,15 @@ public class PartyHandler {
                 party.setName(name);
                 party.setAppliable(appliable);
                 party.setLeaderPick(leaderPick);
-                party.broadcast(WvsContext.partyResult(PartyResult.settingChange(party)));
-                break;
+                party.broadcast(WvsContext.partyResult((PartyResult)PartyResult.settingChange((Party)party)));
+            }
         }
     }
 
-    @Handler(op = CP_PartyResult)
+    @Handler(op=InHeader.CP_PartyResult)
     public static void handlePartyResult(MapleCharacter chr, InPacket inPacket) {
         byte type = inPacket.decodeByte();
-        PartyType pt = PartyType.getByVal(type);
+        PartyType pt = PartyType.getByVal((byte)type);
         if (pt == null) {
             log.error(String.format("Unknown party request result type %d", type));
             return;
@@ -179,7 +202,8 @@ public class PartyHandler {
                 }
                 int leaderID = inPacket.decodeInt();
                 if (chr.getParty() != null) {
-                    chr.write(WvsContext.partyResult(PartyResult.msg(PartyType.PartyRes_JoinParty_Remote_Done)));
+                    chr.write(WvsContext.partyResult((PartyResult)PartyResult.msg((PartyType)PartyType.PartyRes_JoinParty_Remote_Done)));
+
                     return;
                 }
                 int theCh = WorldFindService.getInstance().findChannel(leaderID);
@@ -190,8 +214,12 @@ public class PartyHandler {
                 if (invited == null) {
                     return;
                 }
-                if (op == 5) {
-                    invited.write(WvsContext.partyResult(PartyResult.invitePartySent(op, chr.getName())));
+                if (op == 4) {
+                    // todo 拒绝组队?
+                    MapleCharacter applier = chr.getParty().getApplyingChar();
+                    chr.getParty().setApplyingChar(null);
+                    applier.write(WvsContext.partyResult(PartyResult.applyPartySent(op, chr.getName())));
+//                    invited.write(WvsContext.partyResult((PartyResult)PartyResult.reject((int)op, (String)chr.getName())));
                     return;
                 }
                 Party party = invited.getParty();
@@ -203,18 +231,18 @@ public class PartyHandler {
                     party.addPartyMember(chr);
                     chr.receivePartyMemberHP();
                     chr.updatePartyMemberHP();
-                } else {
-                    chr.write(WvsContext.partyResult(PartyResult.msg(PartyType.PartyRes_JoinParty_AlreadyFull)));
+                    break;
                 }
+                chr.write(WvsContext.partyResult((PartyResult)PartyResult.msg((PartyType)PartyType.PartyRes_JoinParty_AlreadyFull)));
                 break;
             }
-            case PartyRes_ApplyParty_Sent:
+            case PartyRes_ApplyParty_Sent: {
                 int op = inPacket.decodeInt();
                 if (op != 4 && op != 5) {
                     return;
                 }
                 if (chr.getParty() != null) {
-                    chr.write(WvsContext.partyResult(PartyResult.msg(PartyType.PartyRes_JoinParty_AlreadyJoined)));
+                    chr.write(WvsContext.partyResult((PartyResult)PartyResult.msg((PartyType)PartyType.PartyRes_JoinParty_AlreadyJoined)));
                     return;
                 }
                 if (chr.getParty().getPartyLeader().getChr() != chr) {
@@ -226,21 +254,21 @@ public class PartyHandler {
                 }
                 if (op == 4) {
                     chr.getParty().setApplyingChar(null);
-                    applier.write(WvsContext.partyResult(PartyResult.applyPartySent(op, chr.getName())));
+                    applier.write(WvsContext.partyResult((PartyResult)PartyResult.applyPartySent((int)op, (String)chr.getName())));
                     return;
                 }
                 if (!chr.getParty().isFull()) {
                     chr.getParty().addPartyMember(applier);
                     applier.receivePartyMemberHP();
                     applier.updatePartyMemberHP();
-                } else {
-                    chr.write(WvsContext.partyResult(PartyResult.msg(PartyType.PartyRes_JoinParty_AlreadyFull)));
+                    break;
                 }
-                break;
+                chr.write(WvsContext.partyResult((PartyResult)PartyResult.msg((PartyType)PartyType.PartyRes_JoinParty_AlreadyFull)));
+            }
         }
     }
 
-    @Handler(op = CP_PartyMemberCandidateRequest)
+    @Handler(op=InHeader.CP_PartyMemberCandidateRequest)
     public static void handlePartyMemberCandidateRequest(MapleCharacter chr, InPacket inPacket) {
         if (chr.isInBlockedMap()) {
             chr.dropMessage(5, "無法在這個地方進行搜索.");
@@ -248,12 +276,10 @@ public class PartyHandler {
             return;
         }
         MapleMap field = chr.getMap();
-        chr.write(WvsContext.partyMemberCandidateResult(field.getCharacters().stream()
-                .filter(ch -> !ch.isHidden() && ch.getQuestNoAdd(MapleQuest.getInstance(GameConstants.PARTY_INVITE)) == null && !ch.equals(chr) && ch.getParty() == null)
-                .collect(Collectors.toSet())));
+        chr.write(WvsContext.partyMemberCandidateResult(field.getCharacters().stream().filter(ch -> !ch.isHidden() && ch.getQuestNoAdd(MapleQuest.getInstance(122901)) == null && !ch.equals(chr) && ch.getParty() == null).collect(Collectors.toSet())));
     }
 
-    @Handler(op = CP_UrusPartyMemberCandidateRequest)
+    @Handler(op=InHeader.CP_UrusPartyMemberCandidateRequest)
     public static void handlePartyCandidateRequest(MapleCharacter chr, InPacket inPacket) {
         if (chr.isInBlockedMap()) {
             chr.dropMessage(5, "無法在這個地方進行搜索.");
@@ -261,17 +287,16 @@ public class PartyHandler {
             return;
         }
         if (chr.getParty() != null) {
-            chr.write(WvsContext.partyCandidateResult(new HashSet<>()));
+            chr.write(WvsContext.partyCandidateResult(new HashSet()));
             return;
         }
         MapleMap field = chr.getMap();
-        Set<Party> parties = new HashSet<>();
+        HashSet<Party> parties = new HashSet<Party>();
         for (MapleCharacter ch : field.getCharacters()) {
-            if (!ch.isHidden() && ch.getParty() != null && ch.getParty().hasCharAsLeader(ch) && !ch.getParty().isAppliable()) {
-                parties.add(ch.getParty());
-            }
+            if (ch.isHidden() || ch.getParty() == null || !ch.getParty().hasCharAsLeader(ch) || ch.getParty().isAppliable()) continue;
+            parties.add(ch.getParty());
         }
         chr.write(WvsContext.partyCandidateResult(parties));
-
     }
 }
+

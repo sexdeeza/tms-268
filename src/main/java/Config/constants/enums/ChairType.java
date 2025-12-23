@@ -1,7 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.enums;
 
 public enum ChairType {
-
     NORMAL,
     TOWER,
     MESO,
@@ -33,5 +35,7 @@ public enum ChairType {
     CHAR_LV,
     HASH_TAG,
     UN22,
-    TRAITS
+    TRAITS;
+
 }
+

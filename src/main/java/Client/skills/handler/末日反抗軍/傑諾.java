@@ -1,12 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Client.PortableChair
+ *  Net.server.maps.ForceAtomObject
+ *  Packet.AdelePacket
+ */
 package Client.skills.handler.末日反抗軍;
 
-import Client.*;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleJob;
+import Client.MonsterEffectHolder;
+import Client.PortableChair;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Client.force.MapleForceFactory;
 import Client.skills.Skill;
 import Client.skills.SkillEntry;
 import Client.skills.SkillFactory;
 import Client.skills.handler.AbstractSkillHandler;
-import Client.skills.handler.HexaSKILL;
 import Client.skills.handler.SkillClassApplier;
 import Client.status.MonsterStatus;
 import Config.constants.SkillConstants;
@@ -19,34 +32,25 @@ import Net.server.maps.MapleMapObjectType;
 import Packet.AdelePacket;
 import Packet.ForcePacket;
 import Packet.MaplePacketCreator;
-import tools.Pair;
-import tools.Randomizer;
-import tools.data.MaplePacketReader;
-
-import java.awt.*;
+import java.awt.Point;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import tools.Pair;
+import tools.Randomizer;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.傑諾.*;
-
-public class 傑諾 extends AbstractSkillHandler {
-
+public class 傑諾
+extends AbstractSkillHandler {
     public 傑諾() {
-        jobs = new MapleJob[]{
-                MapleJob.傑諾,
-                MapleJob.傑諾1轉,
-                MapleJob.傑諾2轉,
-                MapleJob.傑諾3轉,
-                MapleJob.傑諾4轉
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.傑諾, MapleJob.傑諾1轉, MapleJob.傑諾2轉, MapleJob.傑諾3轉, MapleJob.傑諾4轉};
         for (Field field : Config.constants.skills.傑諾.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -55,16 +59,11 @@ public class 傑諾 extends AbstractSkillHandler {
     @Override
     public int baseSkills(MapleCharacter chr, SkillClassApplier applier) {
         if (chr.getLevel() >= 10) {
-            Skill skil;
-            int[] ss = {英雄的回響, 蓄能系統, 全能增幅I, 普羅梅莎突擊, 多功能模式, 自由飛行, 多樣化裝扮, 轉換星力};
-            for (int i : ss) {
-                if (chr.getLevel() < 200 && i == 英雄的回響) {
-                    continue;
-                }
-                skil = SkillFactory.getSkill(i);
-                if (skil != null && chr.getSkillLevel(skil) <= 0) {
-                    applier.skillMap.put(i, new SkillEntry(1, skil.getMaxMasterLevel(), -1));
-                }
+            int[] ss;
+            for (int i : ss = new int[]{30021005, 30020232, 30020234, 30021235, 30021236, 30021237, 30020240, 30020300}) {
+                Skill skil;
+                if (chr.getLevel() < 200 && i == 30021005 || (skil = SkillFactory.getSkill(i)) == null || chr.getSkillLevel(skil) > 0) continue;
+                applier.skillMap.put(i, new SkillEntry(1, skil.getMaxMasterLevel(), -1L));
             }
         }
         return -1;
@@ -73,46 +72,62 @@ public class 傑諾 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 36141501:
-            case 36141502:
-            case 36141503:
+            case 36141501: 
+            case 36141502: 
+            case 36141503: {
                 return 36141500;
-            case 36141000:
-            case 36141001:
-                return 偽裝掃蕩_狙擊;
-            case 36141002:
-            case 36141003:
-                return 偽裝掃蕩_砲擊;
-            case HexaSKILL.強化滅世雷射光:
+            }
+            case 36141000: 
+            case 36141001: {
+                return 36121001;
+            }
+            case 36141002: 
+            case 36141003: {
+                return 36121011;
+            }
+            case 500004124: {
                 return 400041007;
-            case HexaSKILL.強化超載模式:
+            }
+            case 500004125: {
                 return 400041029;
-            case HexaSKILL.強化能量領域_融合:
+            }
+            case 500004126: {
                 return 400041044;
-            case HexaSKILL.強化光子射線:
+            }
+            case 500004127: {
                 return 400041057;
-            case 水銀之刃_集中:
-            case 水銀之刃_飛躍:
-                return 水銀之刃_閃光;
-            case 戰鬥轉換_擊落:
-            case 戰鬥轉換_分裂:
-                return 戰鬥轉換_爆發;
-            case 能量領域_力場:
-            case 能量領域_支援:
-                return 能量領域_貫通;
-            case 偽裝掃蕩_砲擊:
-            case 偽裝掃蕩_轟炸:
-                return 偽裝掃蕩_狙擊;
-            case 神盾系統_攻擊:
-                return 神盾系統;
-            case 毀滅轟炸_1:
-                return 毀滅轟炸;
-            case 超載模式_1:
-                return 超載模式;
-            case 能量領域_融合_1:
-                return 能量領域_融合;
-            case 光子射線_1:
-                return 光子射線;
+            }
+            case 36101008: 
+            case 36101009: {
+                return 36101000;
+            }
+            case 36111009: 
+            case 36111010: {
+                return 36111000;
+            }
+            case 36121013: 
+            case 36121014: {
+                return 36121002;
+            }
+            case 36121011: 
+            case 36121012: {
+                return 36121001;
+            }
+            case 36110004: {
+                return 36111004;
+            }
+            case 36121055: {
+                return 36121052;
+            }
+            case 400041031: {
+                return 400041029;
+            }
+            case 400041047: {
+                return 400041044;
+            }
+            case 400041058: {
+                return 400041057;
+            }
         }
         return -1;
     }
@@ -120,87 +135,104 @@ public class 傑諾 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 英雄的回響:
+            case 36100002: {
+                statups.put(SecondaryStat.IndieCr, 2);
+                return 1;
+            }
+            case 30021005: {
                 effect.setRangeBuff(true);
                 effect.getInfo().put(MapleStatInfo.time, effect.getDuration() * 1000);
                 statups.put(SecondaryStat.MaxLevelBuff, effect.getX());
                 return 1;
-            case 蓄能系統:
+            }
+            case 30020232: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.SurplusSupply, 1);
                 return 1;
-            case 自由飛行:
+            }
+            case 30021237: {
                 effect.getInfo().put(MapleStatInfo.time, 30000);
                 statups.put(SecondaryStat.NewFlying, 1);
                 return 1;
-            case 追縱火箭:
+            }
+            case 36001005: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.XenonRoketRunch, 1);
                 return 1;
-            case 傾斜功率:
+            }
+            case 36001002: {
                 statups.clear();
-                statups.put(SecondaryStat.IndiePAD, effect.getInfo().get(MapleStatInfo.indiePad));
+                statups.put(SecondaryStat.IndiePAD, effect.getInfo().get((Object)MapleStatInfo.indiePad));
                 return 1;
-            case 神盾系統:
+            }
+            case 36111004: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.XenonAegisSystem, 1);
                 return 1;
-            case 全域代碼:
-                statups.put(SecondaryStat.IndiePMdR, effect.getInfo().get(MapleStatInfo.indiePMdR));
-                statups.put(SecondaryStat.BdR, effect.getInfo().get(MapleStatInfo.indieBDR));
+            }
+            case 36121003: {
+                statups.put(SecondaryStat.IndiePMdR, effect.getInfo().get((Object)MapleStatInfo.indiePMdR));
+                statups.put(SecondaryStat.BdR, effect.getInfo().get((Object)MapleStatInfo.indieBDR));
                 return 1;
-            case 攻擊矩陣:
-                statups.put(SecondaryStat.Stance, effect.getInfo().get(MapleStatInfo.x));
-                statups.put(SecondaryStat.IgnoreTargetDEF, effect.getInfo().get(MapleStatInfo.y));
+            }
+            case 36120004: {
+                statups.put(SecondaryStat.Stance, effect.getInfo().get((Object)MapleStatInfo.x));
+                statups.put(SecondaryStat.IgnoreTargetDEF, effect.getInfo().get((Object)MapleStatInfo.y));
                 return 1;
-            case 能量領域_支援:
+            }
+            case 36121014: {
                 statups.clear();
-                statups.put(SecondaryStat.DEXR, effect.getInfo().get(MapleStatInfo.evaR));
-                statups.put(SecondaryStat.IndieMHPR, effect.getInfo().get(MapleStatInfo.indieMhpR));
+                statups.put(SecondaryStat.DEXR, effect.getInfo().get((Object)MapleStatInfo.evaR));
+                statups.put(SecondaryStat.IndieMHPR, effect.getInfo().get((Object)MapleStatInfo.indieMhpR));
                 return 1;
-            case 阿瑪蘭斯發電機:
+            }
+            case 36121054: {
                 statups.put(SecondaryStat.AmaranthGenerator, 1);
                 return 1;
-            case 毀滅轟炸:
-                effect.getInfo().put(MapleStatInfo.subTime, effect.getInfo().get(MapleStatInfo.time) * 1000);
-                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get(MapleStatInfo.y) * 1000);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.w));
-
-                monsterStatus.put(MonsterStatus.PDR, -effect.getInfo().get(MapleStatInfo.x));
-                monsterStatus.put(MonsterStatus.MDR, -effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 36121052: {
+                effect.getInfo().put(MapleStatInfo.subTime, effect.getInfo().get((Object)MapleStatInfo.time) * 1000);
+                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get((Object)MapleStatInfo.y) * 1000);
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.w));
+                monsterStatus.put(MonsterStatus.PDR, -effect.getInfo().get((Object)MapleStatInfo.x).intValue());
+                monsterStatus.put(MonsterStatus.MDR, -effect.getInfo().get((Object)MapleStatInfo.x).intValue());
                 return 1;
-            case 超載模式:
+            }
+            case 400041029: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
-                statups.put(SecondaryStat.OverloadMode, effect.getInfo().get(MapleStatInfo.w));
+                statups.put(SecondaryStat.OverloadMode, effect.getInfo().get((Object)MapleStatInfo.w));
                 return 1;
-            case 能量纏繞:
+            }
+            case 36121053: {
                 monsterStatus.put(MonsterStatus.Freeze, 1);
                 monsterStatus.put(MonsterStatus.MagicCrash, 1);
                 return 1;
-            case 三角列陣:
+            }
+            case 36110005: {
                 monsterStatus.put(MonsterStatus.EVA, -8);
                 monsterStatus.put(MonsterStatus.Blind, 8);
                 monsterStatus.put(MonsterStatus.Explosion, 1);
                 return 1;
-            case 虛擬投影:
+            }
+            case 36111006: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
-                statups.put(SecondaryStat.ShadowPartner, effect.getInfo().get(MapleStatInfo.y));
+                statups.put(SecondaryStat.ShadowPartner, effect.getInfo().get((Object)MapleStatInfo.y));
                 return 1;
-            case 楓葉祝福:
-                effect.setPartyBuff(true);
-                statups.put(SecondaryStat.BasicStatUp, effect.getInfo().get(MapleStatInfo.x));
-                return 1;
-            case 滅世雷射光:
+            }
+            case 400041007: {
                 statups.put(SecondaryStat.IndieNotDamaged, 0);
                 statups.put(SecondaryStat.MegaSmasher, -1);
                 return 1;
-            case 能量領域_融合:
+            }
+            case 400041044: {
                 statups.put(SecondaryStat.EVAR, 1);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
                 return 1;
-            case 光子射線:
+            }
+            case 400041057: {
                 statups.put(SecondaryStat.XenonBursterLaser, 1);
                 return 1;
+            }
         }
         return -1;
     }
@@ -208,40 +240,38 @@ public class 傑諾 extends AbstractSkillHandler {
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 額外供應: {
-                if (chr.getSkillEffect(蓄能系統) != null) {
+            case 36111008: {
+                if (chr.getSkillEffect(30020232) != null) {
                     chr.applyXenonEnegy(applier.effect.getX());
                 }
                 return 1;
             }
-            case 光子射線_1: {
+            case 400041058: {
                 slea.readInt();
                 applier.pos = slea.readPosInt();
                 if (chr.getBuffStatValueHolder(SecondaryStat.XenonBursterLaser) != null) {
                     chr.dispelEffect(SecondaryStat.XenonBursterLaser);
                     if (!applier.ai.skillTargetList.isEmpty()) {
-                        List<ForceAtomObject> createList = new ArrayList<>();
+                        ArrayList<ForceAtomObject> createList = new ArrayList<ForceAtomObject>();
                         int idx = 1;
-                        int[] list = {-45, -70, -135, -165, -150, -35, -55, -50, -160,
-                                -48, -140, -167, -40, -170, 52, -10, -15, -170, -165, -175,
-                                -5, -20, -25, -160, -30, -155, -150, -32, -177, -38};
+                        int[] list = new int[]{-45, -70, -135, -165, -150, -35, -55, -50, -160, -48, -140, -167, -40, -170, 52, -10, -15, -170, -165, -175, -5, -20, -25, -160, -30, -155, -150, -32, -177, -38};
                         for (Pair<Integer, Integer> pair : applier.ai.skillTargetList) {
-                            for (int i = 0; i < pair.right; i++) {
-                                ForceAtomObject sword = new ForceAtomObject(idx, 9, idx - 1, chr.getId(), 0, 光子射線_1);
+                            for (int i = 0; i < (Integer)pair.right; ++i) {
+                                ForceAtomObject sword = new ForceAtomObject(idx, 9, idx - 1, chr.getId(), 0, 400041058);
                                 sword.Position = new Point(applier.pos.x + Randomizer.nextInt(200), applier.pos.y + 46);
                                 sword.ObjPosition = new Point(applier.pos.x, applier.pos.y);
                                 sword.Expire = 10000;
-                                sword.Target = pair.left;
+                                sword.Target = (Integer)pair.left;
                                 sword.CreateDelay = 150 + i * 30;
                                 for (int x : list) {
                                     sword.addX(x);
                                 }
                                 createList.add(sword);
-                                idx++;
+                                ++idx;
                             }
                         }
                         if (!createList.isEmpty()) {
-                            chr.getMap().broadcastMessage(AdelePacket.ForceAtomObject(chr.getId(), createList, 0), chr.getPosition());
+                            chr.getMap().broadcastMessage(AdelePacket.ForceAtomObject((int)chr.getId(), createList, (int)0), chr.getPosition());
                         }
                     }
                     return 1;
@@ -255,11 +285,11 @@ public class 傑諾 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 普羅梅莎突擊: {
+            case 30021235: {
                 applyto.changeMap(applier.effect.getX(), 0);
                 return 1;
             }
-            case 追縱火箭: {
+            case 36001005: {
                 if (!applier.primary) {
                     return 0;
                 }
@@ -269,22 +299,22 @@ public class 傑諾 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 蓄能系統: {
+            case 30020232: {
                 applier.localstatups.put(SecondaryStat.SurplusSupply, Math.min(SkillConstants.dY(applyto.getJob()) * 5 + applyto.getBuffedIntValue(SecondaryStat.OverloadMode), Math.max(0, applyto.getBuffedIntValue(SecondaryStat.SurplusSupply))));
                 return 1;
             }
-            case 神盾系統: {
+            case 36111004: {
                 if (applyto.getBuffedValue(SecondaryStat.XenonAegisSystem) != null) {
                     applier.overwrite = false;
                     applier.localstatups.clear();
                 }
                 return 1;
             }
-            case 虛擬投影: {
+            case 36111006: {
                 applyto.getSpecialStat().setShadowHP(applyto.getStat().getCurrentMaxHP() * applier.effect.getX());
                 return 1;
             }
-            case 時空膠囊: {
+            case 36121007: {
                 if (applier.primary) {
                     applyto.setChair(new PortableChair(3010587));
                     applyto.getMap().broadcastMessage(applyto, MaplePacketCreator.UserSetActivePortableChair(applyto), false);
@@ -292,15 +322,15 @@ public class 傑諾 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 阿瑪蘭斯發電機: {
+            case 36121054: {
                 applyfrom.applyXenonEnegy(20);
                 return 1;
             }
-            case 滅世雷射光: {
+            case 400041007: {
                 if (applier.passive) {
-                    final SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.MegaSmasher);
+                    SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.MegaSmasher);
                     if (mbsvh != null) {
-                        applier.duration += Math.min((int) (System.currentTimeMillis() - mbsvh.startTime) / (applier.effect.getY() * 1000), applier.effect.getZ()) * 1000;
+                        applier.duration += Math.min((int)(System.currentTimeMillis() - mbsvh.startTime) / (applier.effect.getY() * 1000), applier.effect.getZ()) * 1000;
                     }
                     applier.localstatups.put(SecondaryStat.MegaSmasher, 1);
                     break;
@@ -309,7 +339,7 @@ public class 傑諾 extends AbstractSkillHandler {
                 applier.duration = 2100000000;
                 return 1;
             }
-            case 光子射線: {
+            case 400041057: {
                 applier.buffz = 0;
                 return 1;
             }
@@ -319,15 +349,15 @@ public class 傑諾 extends AbstractSkillHandler {
 
     @Override
     public int onApplyAttackEffect(MapleCharacter applyfrom, MapleMonster applyto, SkillClassApplier applier) {
-        final MonsterEffectHolder meh;
-        if ((meh = applyto.getEffectHolder(MonsterStatus.Explosion)) != null && meh.value >= 3) {
+        MonsterEffectHolder meh = applyto.getEffectHolder(MonsterStatus.Explosion);
+        if (meh != null && meh.value >= 3) {
             if (applier.effect != null) {
                 applyfrom.getClient().announce(ForcePacket.UserExplosionAttack(applyto));
-                applyto.removeEffect(applyfrom.getId(), 三角列陣);
+                applyto.removeEffect(applyfrom.getId(), 36110005);
             }
         } else {
-            final MapleStatEffect skillEffect19;
-            if ((skillEffect19 = applyfrom.getSkillEffect(三角列陣)) != null && applier.effect != null && applier.effect.getSourceId() != 三角列陣) {
+            MapleStatEffect skillEffect19 = applyfrom.getSkillEffect(36110005);
+            if (skillEffect19 != null && applier.effect != null && applier.effect.getSourceId() != 36110005) {
                 skillEffect19.applyMonsterEffect(applyfrom, applyto, skillEffect19.getY() * 1000);
             }
         }
@@ -336,11 +366,11 @@ public class 傑諾 extends AbstractSkillHandler {
 
     @Override
     public int onAfterAttack(MapleCharacter player, SkillClassApplier applier) {
-        final MapleForceFactory mff = MapleForceFactory.getInstance();
-        final MapleStatEffect effecForBuffStat11 = player.getEffectForBuffStat(SecondaryStat.XenonRoketRunch);
-        if (applier.totalDamage > 0L && effecForBuffStat11 != null && player.getCheatTracker().canNext追縱火箭() && (applier.effect == null || applier.effect.getSourceId() != 追縱火箭)) {
+        MapleForceFactory mff = MapleForceFactory.getInstance();
+        MapleStatEffect effecForBuffStat11 = player.getEffectForBuffStat(SecondaryStat.XenonRoketRunch);
+        if (applier.totalDamage > 0L && effecForBuffStat11 != null && player.getCheatTracker().canNext追縱火箭() && (applier.effect == null || applier.effect.getSourceId() != 36001005)) {
             List<MapleMapObject> mobs = player.getMap().getMapObjectsInRect(effecForBuffStat11.calculateBoundingBox(player.getPosition(), player.isFacingLeft(), 100), Collections.singletonList(MapleMapObjectType.MONSTER));
-            final ArrayList<Integer> list2 = new ArrayList<>();
+            ArrayList<Integer> list2 = new ArrayList<Integer>();
             mobs.forEach(mob -> list2.add(mob.getObjectId()));
             if (!list2.isEmpty()) {
                 player.getMap().broadcastMessage(player, ForcePacket.forceAtomCreate(mff.getMapleForce(player, effecForBuffStat11, 0, list2)), true);
@@ -349,3 +379,4 @@ public class 傑諾 extends AbstractSkillHandler {
         return 1;
     }
 }
+

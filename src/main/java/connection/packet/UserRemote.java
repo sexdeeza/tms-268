@@ -1,7 +1,7 @@
 package connection.packet;
 
 import Client.MapleCharacter;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import connection.OutPacket;
 
 public class UserRemote {

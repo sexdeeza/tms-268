@@ -1,15 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 凱殷 {
-
     public static final int 事前準備 = 60030241;
     public static final int 事前準備_傳授 = 80003015;
     public static final int 事前準備_計數 = 80003018;
-
     public static final int 前往圖倫城市 = 60031000;
     public static final int 獨門咒語 = 60031005;
-
-
     public static final int 衝擊箭 = 63001000;
     public static final int 衝擊箭_1 = 63001001;
     public static final int 具現_衝擊箭 = 63001100;
@@ -21,8 +20,6 @@ public class 凱殷 {
     public static final int 殺手 = 63000007;
     public static final int 隱密 = 63000008;
     public static final int 暗影迅捷_1 = 63001009;
-
-
     public static final int 主導 = 63101001;
     public static final int 龍炸裂 = 63101005;
     public static final int 龍炸裂_1 = 63101006;
@@ -36,8 +33,6 @@ public class 凱殷 {
     public static final int 龍息射手加速器 = 63101010;
     public static final int 精通龍息射手 = 63100011;
     public static final int 鍛鍊身體 = 63100012;
-
-
     public static final int 衝擊箭III = 63110001;
     public static final int 衝擊箭III_1 = 63111002;
     public static final int 死亡祝福 = 63110011;
@@ -57,8 +52,6 @@ public class 凱殷 {
     public static final int 殘留憤恨_1 = 63111010;
     public static final int 自然本能 = 63110014;
     public static final int 研磨 = 63110015;
-
-
     public static final int 主導II = 63120000;
     public static final int 進階死亡祝福 = 63120001;
     public static final int 破塵箭 = 63121002;
@@ -76,8 +69,6 @@ public class 凱殷 {
     public static final int 信條 = 63120012;
     public static final int 精通龍息射手_1 = 63120013;
     public static final int 適應死亡 = 63120014;
-
-
     public static final int 龍息射手_無視防禦 = 63120031;
     public static final int 龍息射手_強化 = 63120032;
     public static final int 龍息射手_BOSS殺手 = 63120033;
@@ -87,8 +78,6 @@ public class 凱殷 {
     public static final int 殘留憤恨_強化 = 63120037;
     public static final int 龍炸裂_範圍 = 63120038;
     public static final int 龍之延展_額外恢復 = 63120039;
-
-
     public static final int 追擊箭矢 = 63121042;
     public static final int 化身 = 63121044;
     public static final int 暗地狙擊 = 63121040;
@@ -97,15 +86,11 @@ public class 凱殷 {
     public static final int 具現_處刑_暗地狙擊_1 = 63121140;
     public static final int 具現_處刑_暗地狙擊_2 = 63121141;
     public static final int 化身_1 = 80003017;
-
-
     public static final int 具現_龍之爆裂 = 400031061;
-
     public static final int 死亡降臨 = 400031062;
     public static final int 死亡降臨_1 = 400031063;
     public static final int 死亡降臨_2 = 400031064;
-
     public static final int 處刑_致命奇襲 = 400031065;
-
     public static final int 掌握痛苦 = 400031066;
 }
+

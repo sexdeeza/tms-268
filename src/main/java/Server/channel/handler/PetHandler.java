@@ -13,7 +13,7 @@ import Net.server.MapleItemInformationProvider;
 import Net.server.maps.FieldLimitType;
 import Net.server.movement.LifeMovementFragment;
 import Net.server.quest.MapleQuest;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.EffectPacket;
 import Packet.PetPacket;
 import tools.Randomizer;

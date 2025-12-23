@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Server.channel.handler;
 
 public class AttackMobInfo {
@@ -22,9 +25,6 @@ public class AttackMobInfo {
     public int templateID;
     public short idk6;
     public boolean isResWarriorLiftPress;
-    //    public Position pos1;
-//    public Position pos2;
-//    public Rect rect;
     public int idkInt;
     public byte byteIdk1;
     public byte byteIdk2;
@@ -40,41 +40,39 @@ public class AttackMobInfo {
 
     public AttackMobInfo deepCopy() {
         AttackMobInfo mai = new AttackMobInfo();
-        mai.mobId = mobId;
-        mai.hitAction = hitAction;
-        mai.left = left;
-        mai.idk3 = idk3;
-        mai.forceActionAndLeft = forceActionAndLeft;
-        mai.frameIdx = frameIdx;
-        mai.calcDamageStatIndex = calcDamageStatIndex;
-        mai.hitX = hitX;
-        mai.hitY = hitY;
-        mai.oldPosX = oldPosX;
-        mai.oldPosY = oldPosY;
-        mai.hpPerc = hpPerc;
-        mai.damages = new long[damages.length];
-        if (damages != null && damages.length > 0) {
-            System.arraycopy(damages, 0, mai.damages, 0, damages.length);
+        mai.mobId = this.mobId;
+        mai.hitAction = this.hitAction;
+        mai.left = this.left;
+        mai.idk3 = this.idk3;
+        mai.forceActionAndLeft = this.forceActionAndLeft;
+        mai.frameIdx = this.frameIdx;
+        mai.calcDamageStatIndex = this.calcDamageStatIndex;
+        mai.hitX = this.hitX;
+        mai.hitY = this.hitY;
+        mai.oldPosX = this.oldPosX;
+        mai.oldPosY = this.oldPosY;
+        mai.hpPerc = this.hpPerc;
+        mai.damages = new long[this.damages.length];
+        if (this.damages != null && this.damages.length > 0) {
+            System.arraycopy(this.damages, 0, mai.damages, 0, this.damages.length);
         }
-        mai.mobUpDownYRange = mobUpDownYRange;
-        mai.animationDeltaL = animationDeltaL;
-        if (hitPartRunTimes != null && hitPartRunTimes.length > 0) {
-            System.arraycopy(hitPartRunTimes, 0, mai.hitPartRunTimes, 0, hitPartRunTimes.length);
+        mai.mobUpDownYRange = this.mobUpDownYRange;
+        mai.animationDeltaL = this.animationDeltaL;
+        if (this.hitPartRunTimes != null && this.hitPartRunTimes.length > 0) {
+            System.arraycopy(this.hitPartRunTimes, 0, mai.hitPartRunTimes, 0, this.hitPartRunTimes.length);
         }
-        mai.templateID = templateID;
-        mai.idk6 = idk6;
-        mai.isResWarriorLiftPress = isResWarriorLiftPress;
-//        mai.pos1 = pos1 != null ? pos1.deepCopy() : null;
-//        mai.pos2 = pos2 != null ? pos2.deepCopy() : null;
-//        mai.rect = rect != null ? rect.deepCopy() : null;
-        mai.idkInt = idkInt;
-        mai.byteIdk1 = byteIdk1;
-        mai.byteIdk2 = byteIdk2;
-        mai.byteIdk3 = byteIdk3;
-        mai.byteIdk4 = byteIdk4;
-        mai.byteIdk5 = byteIdk5;
-        mai.psychicLockInfo = psychicLockInfo;
-        mai.rocketRushInfo = rocketRushInfo;
+        mai.templateID = this.templateID;
+        mai.idk6 = this.idk6;
+        mai.isResWarriorLiftPress = this.isResWarriorLiftPress;
+        mai.idkInt = this.idkInt;
+        mai.byteIdk1 = this.byteIdk1;
+        mai.byteIdk2 = this.byteIdk2;
+        mai.byteIdk3 = this.byteIdk3;
+        mai.byteIdk4 = this.byteIdk4;
+        mai.byteIdk5 = this.byteIdk5;
+        mai.psychicLockInfo = this.psychicLockInfo;
+        mai.rocketRushInfo = this.rocketRushInfo;
         return mai;
     }
 }
+

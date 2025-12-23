@@ -22,7 +22,7 @@ package Packet;
 
 import Client.MapleCharacter;
 import Net.server.carnival.MapleCarnivalParty;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.data.MaplePacketLittleEndianWriter;
 
 import java.util.List;

@@ -1,49 +1,32 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  SwordieX.util.Position
+ *  SwordieX.util.container.Tuple
+ */
 package connection.packet;
 
 import Client.MapleClient;
 import Config.configs.ServerConfig;
 import Config.constants.ServerConstants;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.PacketHelper;
 import Server.ServerType;
-import connection.OutPacket;
 import SwordieX.enums.LoginType;
 import SwordieX.util.Position;
 import SwordieX.util.container.Tuple;
 import SwordieX.world.World;
-import tools.StringUtil;
-
+import connection.OutPacket;
 import java.util.Map;
 import java.util.Set;
+import tools.StringUtil;
 
 public class Login {
-
-    /**
-     * 發送一個handshake封包
-     *
-     * @param mapleVersion 客戶端版本
-     * @param siv          發送iv
-     * @param riv          接收iv
-     * @param type         伺服器類型
-     * @return 封包
-     */
     public static OutPacket sendConnect(short mapleVersion, byte[] siv, byte[] riv, ServerType type) {
-        int version = mapleVersion + ((type == ServerType.ChatServer) ? 159 : 0);
+        int version = mapleVersion + (type == ServerType.ChatServer ? 159 : 0);
         byte mapleRegion = ServerConstants.MapleRegion;
-        if (ServerConstants.TestServer) {
-            switch (mapleRegion) {
-                case 1:
-                case 5:
-                    mapleRegion += 1;
-                    break;
-                default:
-                    mapleVersion = Short.parseShort("1" + String.valueOf(mapleVersion));
-                    break;
-            }
-        }
-
         OutPacket oPacket = new OutPacket(version);
-
         if (type != ServerType.LoginServer) {
             oPacket.encodeInt(version);
         } else {
@@ -72,26 +55,12 @@ public class Login {
         }
         OutPacket newPacket = new OutPacket(oPacket.getLength());
         newPacket.encodeArr(oPacket.getData());
-
         return newPacket;
     }
 
-    /**
-     * 發送Login的Ping封包.
-     *
-     * @return 封包
-     * @updateVersion:262.1
-     * @Check_Date:2024/6/26
-     */
     public static OutPacket sendAliveReq() {
         return new OutPacket(OutHeader.CLIENT_ALIVE.getValue());
     }
-
-    /**
-     * 發送一個客戶端到GameServer的Ping封包
-     *
-     * @return 封包
-     */
 
     public static OutPacket sendPingCheckResultClientToGame() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_PingCheckResult_ClientToGame.getValue());
@@ -104,156 +73,138 @@ public class Login {
         return outPacket;
     }
 
-    /**
-     * 發送安全性(NGS)封包
-     *
-     * @return 封包
-     */
     public static OutPacket sendSecurityPacket() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_SecurityPacket);
         outPacket.encodeArr(new byte[5]);
         return outPacket;
     }
 
-    /**
-     * 發送伺服器參數設定
-     *
-     * @return 封包
-     */
     public static OutPacket sendServerValues() {
         OutPacket oPacket = new OutPacket(OutHeader.LP_ServerValue);
         oPacket.encodeInt(30);
-        oPacket.encodeInt(0x00000001);
-        oPacket.encodeInt(0x00000015);
-        oPacket.encodeInt(0x00000001);
+        oPacket.encodeInt(1);
+        oPacket.encodeInt(21);
+        oPacket.encodeInt(1);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000002);
-        oPacket.encodeInt(0x00000019);
-        oPacket.encodeInt(0x00000064);
+        oPacket.encodeInt(2);
+        oPacket.encodeInt(25);
+        oPacket.encodeInt(100);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000003);
-        oPacket.encodeInt(0x000003E8);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(3);
+        oPacket.encodeInt(1000);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000004);
-        oPacket.encodeInt(0x000003E9);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(4);
+        oPacket.encodeInt(1001);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000005);
-        oPacket.encodeInt(0x000003EA);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(5);
+        oPacket.encodeInt(1002);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000006);
-        oPacket.encodeInt(0x000003F2);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(6);
+        oPacket.encodeInt(1010);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000000A);
-        oPacket.encodeInt(0x00000444);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(10);
+        oPacket.encodeInt(1092);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000000B);
-        oPacket.encodeInt(0x00002712);
-        oPacket.encodeInt(0x00000007);
+        oPacket.encodeInt(11);
+        oPacket.encodeInt(10002);
+        oPacket.encodeInt(7);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000000C);
-        oPacket.encodeInt(0x00002713);
-        oPacket.encodeInt(0x00000001);
+        oPacket.encodeInt(12);
+        oPacket.encodeInt(10003);
+        oPacket.encodeInt(1);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000000D);
-        oPacket.encodeInt(0x00002722);
-        oPacket.encodeInt(0x00000001);
+        oPacket.encodeInt(13);
+        oPacket.encodeInt(10018);
+        oPacket.encodeInt(1);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000000F);
-        oPacket.encodeInt(0x00002751);
-        oPacket.encodeInt(0x00000001);
+        oPacket.encodeInt(15);
+        oPacket.encodeInt(10065);
+        oPacket.encodeInt(1);
         oPacket.encodeString("AllServer");
-        oPacket.encodeInt(0x00000010);
-        oPacket.encodeInt(0x0000272F);
-        oPacket.encodeInt(0x000000FA);
+        oPacket.encodeInt(16);
+        oPacket.encodeInt(10031);
+        oPacket.encodeInt(250);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000015);
-        oPacket.encodeInt(0x000000CD);
-        oPacket.encodeInt(0x00000001);
+        oPacket.encodeInt(21);
+        oPacket.encodeInt(205);
+        oPacket.encodeInt(1);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000017);
-        oPacket.encodeInt(0x00002733);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(23);
+        oPacket.encodeInt(10035);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000018);
-        oPacket.encodeInt(0x00000119);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(24);
+        oPacket.encodeInt(281);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000001A);
-        oPacket.encodeInt(0x000000C9);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(26);
+        oPacket.encodeInt(201);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000001B);
-        oPacket.encodeInt(0x0000012F);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(27);
+        oPacket.encodeInt(303);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000001C);
-        oPacket.encodeInt(0x0000006F);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(28);
+        oPacket.encodeInt(111);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000001D);
-        oPacket.encodeInt(0x0000013C);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(29);
+        oPacket.encodeInt(316);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000001E);
-        oPacket.encodeInt(0x00000144);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(30);
+        oPacket.encodeInt(324);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000001F);
-        oPacket.encodeInt(0x00000142);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(31);
+        oPacket.encodeInt(322);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000020);
-        oPacket.encodeInt(0x00002754);
-        oPacket.encodeInt(0x00000001);
+        oPacket.encodeInt(32);
+        oPacket.encodeInt(10068);
+        oPacket.encodeInt(1);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000021);
-        oPacket.encodeInt(0x000000A3);
-        oPacket.encodeInt(0x00007530);
+        oPacket.encodeInt(33);
+        oPacket.encodeInt(163);
+        oPacket.encodeInt(30000);
         oPacket.encodeString("Project|Center|WorldID|0");
-        oPacket.encodeInt(0x00000024);
-        oPacket.encodeInt(0x00002750);
-        oPacket.encodeInt(0x0000000A);
+        oPacket.encodeInt(36);
+        oPacket.encodeInt(10064);
+        oPacket.encodeInt(10);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000025);
-        oPacket.encodeInt(0x00000237);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(37);
+        oPacket.encodeInt(567);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000026);
-        oPacket.encodeInt(0x00000238);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(38);
+        oPacket.encodeInt(568);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000027);
-        oPacket.encodeInt(0x00000220);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(39);
+        oPacket.encodeInt(544);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000028);
-        oPacket.encodeInt(0x000000E8);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(40);
+        oPacket.encodeInt(232);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x00000029);
-        oPacket.encodeInt(0x0000049D);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(41);
+        oPacket.encodeInt(1181);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-        oPacket.encodeInt(0x0000002A);
-        oPacket.encodeInt(0x000001B1);
-        oPacket.encodeInt(0x00000000);
+        oPacket.encodeInt(42);
+        oPacket.encodeInt(433);
+        oPacket.encodeInt(0);
         oPacket.encodeString("All");
-
         return oPacket;
     }
 
-    /**
-     * 發送伺服器服務狀態
-     *
-     * @return 封包
-     * @updateVersion:262.1
-     * @Check_Date:2024/6/26
-     */
     public static OutPacket sendServerEnvironment() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_ServerEnvironment);
         outPacket.encodeInt(9);
@@ -296,12 +247,6 @@ public class Login {
         return outPacket;
     }
 
-
-    /**
-     * 發送要求檢查檔案列表
-     *
-     * @return 封包
-     */
     public static OutPacket sendWZCheckList() {
         OutPacket oPacket = new OutPacket(OutHeader.LP_FileCheckList);
         oPacket.encodeInt(686);
@@ -1000,18 +945,12 @@ public class Login {
         oPacket.encodeString("Data\\UI\\_Canvas\\_Canvas_010.wz");
         oPacket.encodeString("Data\\UI\\_Canvas\\_Canvas_011.wz");
         oPacket.encodeString("Data\\UI\\_Canvas\\_Canvas_012.wz");
-
         return oPacket;
     }
 
-    /**
-     * 發送要求檢查檔案列表
-     *
-     * @return 封包
-     */
     public static OutPacket sendFileCheckList() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_WzCheckList);
-        outPacket.encodeInt(336); // change int 336
+        outPacket.encodeInt(336);
         outPacket.encodeString("Canvas.dll");
         outPacket.encodeString("CrashReporter_64.dll");
         outPacket.encodeString("D3DX9_43.dll");
@@ -1427,23 +1366,13 @@ public class Login {
         outPacket.encodeString("swiftshader\\libEGL.dll");
         outPacket.encodeString("swiftshader\\libGLESv2.dll");
         outPacket.encodeString("v8_context_snapshot.bin");
-
         return outPacket;
     }
 
-    /**
-     * 發送檔案檢查結果封包
-     *
-     * @param result 檢查結果
-     * @return 封包
-     */
     public static OutPacket sendFileCheckResult(int result) {
         return new OutPacket(OutHeader.LP_FileCheckBad);
     }
 
-    /**
-     * 發送安全代碼封包 v267
-     */
     public static OutPacket sendSecurityCodePacket() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_SecurityCodePacket);
         outPacket.encodeByte(1);
@@ -1461,118 +1390,44 @@ public class Login {
         return outPacket;
     }
 
-
-    /**
-     * 發送未知封包
-     *
-     * @updateVersion:262.1
-     * @Check_Date:2024/6/26
-     */
     public static OutPacket LP_CheckLogin() {
         return new OutPacket(OutHeader.LP_CheckLogin);
     }
 
-
-    /**
-     * 發送Hotfix的封包
-     *
-     * @param data  hotfix檔案
-     * @param check 雜湊值(hash)
-     * @return 封包
-     * @updateVersion:262.1
-     * @Check_Date:2024/6/26
-     */
     public static OutPacket sendHotfix(int size, int index, byte[] data, String check) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_ClientSocket_hotfix.getValue());
-//        List<Integer> pks = new ArrayList<>();
-//        if (data.length > 0 && check.length() >= 8) {
-//            if (index == 0) {
-//                int ret = size * 2;
-//                byte[] bytes = ByteBuffer.allocate(4).putInt(ret).array();
-//                int len = bytes.length - 1;
-//                for (int i = 0; i <= len; i++) {
-//                    if ((bytes[(i + 1) > len ? i : (i + 1)] & 0x7F) > 0) {
-//                        int x = ((ret >> ((len - i) * 7)));
-//                        ret -= (x & 0x7F) << ((len - i) * 7);
-//                        if (x != 0) {
-//                            pks.add(x);
-//                        }
-//                    }
-//                }
-//                for (int i = pks.size() - 1; 0 <= i; i--) {
-//                    outPacket.encodeByte((i == 0) ? (pks.get(i)) : (pks.get(i) - 128));
-//                }
-//
-//                outPacket.encodeArr(HexTool.getByteArrayFromHexString(check)); // file check (4 byte)
-//            }
-//            outPacket.encodeArr(data);
-//        } else {
-//            outPacket.encodeByte(0); // 0 = 不更新
-//        }
         if (!check.isEmpty()) {
             if (index == 0) {
                 outPacket.encodeZigZagVarints(size);
-                outPacket.encodeArr(check); // file check (4 byte)
+                outPacket.encodeArr(check);
             }
             outPacket.encodeArr(data);
         } else {
-            outPacket.encodeByte(0); // 0 = 不更新
+            outPacket.encodeByte(0);
         }
-
         return outPacket;
     }
 
-    /**
-     * 發送私人伺服器驗證封包
-     *
-     * @param pid 執行序id
-     * @return 封包
-     */
     public static OutPacket sendPrivateServerPacket(int pid) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_PrivateServerPacket);
-
-        outPacket.encodeInt((pid ^ OutHeader.LP_PrivateServerPacket.getValue()));
-
+        outPacket.encodeInt(pid ^ OutHeader.LP_PrivateServerPacket.getValue());
         return outPacket;
     }
 
-    /**
-     * 發送選擇性別的封包
-     *
-     * @return 封包
-     */
     public static OutPacket sendChooseGender() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_ChooseGender);
         outPacket.encodeByte(1);
         return outPacket;
     }
 
-    /**
-     * 發送選擇性別成功封包
-     *
-     * @return 封包
-     */
     public static OutPacket sendSetGender(boolean success) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_GenderSet);
         outPacket.encodeByte(success);
         return outPacket;
     }
 
-    /**
-     * 發送登入遊戲帳密檢查結果的封包
-     *
-     * @param msg     檢查結果
-     * @param client  客戶端
-     * @param relogin 是否為重新登入
-     * @return 封包
-     */
     public static OutPacket sendCheckPasswordResult(LoginType msg, MapleClient client, boolean relogin) {
-        OutPacket outPacket;
-        if (relogin) {
-            outPacket = new OutPacket(OutHeader.LP_AccountInfoResult.getValue());
-        } else {
-            outPacket = new OutPacket(OutHeader.LP_CheckPasswordResult.getValue());
-        }
+        OutPacket outPacket = relogin ? new OutPacket(OutHeader.LP_AccountInfoResult.getValue()) : new OutPacket(OutHeader.LP_CheckPasswordResult.getValue());
         outPacket.encodeByte(msg.getValue());
         outPacket.encodeString("");
         if (msg == LoginType.Success) {
@@ -1581,13 +1436,6 @@ public class Login {
                 outPacket.encodeLong(client.getAccID());
             }
             outPacket.encodeInt(client.getAccID());
-            /* 是否為管理員帳號
-             * 效果1 - 不受地圖使用位移技能限制
-             * 效果2 - 可以使用/前綴指令
-             * 效果3 - 不受部分異常狀態/怪物BUFF影響
-             * 效果4 - 無法丟棄道具
-             * 效果5 - 上線提示「該帳號限制道具和楓幣移動，請至認證信箱了解詳情，並聯絡客服中心。」
-             */
             outPacket.encodeInt(0);
             outPacket.encodeInt(client.getAccID());
             outPacket.encodeInt(0);
@@ -1601,60 +1449,49 @@ public class Login {
             outPacket.encodeShort(0);
             outPacket.encodeByte(0);
             outPacket.encodeString(client.getSecurityAccountName());
-
             outPacket.encodeInt(-16711680);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65792);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65792);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65792);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65536);
             outPacket.encodeInt(257);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65792);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65792);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16777217);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1000001);
             outPacket.encodeInt(65792);
-            outPacket.encodeInt(16777473);
-            outPacket.encodeInt(16842753);
+            outPacket.encodeInt(0x1000101);
+            outPacket.encodeInt(0x1010001);
             outPacket.encodeInt(65792);
             outPacket.encodeInt(257);
             outPacket.encodeInt(-1);
             outPacket.encodeByte(0);
         } else if (msg == LoginType.Blocked) {
             outPacket.encodeString("");
-            outPacket.encodeByte(0); // nReason // banType
-            outPacket.encodeFT(PacketHelper.getTime(-2)); // Tempban 日期處理 -- 64位長, 100 ns的間隔從 1/1/1601.
-            outPacket.encodeString("帳號已被封鎖"); // reason
+            outPacket.encodeByte(0);
+            outPacket.encodeFT(PacketHelper.getTime(-2L));
+            outPacket.encodeString("帳號已被封鎖");
         } else if (msg == LoginType.WaitOTP) {
             outPacket.encodeByte(1);
         } else {
             outPacket.encodeInt(0);
         }
-
         return outPacket;
     }
 
-    /**
-     * 發送世界資訊的封包
-     *
-     * @param world       世界物件
-     * @param channelLoad 頻道負載資訊
-     * @param stringInfos 頻道提示訊息
-     * @return 封包
-     */
     public static OutPacket sendWorldInformation(World world, Map<Integer, Integer> channelLoad, Set<Tuple<Position, String>> stringInfos) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_WorldInformation.getValue());
-
         int worldId = world == null || world.getWorldId() == null ? -1 : world.getWorldId().getVal();
         outPacket.encodeByte(worldId);
         if (worldId >= 0) {
@@ -1662,135 +1499,76 @@ public class Login {
             outPacket.encodeInt(0);
             outPacket.encodeInt(0);
             outPacket.encodeByte(0);
-            outPacket.encodeByte(0); // boolean 雪吉拉 X 皮卡啾 伺服器
-            outPacket.encodeByte(world.getWorldState()); // ServerConfig.LOGIN_SERVERSTATUS 伺服器狀態  0 無 1活動 2新的 3hot
-            outPacket.encodeString(world.getWorldEventDescription()); // 伺服器公告牌信息
-
+            outPacket.encodeByte(0);
+            outPacket.encodeByte(world.getWorldState());
+            outPacket.encodeString(world.getWorldEventDescription());
             int lastChannel = 1;
             Set<Integer> channels = channelLoad.keySet();
-            for (int i = 30; i > 0; i--) {
-                if (channels.contains(i)) {
-                    lastChannel = i;
-                    break;
-                }
+            for (int i = 30; i > 0; --i) {
+                if (!channels.contains(i)) continue;
+                lastChannel = i;
+                break;
             }
             outPacket.encodeByte(lastChannel);
-            int load;
-            for (int i = 1; i <= lastChannel; i++) {
-                outPacket.encodeString(world.getWorldId().name() + "-" + i); // 頻道名字 = 伺服器名字 - 頻道編號
-                if (!channels.contains(i)) {
-                    load = 1;
-                } else {
-                    /* 這裡5決定限制人數數量 */
-                    load = Math.min(20 ,channelLoad.get(i));
-                }
-                outPacket.encodeInt(load + ServerConfig.LOGIN_DEFAULTUSERLIMIT); // 頻道連接人數
-                outPacket.encodeByte(world.getWorldId().getVal()); // 伺服器ID
-                outPacket.encodeByte(i - 1); // 頻道編號
-                outPacket.encodeByte(0); // isAdultChannel
+            for (int i = 1; i <= lastChannel; ++i) {
+                outPacket.encodeString(world.getWorldId().name() + "-" + i);
+                int load = !channels.contains(i) ? 1 : Math.min(20, channelLoad.get(i));
+                outPacket.encodeInt(load + ServerConfig.LOGIN_DEFAULTUSERLIMIT);
+                outPacket.encodeByte(world.getWorldId().getVal());
+                outPacket.encodeByte(i - 1);
+                outPacket.encodeByte(0);
             }
-
             outPacket.encodeShort(stringInfos == null ? 0 : stringInfos.size());
             if (stringInfos != null) {
                 for (Tuple<Position, String> stringInfo : stringInfos) {
-                    outPacket.encodePosition(stringInfo.getLeft());
-                    outPacket.encodeString(stringInfo.getRight());
+                    outPacket.encodePosition((Position)stringInfo.getLeft());
+                    outPacket.encodeString((String)stringInfo.getRight());
                 }
             }
-
             outPacket.encodeInt(0);
-
             boolean a2 = true;
             outPacket.encodeByte(a2);
             if (a2) {
-                byte[] unk1 = new byte[]{
-                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
-                        2
-                };
+                byte[] unk1 = new byte[]{1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2};
                 outPacket.encodeInt(unk1.length);
-                for (int i = unk1.length; i > 0; i--) {
-                    outPacket.encodeByte(i - 1); // index
+                for (int i = unk1.length; i > 0; --i) {
+                    outPacket.encodeByte(i - 1);
                     outPacket.encodeByte(unk1[i - 1]);
                     outPacket.encodeByte(0);
                 }
             }
-
         } else {
             outPacket.encodeByte(false);
             outPacket.encodeByte(false);
             outPacket.encodeInt(-1);
             outPacket.encodeInt(-1);
         }
-
         return outPacket;
     }
 
-    /**
-     * 發送世界資訊結束封包
-     *
-     * @return 封包
-     */
     public static OutPacket sendWorldInformationEnd() {
-        return sendWorldInformation(null, null, null);
+        return Login.sendWorldInformation(null, null, null);
     }
 
-    /**
-     * 發送世界狀態資訊封包。
-     *
-     * @param status 伺服器狀態。
-     * @return 伺服器狀態數據包。
-     * @updateVersion:262.1
-     * @Check_Date:2024/6/26
-     */
     public static OutPacket sendWorldStatusResult(int serverId, int status) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_WorldStatusResult.getValue());
-        /*
-         * 可能的值 status:
-         * 0 - 沒有消息
-         * 1 - 當前世界連接數量較多，這可能會導致登錄遊戲時有些困難。
-         * 2 - 當前世界上的連接已到達最高限制。請選擇別的伺服器進行遊戲或稍後再試。
-         */
         outPacket.encodeByte(status);
         outPacket.encodeByte(0);
         outPacket.encodeByte(0);
         outPacket.encodeInt(serverId);
-        outPacket.encodeInt(-1); // 0 - 燃燒伺服器提示; 1 - 皮卡啾伺服器提示
-
+        outPacket.encodeInt(-1);
         return outPacket;
     }
 
-    /**
-     * 發送設定客戶端金鑰封包
-     *
-     * @return
-     */
     public static OutPacket sendSetClientKey() {
         OutPacket outPacket = new OutPacket(OutHeader.LP_SetClientKey);
-        outPacket.encodeLong(199);
+        outPacket.encodeLong(199L);
         return outPacket;
     }
 
-
-    /**
-     * 如標題 頻道類別(世界ID)
-     * 艾麗亞 0X00 = 0
-     * 普麗特 0X01 = 1
-     * 琉德 0X02 = 2
-     * 優依娜 0X03 = 3
-     * 愛麗西亞 0X04 = 4
-     * 殺人鯨 0X06 = 6
-     * Reboot 0X2D = 45
-     *
-     * @param world
-     * @return
-     * @updateVersion:262.1
-     * @Check_Date:2024/6/26
-     */
     public static OutPacket sendSetPhysicalWorldID(int world) {
         OutPacket outPacket = new OutPacket(OutHeader.LP_SetPhysicalWorldID.getValue());
-        outPacket.encodeInt(world); // V267 +
+        outPacket.encodeInt(world);
         outPacket.encodeInt(world);
         return outPacket;
     }
@@ -1801,3 +1579,4 @@ public class Login {
         return say;
     }
 }
+

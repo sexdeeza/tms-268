@@ -1,14 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Server.world.messenger;
 
 import Client.MapleCharacter;
-
 import java.io.Serializable;
 
-/*
- * 聊天招待 角色信息
- */
-public class MapleMessengerCharacter implements Serializable {
-
+public class MapleMessengerCharacter
+implements Serializable {
     private static final long serialVersionUID = 6215463252132450750L;
     private String name = "";
     private int id = -1;
@@ -26,11 +25,11 @@ public class MapleMessengerCharacter implements Serializable {
     }
 
     public int getChannel() {
-        return channel;
+        return this.channel;
     }
 
     public boolean isOnline() {
-        return online;
+        return this.online;
     }
 
     public void setOnline(boolean online) {
@@ -38,22 +37,20 @@ public class MapleMessengerCharacter implements Serializable {
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
-    @Override
     public int hashCode() {
         int prime = 31;
         int result = 1;
-        result = prime * result + ((name == null) ? 0 : name.hashCode());
+        result = prime * result + (this.name == null ? 0 : this.name.hashCode());
         return result;
     }
 
-    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -61,12 +58,14 @@ public class MapleMessengerCharacter implements Serializable {
         if (obj == null) {
             return false;
         }
-        if (getClass() != obj.getClass()) {
+        if (this.getClass() != obj.getClass()) {
             return false;
         }
-        MapleMessengerCharacter other = (MapleMessengerCharacter) obj;
-        if (name == null) {
+        MapleMessengerCharacter other = (MapleMessengerCharacter)obj;
+        if (this.name == null) {
             return other.name == null;
-        } else return name.equals(other.name);
+        }
+        return this.name.equals(other.name);
     }
 }
+

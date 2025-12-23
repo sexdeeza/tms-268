@@ -1,18 +1,17 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 菈菈 {
-
     public static final int 大自然夥伴 = 160010001;
     public static final int 大自然夥伴_傳授 = 80003058;
     public static final int 大自然夥伴_計數 = 80003070;
-
     public static final int 前往納林 = 160011074;
     public static final int 形象變幻 = 160011075;
     public static final int 獨門咒語 = 160011005;
     public static final int 精靈親和 = 160010000;
     public static final int 發現_風之鞦韆_2 = 80003059;
-
-
     public static final int 精氣散播 = 162001000;
     public static final int 蹦跳 = 162001001;
     public static final int 向上蹦跳 = 162001002;
@@ -20,8 +19,6 @@ public class 菈菈 {
     public static final int 小山靈_1 = 162001004;
     public static final int 山不敗 = 162001005;
     public static final int 感應 = 162000006;
-
-
     public static final int 龍脈讀取 = 162101000;
     public static final int 龍脈釋放 = 162101001;
     public static final int 釋放_波瀾之江 = 162100002;
@@ -38,8 +35,6 @@ public class 菈菈 {
     public static final int 短杖加速 = 162101013;
     public static final int 短杖精通 = 162100014;
     public static final int 鍛鍊身體 = 162100015;
-
-
     public static final int 發現_江水流動之地 = 162111002;
     public static final int 發現_江水流動之地_1 = 162111010;
     public static final int 發現_風之鞦韆 = 162111000;
@@ -50,9 +45,7 @@ public class 菈菈 {
     public static final int 龍脈的痕跡 = 162111006;
     public static final int 龍脈的迴響 = 162110007;
     public static final int 一塵不染 = 162110008;
-    public static final int 風水地理 = 162110009;
-
-
+    public static final int 風水地理 = 0x9A99A39;
     public static final int 龍脈吸收 = 162121000;
     public static final int 吸收_潑江水 = 162120002;
     public static final int 吸收_潑江水_1 = 162121003;
@@ -82,8 +75,6 @@ public class 菈菈 {
     public static final int 風水地理深化 = 162120026;
     public static final int 慧眼 = 162120027;
     public static final int 悠然自得 = 162120028;
-
-
     public static final int 釋放_吸收_無視防禦 = 162120031;
     public static final int 釋放_吸收_強化 = 162120032;
     public static final int 釋放_吸收_BOSS殺手 = 162120033;
@@ -93,27 +84,19 @@ public class 菈菈 {
     public static final int 龍脈的迴響_效果強化 = 162120037;
     public static final int 山環抱_額外護盾 = 162120038;
     public static final int 龍脈_效果強化 = 162120039;
-
     public static final int 自由龍脈 = 162121042;
     public static final int 藤蔓交織 = 162121041;
     public static final int 神木 = 162121043;
     public static final int 神木_1 = 162121044;
-
-
     public static final int 大大的舒展 = 400021122;
-
     public static final int 日江山風 = 400021123;
     public static final int 日江山風_1 = 400021124;
     public static final int 日江山風_2 = 400021125;
     public static final int 日江山風_3 = 400021126;
     public static final int 日江山風_4 = 400021127;
     public static final int 日江山風_5 = 400021128;
-
-
     public static final int 翻騰的精氣 = 400021129;
-
     public static final int 蜿蜒的山脊 = 400021130;
     public static final int 蜿蜒的山脊_1 = 400021131;
-
-
 }
+

@@ -1,7 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
 public class BanishInfo {
-
     private final int map;
     private final String portal;
     private final String msg;
@@ -13,14 +15,15 @@ public class BanishInfo {
     }
 
     public int getMap() {
-        return map;
+        return this.map;
     }
 
     public String getPortal() {
-        return portal;
+        return this.portal;
     }
 
     public String getMsg() {
-        return msg;
+        return this.msg;
     }
 }
+

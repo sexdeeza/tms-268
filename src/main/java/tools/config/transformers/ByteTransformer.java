@@ -1,21 +1,24 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.config.transformers;
 
-import tools.config.TransformationException;
-
 import java.lang.reflect.Field;
+import tools.config.TransformationException;
+import tools.config.transformers.PropertyTransformer;
 
 public class ByteTransformer
-        implements PropertyTransformer<Byte> {
-    /* 18 */ public static final ByteTransformer SHARED_INSTANCE = new ByteTransformer();
+implements PropertyTransformer<Byte> {
+    public static final ByteTransformer SHARED_INSTANCE = new ByteTransformer();
 
+    @Override
     public Byte transform(String value, Field field) throws TransformationException {
         try {
-            /* 31 */
             return Byte.decode(value);
-            /* 32 */
-        } catch (Exception e) {
-            /* 33 */
+        }
+        catch (Exception e) {
             throw new TransformationException(e);
         }
     }
 }
+

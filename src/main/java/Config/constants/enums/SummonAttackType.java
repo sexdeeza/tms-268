@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.enums;
 
 public enum SummonAttackType {
@@ -24,7 +27,8 @@ public enum SummonAttackType {
 
     public final byte value;
 
-    SummonAttackType(final int value) {
-        this.value = (byte) value;
+    private SummonAttackType(int value) {
+        this.value = (byte)value;
     }
 }
+

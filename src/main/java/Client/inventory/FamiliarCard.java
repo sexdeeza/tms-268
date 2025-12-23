@@ -1,13 +1,19 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
 public class FamiliarCard {
     private short skill;
-    private byte level, grade;
-    private int option1, option2, option3;
+    private byte level;
+    private byte grade;
+    private int option1;
+    private int option2;
+    private int option3;
 
     public FamiliarCard(short skill, byte level, byte grade, int option1, int option2, int option3) {
         this.skill = skill;
-        this.level = (byte) Math.max(1, level);
+        this.level = (byte)Math.max(1, level);
         this.grade = grade;
         this.option1 = option1;
         this.option2 = option2;
@@ -30,12 +36,15 @@ public class FamiliarCard {
 
     public int getOption(int type) {
         switch (type) {
-            case 0:
-                return option1;
-            case 1:
-                return option2;
-            case 2:
-                return option3;
+            case 0: {
+                return this.option1;
+            }
+            case 1: {
+                return this.option2;
+            }
+            case 2: {
+                return this.option3;
+            }
         }
         return 0;
     }
@@ -88,3 +97,4 @@ public class FamiliarCard {
         this.option3 = option3;
     }
 }
+

@@ -1,14 +1,16 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor. Then suck a dick
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.market.MarketEngine$ItemEntry
  */
 package Net.server.market;
 
 import Client.MapleCharacter;
-import Database.DatabaseLoader.DatabaseConnectionEx;
+import Database.DatabaseLoader;
+import Net.server.market.MarketEngine;
 import Server.channel.ChannelServer;
-
-import java.sql.Connection;
+import com.alibaba.druid.pool.DruidPooledConnection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -19,16 +21,20 @@ import java.util.Map;
 
 public class MarketEngine {
 
-    private final List<ItemEntry> items = new LinkedList<>();
-    private final Map<Integer, String> names = new LinkedHashMap<>();
 
+    private final List<ItemEntry> items = new LinkedList<ItemEntry>();
+    private final Map<Integer, String> names = new LinkedHashMap<Integer, String>();
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public void addItem(int itemId, int quantity, int price, int charid) {
-        synchronized (items) {
-            for (ItemEntry ie : items) {
-                if (ie.getId() == itemId && ie.getOwner() == charid && ie.getPrice() == price) {
-                    ie.setQuantity(ie.getQuantity() + quantity);
-                    return;
-                }
+        List<ItemEntry> list = this.items;
+        synchronized (list) {
+            for (ItemEntry ie : this.items) {
+                if (ie.getId() != itemId || ie.getOwner() != charid || ie.getPrice() != price) continue;
+                ie.setQuantity(ie.getQuantity() + quantity);
+                return;
             }
         }
         ItemEntry ie = new ItemEntry();
@@ -36,71 +42,78 @@ public class MarketEngine {
         ie.setQuantity(quantity);
         ie.setOwner(charid);
         ie.setPrice(price);
-        synchronized (items) {
-            items.add(ie);
+        List<ItemEntry> list2 = this.items;
+        synchronized (list2) {
+            this.items.add(ie);
         }
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public void removeItem(int itemId, int quantity, int charid) {
-        synchronized (items) {
-            for (int i = 0; i < items.size(); i++) {
-                ItemEntry ie = items.get(i);
-                if (ie.getOwner() == charid && ie.getId() == itemId && ie.getQuantity() >= quantity) {
-                    if (ie.getQuantity() == quantity) {
-                        items.remove(ie);
-                    } else {
-                        ie.setQuantity(ie.getQuantity() - quantity);
-                    }
+        List<ItemEntry> list = this.items;
+        synchronized (list) {
+            for (int i = 0; i < this.items.size(); ++i) {
+                ItemEntry ie = this.items.get(i);
+                if (ie.getOwner() != charid || ie.getId() != itemId || ie.getQuantity() < quantity) continue;
+                if (ie.getQuantity() == quantity) {
+                    this.items.remove(ie);
+                    continue;
                 }
+                ie.setQuantity(ie.getQuantity() - quantity);
             }
         }
     }
 
     public ItemEntry getItem(int position) {
-        return items.get(position);
+        return this.items.get(position);
     }
 
     public List<ItemEntry> getItems() {
-        return items;
+        return this.items;
     }
 
+    /*
+     * Enabled aggressive block sorting
+     * Enabled unnecessary exception pruning
+     * Enabled aggressive exception aggregation
+     */
     public String getCharacterName(int charId) {
-        if (names.get(charId) != null) {
-            return names.get(charId);
+        if (this.names.get(charId) != null) {
+            return this.names.get(charId);
         }
-
         for (ChannelServer cs : ChannelServer.getAllInstances()) {
             for (MapleCharacter mc : cs.getPlayerStorage().getAllCharacters()) {
-                if (mc.getId() == charId) {
-                    names.put(charId, mc.getName());
-                    return mc.getName();
-                }
+                if (mc.getId() != charId) continue;
+                this.names.put(charId, mc.getName());
+                return mc.getName();
             }
         }
-        try (Connection con = DatabaseConnectionEx.getInstance().getConnection()) {
+        try (DruidPooledConnection con = DatabaseLoader.DatabaseConnectionEx.getInstance().getConnection();){
             PreparedStatement ps = con.prepareStatement("SELECT * FROM characters WHERE id = ?");
             ps.setInt(1, charId);
             ResultSet rs = ps.executeQuery();
-            if (rs.next()) {
-                String name = rs.getString("name");
-                names.put(charId, name);
-                return name;
-            }
-        } catch (SQLException e) {
+            if (!rs.next()) return "No user";
+            String name = rs.getString("name");
+            this.names.put(charId, name);
+            String string = name;
+            return string;
+        }
+        catch (SQLException e) {
             return "SQL Error fixmepl0x";
         }
-        return "No user";
     }
 
-    @Override
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public String toString() {
         String ret = "";
-        synchronized (items) {
-            for (ItemEntry ie : items) {
-                ret += "#v" + ie.getId() +
-                        "# 價格: #b" + ie.getPrice() + "#k" +
-                        "賣家: #b" + getCharacterName(ie.getOwner()) + "#k" +
-                        "\\r\\n";
+        List<ItemEntry> list = this.items;
+        synchronized (list) {
+            for (ItemEntry ie : this.items) {
+                ret = (String)ret + "#v" + ie.getId() + "# 價格: #b" + ie.getPrice() + "#k賣家: #b" + this.getCharacterName(ie.getOwner()) + "#k\\r\\n";
             }
         }
         return ret;
@@ -146,3 +159,4 @@ public class MarketEngine {
         }
     }
 }
+

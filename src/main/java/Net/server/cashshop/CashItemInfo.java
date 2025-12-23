@@ -1,27 +1,30 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.cashshop;
 
 import Config.constants.enums.CashItemModFlag;
+import Net.server.cashshop.CashItemFactory;
 
 public class CashItemInfo {
-
-    private final int itemId; //道具ID
-    private final int count; //默認購買數量
-    private final int price; //道具價格
+    private final int itemId;
+    private final int count;
+    private final int price;
     private final int meso;
-    private final int originalPrice; //道具原價
-    private final int sn; //道具的SN
-    private final int period; //道具的持續時間 也就是道具購買有有時間限制
-    private final int gender; //道具是否有性別限制
+    private final int originalPrice;
+    private final int sn;
+    private final int period;
+    private final int gender;
     private final byte csClass;
     private final byte priority;
     private final int termStart;
     private final int termEnd;
-    private final boolean onSale; //道具是否出售
-    private final boolean bonus; //是否幹什麼的獎金
-    private final boolean refundable; //是否可以回購換成楓點？
-    private final boolean discount; //道具是否打折出售
-    private final int mileageRate; // 里程抵扣率
-    private final boolean onlyMileage; // 可全里程購買
+    private final boolean onSale;
+    private final boolean bonus;
+    private final boolean refundable;
+    private final boolean discount;
+    private final int mileageRate;
+    private final boolean onlyMileage;
     private final int LimitMax;
     private final String wzName;
 
@@ -48,62 +51,44 @@ public class CashItemInfo {
         this.LimitMax = LimitMax;
     }
 
-
     public String getName() {
         return this.wzName;
     }
 
-    /**
-     * 獲取道具ID
-     *
-     * @return
-     */
     public int getItemId() {
-        return itemId;
+        return this.itemId;
     }
 
-    /**
-     * 獲取道具數量
-     *
-     * @return
-     */
     public int getCount() {
-        return count;
+        return this.count;
     }
 
-    /*
-     * 道具的價格
-     * 暫時取最高價格
-     */
     public int getPrice() {
-        return price;
+        return this.price;
     }
 
-    /*
-     * 道具原始價格
-     */
     public int getOriginalPrice() {
-        return originalPrice;
+        return this.originalPrice;
     }
 
     public int getSN() {
-        return sn;
+        return this.sn;
     }
 
     public int getPeriod() {
-        return period;
+        return this.period;
     }
 
     public int getGender() {
-        return gender;
+        return this.gender;
     }
 
     public boolean onSale() {
-        CashModInfo modInfo = CashItemFactory.getInstance().getModInfo(sn);
+        CashModInfo modInfo = CashItemFactory.getInstance().getModInfo(this.sn);
         if (modInfo != null) {
             return modInfo.showUp;
         }
-        return onSale;
+        return this.onSale;
     }
 
     public boolean genderEquals(int g) {
@@ -111,54 +96,70 @@ public class CashItemInfo {
     }
 
     public boolean isBonus() {
-        return bonus;
+        return this.bonus;
     }
 
     public boolean isRefundable() {
-        return refundable;
+        return this.refundable;
     }
 
     public boolean isDiscount() {
-        return discount;
+        return this.discount;
     }
 
     public int getMeso() {
-        return meso;
+        return this.meso;
     }
 
     public byte getCsClass() {
-        return csClass;
+        return this.csClass;
     }
 
     public byte getPriority() {
-        return priority;
+        return this.priority;
     }
 
     public int getTermStart() {
-        return termStart;
+        return this.termStart;
     }
 
     public int getTermEnd() {
-        return termEnd;
+        return this.termEnd;
     }
 
     public int getMileageRate() {
-        return mileageRate;
+        return this.mileageRate;
     }
 
     public boolean isOnlyMileage() {
-        return onlyMileage;
+        return this.onlyMileage;
     }
 
     public int getLimitMax() {
-        return LimitMax;
+        return this.LimitMax;
     }
 
     public static class CashModInfo {
-
-        private int price, originalPrice, mark, priority, sn, itemid, period, gender, count, meso, csClass, termStart, termEnd, fameLimit, levelLimit, categories;
+        private int price;
+        private int originalPrice;
+        private int mark;
+        private int priority;
+        private int sn;
+        private int itemid;
+        private int period;
+        private int gender;
+        private int count;
+        private int meso;
+        private int csClass;
+        private int termStart;
+        private int termEnd;
+        private int fameLimit;
+        private int levelLimit;
+        private int categories;
         private long flags;
-        private boolean showUp, packagez, base_new;
+        private boolean showUp;
+        private boolean packagez;
+        private boolean base_new;
         private CashItemInfo cii;
 
         public CashModInfo(int sn, int price, int mark, boolean show, int itemid, int priority, boolean packagez, int period, int gender, int count, int meso, int csClass, int termStart, int termEnd, int fameLimit, int levelLimit, int categories, boolean base_new) {
@@ -166,7 +167,7 @@ public class CashItemInfo {
             this.itemid = itemid;
             this.price = price;
             this.originalPrice = 0;
-            this.mark = mark; //0 = new, 1 = sale, 2 = hot, 3 = event
+            this.mark = mark;
             this.showUp = show;
             this.priority = priority;
             this.packagez = packagez;
@@ -174,15 +175,14 @@ public class CashItemInfo {
             this.gender = gender;
             this.count = count;
             this.meso = meso;
-            this.csClass = csClass; //0 = doesn't have, 1 = has, but false, 2 = has and true
+            this.csClass = csClass;
             this.termStart = termStart;
             this.termEnd = termEnd;
-            this.flags = 0;
+            this.flags = 0L;
             this.fameLimit = fameLimit;
             this.levelLimit = levelLimit;
             this.categories = categories;
             this.base_new = base_new;
-
             if (this.itemid > 0) {
                 this.flags |= CashItemModFlag.ITEM_ID.getValue();
             }
@@ -201,7 +201,6 @@ public class CashItemInfo {
             if (this.period > 0) {
                 this.flags |= CashItemModFlag.PERIOD.getValue();
             }
-            //0x40 = ?
             if (this.meso > 0) {
                 this.flags |= CashItemModFlag.MESO.getValue();
             }
@@ -209,10 +208,9 @@ public class CashItemInfo {
                 this.flags |= CashItemModFlag.COMMODITY_GENDER.getValue();
             }
             this.flags |= CashItemModFlag.ON_SALE.getValue();
-            if (this.mark >= -1 || this.mark <= 0xF) {
+            if (this.mark >= -1 || this.mark <= 15) {
                 this.flags |= CashItemModFlag.CLASS.getValue();
             }
-            //0x2000, 0x4000, 0x8000, 0x10000, 0x20000, 0x100000, 0x80000 - ?
             if (this.fameLimit > 0) {
                 this.flags |= CashItemModFlag.REQ_POP.getValue();
             }
@@ -231,7 +229,7 @@ public class CashItemInfo {
         }
 
         public int getPrice() {
-            return price;
+            return this.price;
         }
 
         public void setPrice(int price) {
@@ -239,7 +237,7 @@ public class CashItemInfo {
         }
 
         public int getOriginalPrice() {
-            return originalPrice;
+            return this.originalPrice;
         }
 
         public void setOriginalPrice(int originalPrice) {
@@ -247,7 +245,7 @@ public class CashItemInfo {
         }
 
         public int getMark() {
-            return mark;
+            return this.mark;
         }
 
         public void setMark(int mark) {
@@ -255,7 +253,7 @@ public class CashItemInfo {
         }
 
         public int getPriority() {
-            return priority;
+            return this.priority;
         }
 
         public void setPriority(int priority) {
@@ -263,7 +261,7 @@ public class CashItemInfo {
         }
 
         public int getSn() {
-            return sn;
+            return this.sn;
         }
 
         public void setSn(int sn) {
@@ -271,7 +269,7 @@ public class CashItemInfo {
         }
 
         public int getItemid() {
-            return itemid;
+            return this.itemid;
         }
 
         public void setItemid(int itemid) {
@@ -279,7 +277,7 @@ public class CashItemInfo {
         }
 
         public long getFlags() {
-            return flags;
+            return this.flags;
         }
 
         public void setFlags(long flags) {
@@ -287,7 +285,7 @@ public class CashItemInfo {
         }
 
         public int getPeriod() {
-            return period;
+            return this.period;
         }
 
         public void setPeriod(int period) {
@@ -295,7 +293,7 @@ public class CashItemInfo {
         }
 
         public int getGender() {
-            return gender;
+            return this.gender;
         }
 
         public void setGender(int gender) {
@@ -303,7 +301,7 @@ public class CashItemInfo {
         }
 
         public int getCount() {
-            return count;
+            return this.count;
         }
 
         public void setCount(int count) {
@@ -311,7 +309,7 @@ public class CashItemInfo {
         }
 
         public int getMeso() {
-            return meso;
+            return this.meso;
         }
 
         public void setMeso(int meso) {
@@ -319,7 +317,7 @@ public class CashItemInfo {
         }
 
         public int getCsClass() {
-            return csClass;
+            return this.csClass;
         }
 
         public void setCsClass(int csClass) {
@@ -327,7 +325,7 @@ public class CashItemInfo {
         }
 
         public int getTermStart() {
-            return termStart;
+            return this.termStart;
         }
 
         public void setTermStart(int termStart) {
@@ -335,7 +333,7 @@ public class CashItemInfo {
         }
 
         public int getTermEnd() {
-            return termEnd;
+            return this.termEnd;
         }
 
         public void setTermEnd(int termEnd) {
@@ -343,7 +341,7 @@ public class CashItemInfo {
         }
 
         public int getFameLimit() {
-            return fameLimit;
+            return this.fameLimit;
         }
 
         public void setFameLimit(int fameLimit) {
@@ -351,7 +349,7 @@ public class CashItemInfo {
         }
 
         public int getLevelLimit() {
-            return levelLimit;
+            return this.levelLimit;
         }
 
         public void setLevelLimit(int levelLimit) {
@@ -359,7 +357,7 @@ public class CashItemInfo {
         }
 
         public int getCategories() {
-            return categories;
+            return this.categories;
         }
 
         public void setCategories(int categories) {
@@ -367,7 +365,7 @@ public class CashItemInfo {
         }
 
         public boolean isShowUp() {
-            return showUp;
+            return this.showUp;
         }
 
         public void setShowUp(boolean showUp) {
@@ -375,7 +373,7 @@ public class CashItemInfo {
         }
 
         public boolean isPackagez() {
-            return packagez;
+            return this.packagez;
         }
 
         public void setPackagez(boolean packagez) {
@@ -383,7 +381,7 @@ public class CashItemInfo {
         }
 
         public boolean isBase_new() {
-            return base_new;
+            return this.base_new;
         }
 
         public void setBase_new(boolean base_new) {
@@ -391,7 +389,7 @@ public class CashItemInfo {
         }
 
         public CashItemInfo getCii() {
-            return cii;
+            return this.cii;
         }
 
         public void setCii(CashItemInfo cii) {
@@ -399,59 +397,30 @@ public class CashItemInfo {
         }
 
         public CashItemInfo toCItem(CashItemInfo backup) {
-            if (cii != null) {
-                return cii;
+            int price;
+            if (this.cii != null) {
+                return this.cii;
             }
-            final int item, c, price, expire, gen, likes;
-            final boolean onSale;
-            if (itemid <= 0) {
-                item = backup.getItemId();
-            } else {
-                item = itemid;
-            }
-            if (count <= 0) {
-                c = backup.getCount();
-            } else {
-                c = count;
-            }
-            if (meso <= 0) {
-                if (this.price <= 0) {
-                    price = backup.price;
-                } else {
-                    price = this.price;
-                }
+            int item = this.itemid <= 0 ? backup.getItemId() : this.itemid;
+            int c = this.count <= 0 ? backup.getCount() : this.count;
+            if (this.meso <= 0) {
+                price = this.price <= 0 ? backup.price : this.price;
                 if (this.price > 0 && (backup.originalPrice > 0 ? backup.originalPrice : backup.price) < this.price) {
-                    flags |= CashItemModFlag.ORIGINAL_PRICE.getValue();
-                    if (backup.price > 0 && backup.originalPrice > 0 && backup.originalPrice > backup.price) {
-                        originalPrice = price * backup.originalPrice / backup.price;
-                    } else {
-                        originalPrice = price;
-                    }
+                    this.flags |= CashItemModFlag.ORIGINAL_PRICE.getValue();
+                    this.originalPrice = backup.price > 0 && backup.originalPrice > 0 && backup.originalPrice > backup.price ? price * backup.originalPrice / backup.price : price;
                 } else {
-                    originalPrice = backup.originalPrice;
+                    this.originalPrice = backup.originalPrice;
                 }
             } else {
-                price = meso;
-                originalPrice = backup.originalPrice;
+                price = this.meso;
+                this.originalPrice = backup.originalPrice;
             }
-            if (period <= 0) {
-                expire = backup.getPeriod();
-            } else {
-                expire = period;
-            }
-            if (gender < 0) {
-                gen = backup.getGender();
-            } else {
-                gen = gender;
-            }
-            if (!showUp) {
-                onSale = backup.onSale();
-            } else {
-                onSale = showUp;
-            }
-
-            cii = new CashItemInfo(backup.wzName, item, c, price, originalPrice, meso, sn, expire, gen, backup.csClass, backup.priority, backup.termStart, backup.termEnd, onSale, backup.bonus, backup.refundable, backup.discount, backup.mileageRate, backup.onlyMileage, backup.LimitMax);
-            return cii;
+            int expire = this.period <= 0 ? backup.getPeriod() : this.period;
+            int gen = this.gender < 0 ? backup.getGender() : this.gender;
+            boolean onSale = !this.showUp ? backup.onSale() : this.showUp;
+            this.cii = new CashItemInfo(backup.wzName, item, c, price, this.originalPrice, this.meso, this.sn, expire, gen, backup.csClass, backup.priority, backup.termStart, backup.termEnd, onSale, backup.bonus, backup.refundable, backup.discount, backup.mileageRate, backup.onlyMileage, backup.LimitMax);
+            return this.cii;
         }
     }
 }
+

@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 public enum MapleForceType {
@@ -16,8 +19,8 @@ public enum MapleForceType {
     楓幣炸彈,
     靈狐,
     UNK_0E,
-    Switch_type_Magic_暗影蝙蝠,
-    SUMMON_暗影蝙蝠_反彈(false),
+    暗影蝙蝠,
+    暗影蝙蝠_反彈(false),
     軌道烈焰(false),
     UNK_12,
     UNK_13,
@@ -36,22 +39,20 @@ public enum MapleForceType {
     UNK_20,
     UNK_21,
     UNK_22,
-    UNK_23,
-    ;
-
+    UNK_23;
 
     private final boolean isMultiMob;
 
-    MapleForceType() {
-        isMultiMob = true;
+    private MapleForceType() {
+        this.isMultiMob = true;
     }
 
-    MapleForceType(boolean isMultiMob) {
+    private MapleForceType(boolean isMultiMob) {
         this.isMultiMob = isMultiMob;
     }
 
     public boolean isMultiMob() {
-        return isMultiMob;
+        return this.isMultiMob;
     }
-
 }
+

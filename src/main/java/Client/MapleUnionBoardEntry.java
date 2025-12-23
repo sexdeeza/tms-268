@@ -1,10 +1,8 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
-/**
- * create by Ethan on 20170811
- *
- * @author Ethan
- */
 public class MapleUnionBoardEntry {
     private final int xPos;
     private final int yPos;
@@ -32,3 +30,4 @@ public class MapleUnionBoardEntry {
         return this.xPos;
     }
 }
+

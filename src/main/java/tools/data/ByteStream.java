@@ -1,21 +1,23 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.data;
 
 import java.io.IOException;
 
 public interface ByteStream {
+    public long getPosition();
 
-    long getPosition();
+    public void seek(long var1) throws IOException;
 
-    void seek(final long offset) throws IOException;
+    public long getBytesRead();
 
-    long getBytesRead();
+    public int readByte();
 
-    int readByte();
+    public String toString();
 
-    String toString();
+    public String toString(boolean var1);
 
-    String toString(final boolean b);
-
-    long available();
-
+    public long available();
 }
+

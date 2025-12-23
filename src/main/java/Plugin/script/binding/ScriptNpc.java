@@ -1,5 +1,28 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.maps.MapleSlideMenu$SlideMenu0
+ *  Net.server.maps.MapleSlideMenu$SlideMenu1
+ *  Net.server.maps.MapleSlideMenu$SlideMenu2
+ *  Net.server.maps.MapleSlideMenu$SlideMenu3
+ *  Net.server.maps.MapleSlideMenu$SlideMenu4
+ *  Net.server.maps.MapleSlideMenu$SlideMenu5
+ *  Net.server.maps.MapleSlideMenu$SlideMenu6
+ *  Net.server.quest.MapleQuestRequirement
+ *  Net.server.quest.MapleQuestRequirementType
+ *  Plugin.script.EventManager
+ *  SwordieX.client.party.Party
+ *  SwordieX.client.party.PartyMember
+ *  SwordieX.client.party.PartyResult
+ *  connection.packet.WvsContext
+ *  lombok.Generated
+ *  tools.SearchGenerator
+ *  tools.SearchGenerator$SearchType
+ */
 package Plugin.script.binding;
 
+import Client.MapleCharacter;
 import Client.MapleClient;
 import Client.inventory.Item;
 import Client.inventory.MapleInventoryType;
@@ -13,43 +36,40 @@ import Net.server.maps.MapleSlideMenu;
 import Net.server.quest.MapleQuest;
 import Net.server.quest.MapleQuestRequirement;
 import Net.server.quest.MapleQuestRequirementType;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MaplePacketCreator;
 import Packet.UIPacket;
 import Plugin.script.EventManager;
 import Plugin.script.NpcScriptInfo;
-import Plugin.script.ScriptManager;
+import Plugin.script.binding.PlayerScriptInteraction;
+import Plugin.script.binding.ScriptEvent;
 import SwordieX.client.party.Party;
 import SwordieX.client.party.PartyMember;
 import SwordieX.client.party.PartyResult;
+import SwordieX.world.World;
 import connection.packet.ScriptMan;
 import connection.packet.WvsContext;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import tools.SearchGenerator;
-import tools.data.MaplePacketLittleEndianWriter;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import lombok.Generated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.SearchGenerator;
+import tools.data.MaplePacketLittleEndianWriter;
 
-import static Config.constants.enums.NpcMessageType.*;
-
-@Slf4j
-public class ScriptNpc extends PlayerScriptInteraction {
+public class ScriptNpc
+extends PlayerScriptInteraction {
+    @Generated
+    private static final Logger log = LoggerFactory.getLogger(ScriptNpc.class);
     private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
-    @Getter
     private final String scriptPath;
     private final int npcId;
-    @Getter
     private final MapleClient client;
     private final Object obj;
     private ScriptType scriptType = ScriptType.None;
-    @Getter
-    @Setter
     private int lastSMType;
 
     public ScriptNpc(MapleClient client, int npcId, String scriptPath, ScriptType scriptType, Object obj) {
@@ -60,17 +80,17 @@ public class ScriptNpc extends PlayerScriptInteraction {
         this.scriptPath = scriptPath;
         this.scriptType = scriptType;
         if (scriptType == ScriptType.Command) {
-            setVariable("commands", obj);
+            this.setVariable("commands", obj);
         }
     }
 
     public int getNpcId() {
-        return npcId;
+        return this.npcId;
     }
 
     public int getItemId() {
-        if (scriptType == ScriptType.Item) {
-            return ((Item) obj).getItemId();
+        if (this.scriptType == ScriptType.Item) {
+            return ((Item)this.obj).getItemId();
         }
         return 0;
     }
@@ -78,25 +98,23 @@ public class ScriptNpc extends PlayerScriptInteraction {
     private Object sendScriptMessage(String text, NpcMessageType nmt) throws NullPointerException {
         String checkText = text.replaceAll("[\r\n]", "");
         if (checkText.matches("(.)*#[lL][0-9]+#(.)*")) {
-            nmt = AskMenu;
+            nmt = NpcMessageType.AskMenu;
         }
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo().deepCopy();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo().deepCopy();
         nsi.setText(text);
         nsi.setMessageType(nmt);
-        if (nmt != Say) {
+        if (nmt != NpcMessageType.Say) {
             nsi.setNextPossible(false);
             nsi.setPrevPossible(false);
         }
-        getPlayer().getScriptManager().getMemory().add(nsi);
-        getPlayer().write(ScriptMan.scriptMessage(nsi, nmt));
+        this.getPlayer().getScriptManager().getMemory().add(nsi);
+        this.getPlayer().write(ScriptMan.scriptMessage(nsi, nmt));
         Object response = null;
-        if (getPlayer().getScriptManager().isActive(getPlayer().getScriptManager().getLastActiveScriptType())) {
-            response = getPlayer().getScriptManager().getScriptInfoByType(getPlayer().getScriptManager().getLastActiveScriptType()).awaitResponse();
+        if (this.getPlayer().getScriptManager().isActive(this.getPlayer().getScriptManager().getLastActiveScriptType())) {
+            response = this.getPlayer().getScriptManager().getScriptInfoByType(this.getPlayer().getScriptManager().getLastActiveScriptType()).awaitResponse();
         }
         if (response == null) {
-//            response = -1;
-            throw new NullPointerException(ScriptManager.INTENDED_NPE_MSG);
+            throw new NullPointerException("Intended NPE by forceful Plugin.script stop.");
         }
         return response;
     }
@@ -104,46 +122,22 @@ public class ScriptNpc extends PlayerScriptInteraction {
     private int sendGeneralSay(String text, NpcMessageType nmt, boolean hasNext) throws NullPointerException {
         String checkText = text.replaceAll("[\r\n]", "");
         if (checkText.matches("(.)*#[lL][0-9]+#(.)*")) {
-            nmt = AskMenu;
+            nmt = NpcMessageType.AskMenu;
         }
-        if (nmt == Say) {
-            NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        if (nmt == NpcMessageType.Say) {
+            NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
             nsi.setNextPossible(hasNext);
-            nsi.setPrevPossible(getPlayer().getScriptManager().getMemory().hasBack());
+            nsi.setPrevPossible(this.getPlayer().getScriptManager().getMemory().hasBack());
         }
-        return (int) (long) sendScriptMessage(text, nmt);
+        return (int)((Long)this.sendScriptMessage(text, nmt)).longValue();
     }
 
     private int sendGeneralSay(String message, NpcMessageType nmt) throws NullPointerException {
-        return sendGeneralSay(message, nmt, false);
+        return this.sendGeneralSay(message, nmt, false);
     }
 
-//    public int say(String text) {
-//        return sendGeneralSay(text, Say);
-//    }
-
-//    public int sayNext(String text) {
-//        return sendGeneralSay(text, Say, true);
-//    }
-
-//    public int askMenu(String message) {
-//        return sendGeneralSay(message, AskMenu);
-//    }
-//
-//    public boolean askYesNo(String message) {
-//        return sendGeneralSay(message, AskYesNo) != 0;
-//    }
-//
-//    public boolean askAccept(String message) {
-//        return sendGeneralSay(message, AskAccept) != 0;
-//    }
-//
-//    public boolean askAcceptNoESC(String message) {
-//        return sendGeneralSay(message, AskAcceptNoEsc) != 0;
-//    }
-
     public String askQuiz(byte type, String title, String problemText, String hintText, int min, int max, int time) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setType(type);
         nsi.setTitle(title);
         nsi.setProblemText(problemText);
@@ -151,192 +145,195 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setMin(min);
         nsi.setMax(max);
         nsi.setTime(time);
-        return (String) sendScriptMessage("", InitialQuiz);
+        return (String)this.sendScriptMessage("", NpcMessageType.InitialQuiz);
     }
 
     public String askSpeedQuiz(byte type, int quizType, int answer, int correctAnswers, int remaining, int time) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setType(type);
         nsi.setQuizType(quizType);
         nsi.setAnswer(answer);
         nsi.setCorrectAnswers(correctAnswers);
         nsi.setRemaining(remaining);
         nsi.setTime(time);
-        return (String) sendScriptMessage("", InitialSpeedQuiz);
+        return (String)this.sendScriptMessage("", NpcMessageType.InitialSpeedQuiz);
     }
 
     public String askText(String message, String defaultText, short minLength, short maxLength) throws NullPointerException {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setMin(minLength);
         nsi.setMax(maxLength);
         nsi.setDefaultText(defaultText);
-        return (String) sendScriptMessage(message, AskText);
+        return (String)this.sendScriptMessage(message, NpcMessageType.AskText);
     }
 
     public String askBoxText(String def, short columns, short rows) throws NullPointerException {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setDefaultText(def);
         nsi.setCol(columns);
         nsi.setLine(rows);
-        return (String) sendScriptMessage("", AskBoxtext);
+        return (String)this.sendScriptMessage("", NpcMessageType.AskBoxtext);
     }
 
     public long askNumber(String message, long def, long min, long max) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setDefaultNumber(def);
         nsi.setMin(min);
         nsi.setMax(max);
-        return (long) sendScriptMessage(message, AskNumber);
+        return (Long)this.sendScriptMessage(message, NpcMessageType.AskNumber);
     }
 
     public int askPet(String message, List<Item> list) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItems(list);
-        return (int)(long) sendScriptMessage(message, AskPet);
+        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskPet)).longValue();
     }
 
     public int askAvatar(String message, int itemId, int secondLookValue, int srcBeauty, int[] styles) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItemID(itemId);
         nsi.setSecondLookValue(secondLookValue);
         nsi.setOptions(styles);
         nsi.setSrcBeauty(srcBeauty);
-        return (int) (long) sendScriptMessage(message, AskAvatar);
+        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatar)).longValue();
     }
 
     public int askAvatarZero(String message, int itemId, int srcBeauty, int srcBeauty2, int[] styles, int[] styles2) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItemID(itemId);
         nsi.setOptions(styles);
         nsi.setOptions2(styles2);
         nsi.setSrcBeauty(srcBeauty);
         nsi.setSrcBeauty2(srcBeauty2);
-        return (int) (long) sendScriptMessage(message, AskAvatarZero);
+        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatarZero)).longValue();
     }
 
     public boolean askAngelicBuster() {
-        return ((long) sendScriptMessage("", AskAngelicBuster)) != 0;
+        return (Long)this.sendScriptMessage("", NpcMessageType.AskAngelicBuster) != 0L;
     }
 
     public int askAvatarMixColor(int cardID, String msg, int secondLookValue, int srcBeauty) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItemID(cardID);
         nsi.setSecondLookValue(secondLookValue);
         nsi.setSrcBeauty(srcBeauty);
-        return (int) (long) sendScriptMessage(msg, AskAvatarMixColor);
+        return (int)((Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarMixColor)).longValue();
     }
 
     public boolean askAvatarRandomMixColor(String msg) {
-        return askAvatarRandomMixColor(null, null, msg);
+        return this.askAvatarRandomMixColor(null, null, msg);
     }
 
     public boolean askAvatarRandomMixColor(Integer itemID, Integer secondLookValue, String msg) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        if (itemID != null) nsi.setItemID(itemID);
-        if (secondLookValue != null) nsi.setSecondLookValue(secondLookValue);
-        return ((long) sendScriptMessage(msg, AskAvatarRandomMixColor)) != 0;
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        if (itemID != null) {
+            nsi.setItemID(itemID);
+        }
+        if (secondLookValue != null) {
+            nsi.setSecondLookValue(secondLookValue);
+        }
+        return (Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarRandomMixColor) != 0L;
     }
 
     public int sayAvatarMixColorChanged(String msg, int srcBeauty, int drtBeauty, int srcBeauty2, int drtBeauty2) {
-        return sayAvatarMixColorChanged(msg, null, srcBeauty, drtBeauty, srcBeauty2, drtBeauty2);
+        return this.sayAvatarMixColorChanged(msg, null, srcBeauty, drtBeauty, srcBeauty2, drtBeauty2);
     }
 
     public int sayAvatarMixColorChanged(String msg, Integer itemID, int srcBeauty, int drtBeauty, int srcBeauty2, int drtBeauty2) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        if (itemID != null) nsi.setItemID(itemID);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        if (itemID != null) {
+            nsi.setItemID(itemID);
+        }
         nsi.setSrcBeauty(srcBeauty);
         nsi.setDrtBeauty(drtBeauty);
         nsi.setSrcBeauty2(srcBeauty2);
         nsi.setDrtBeauty2(drtBeauty2);
-        return (int) (long) sendScriptMessage(msg, SayAvatarMixColorChanged);
+        return (int)((Long)this.sendScriptMessage(msg, NpcMessageType.SayAvatarMixColorChanged)).longValue();
     }
 
     public boolean askConfirmAvatarChange(int srcBeauty, int srcBeauty2) {
-        return askConfirmAvatarChange(null, null, srcBeauty, srcBeauty2);
+        return this.askConfirmAvatarChange(null, null, srcBeauty, srcBeauty2);
     }
 
     public boolean askConfirmAvatarChange(Integer itemID, Integer secondLookValue, int srcBeauty, int srcBeauty2) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        if (itemID != null) nsi.setItemID(itemID);
-        if (secondLookValue != null) nsi.setSecondLookValue(secondLookValue);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        if (itemID != null) {
+            nsi.setItemID(itemID);
+        }
+        if (secondLookValue != null) {
+            nsi.setSecondLookValue(secondLookValue);
+        }
         nsi.setSrcBeauty(srcBeauty);
         nsi.setSrcBeauty2(srcBeauty2);
-        return ((long) sendScriptMessage("", AskConfirmAvatarChange)) != 0;
+        return (Long)this.sendScriptMessage("", NpcMessageType.AskConfirmAvatarChange) != 0L;
     }
 
-    //--------------------------------------------------
-    // public npc talk Net.api start
-    //--------------------------------------------------
-
     public int sendOkN(String text) {
-        return sendOkE(text, npcId);
+        return this.sendOkE(text, this.npcId);
     }
 
     public int sayN(String text) {
-        return sendOkE(text, npcId);
+        return this.sendOkE(text, this.npcId);
     }
 
     public int sendOkN(String text, int idd) {
-        return sendOkE(text, idd);
+        return this.sendOkE(text, idd);
     }
 
     public int sayN(String text, int idd) {
-        return sendOkE(text, idd);
+        return this.sendOkE(text, idd);
     }
 
     public int sendOkS(String text, byte type) {
-        return sendOkS(text, type, npcId);
+        return this.sendOkS(text, type, this.npcId);
     }
 
     public int sayS(String text, byte type) {
-        return sendOkS(text, type, npcId);
+        return this.sendOkS(text, type, this.npcId);
     }
 
     public int sendOkS(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerToNpc(String text) {
-        return sendNextS(text, (byte) 3, npcId);
+        return this.sendNextS(text, (byte)3, this.npcId);
     }
 
     public int sayPlayerToNpc(String text) {
-        return sendNextS(text, (byte) 3, npcId);
+        return this.sendNextS(text, (byte)3, this.npcId);
     }
 
     public int sendNextS(String text, byte type) {
-        return sendNextS(text, type, npcId);
+        return this.sendNextS(text, type, this.npcId);
     }
 
     public int sayNextS(String text, byte type) {
-        return sendNextS(text, type, npcId);
+        return this.sendNextS(text, type, this.npcId);
     }
 
     public int sendNextS(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, idd, false, 0, idd, type, false, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendNextN(String text) {
@@ -348,51 +345,47 @@ public class ScriptNpc extends PlayerScriptInteraction {
     }
 
     public int sendNextN(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(4);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 4, idd, false, 0, idd, type, false, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPrevS(String text, byte type) {
-        return sendPrevS(text, type, npcId);
+        return this.sendPrevS(text, type, this.npcId);
     }
 
     public int sayPrevS(String text, byte type) {
-        return sendPrevS(text, type, npcId);
+        return this.sendPrevS(text, type, this.npcId);
     }
 
     public int sendPrevS(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(true);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, idd, false, 0, idd, type, true, false, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPrevN(String text) {
-        return this.sendPrevN(text, NpcMessageType.Say.getVal(), npcId);
+        return this.sendPrevN(text, NpcMessageType.Say.getVal(), this.npcId);
     }
 
     public int sayPrevN(String text) {
-        return this.sendPrevN(text, NpcMessageType.Say.getVal(), npcId);
+        return this.sendPrevN(text, NpcMessageType.Say.getVal(), this.npcId);
     }
 
     public int sendPrevN(String text, byte type) {
@@ -404,47 +397,43 @@ public class ScriptNpc extends PlayerScriptInteraction {
     }
 
     public int sendPrevN(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(4);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 4, idd, false, 0, idd, type, true, false, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int PlayerToNpc(String text) {
-        return sendNextPrevS(text, (byte) 3);
+        return this.sendNextPrevS(text, (byte)3);
     }
 
     public int sendNextPrevS(String text, byte type) {
-        return sendNextPrevS(text, type, npcId);
+        return this.sendNextPrevS(text, type, this.npcId);
     }
 
     public int sayNextPrevS(String text, byte type) {
-        return sendNextPrevS(text, type, npcId);
+        return this.sendNextPrevS(text, type, this.npcId);
     }
 
     public int sendNextPrevS(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 4, idd, false, 0, idd, type, true, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendNextPrevN(String text) {
@@ -464,127 +453,121 @@ public class ScriptNpc extends PlayerScriptInteraction {
     }
 
     public int sendNextPrevN(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(4);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 4, idd, false, 0, idd, type, true, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendAcceptDecline(String text) {
-        return askAccept(text);
+        return this.askAccept(text);
     }
 
     public int sayAcceptDecline(String text) {
-        return askAccept(text);
+        return this.askAccept(text);
     }
 
     public int sendAcceptDeclineNoESC(String text) {
-        return askAcceptNoESC(text);
+        return this.askAcceptNoESC(text);
     }
 
     public int sayAcceptDeclineNoESC(String text) {
-        return askAcceptNoESC(text);
+        return this.askAcceptNoESC(text);
     }
 
     public int askAcceptDecline(String text) {
-        return askAcceptDecline(text, npcId);
+        return this.askAcceptDecline(text, this.npcId);
     }
 
     public int askAcceptDecline(String text, int id) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(id);
         nsi.setSpeakerType(4);
         nsi.setParam(0);
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
         nsi.setText(text);
-
-        return (int) (long) sendScriptMessage(text, AskAccept);
-
-//        getClient().announce(NPCPacket.OnAskAccept((byte) 4, id, 0, (short) 0, text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAccept)).longValue();
     }
 
     public int askAcceptDeclineNoESC(String text) {
-        return askAcceptDeclineNoESC(text, npcId);
+        return this.askAcceptDeclineNoESC(text, this.npcId);
     }
 
     public int askAcceptDeclineNoESC(String text, int id) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(id);
         nsi.setSpeakerType(4);
-        nsi.setParam(0x01);
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
+        nsi.setParam(1);
         nsi.setText(text);
-
-        return (int) (long) sendScriptMessage(text, AskAccept);
-//        getClient().announce(NPCPacket.OnAskAccept((byte) 4, id, 0, (short) 0x01, text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAccept)).longValue();
     }
 
     public int askMapSelection(String sel) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        nsi.setTemplateID(npcId);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(4);
         nsi.setParam(0);
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
         nsi.setText(sel);
         nsi.setDefaultText("");
-        nsi.setCol((short) (npcId == 3000012 ? 5 : npcId == 9010000 ? 3 : npcId == 2083006 ? 1 : 0));
-        nsi.setLine((short) (npcId == 9010022 ? 1 : 0));
-        return (int) (long) sendScriptMessage(sel, AskBoxtext);
-//        getClient().announce(NPCPacket.OnAskBoxText((byte) 4, npcId, 0, (short) 0, (short) (npcId == 3000012 ? 5 : npcId == 9010000 ? 3 : npcId == 2083006 ? 1 : 0), (short) (npcId == 9010022 ? 1 : 0), sel, ""));
+        nsi.setCol((short)(this.npcId == 3000012 ? 5 : (this.npcId == 9010000 ? 3 : (this.npcId == 2083006 ? 1 : 0))));
+        nsi.setLine((short)(this.npcId == 9010022 ? 1 : 0));
+        return (int)((Long)this.sendScriptMessage(sel, NpcMessageType.AskBoxtext)).longValue();
     }
 
     public int sendSimple(String text) {
-        return askMenu(text);
+        return this.askMenu(text);
     }
 
     public int sendSimple(String text, int id) {
-        return askMenu(text, id);
+        return this.askMenu(text, id);
     }
 
     public int sendSimpleS(String text, byte type) {
-        return sendSimpleS(text, type, npcId);
+        return this.sendSimpleS(text, type, this.npcId);
     }
 
     public int sendSimpleS(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(3);
         nsi.setParam(type);
-//        // nsi.setInnerOverrideSpeakerTemplateID(diffnpc);
         nsi.setText(text);
-        return (int) (long) sendScriptMessage(text, AskMenu);
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskMenu)).longValue();
     }
 
     public int sendSimpleN(String text) {
-        return this.sendSimpleN(text, NpcMessageType.AskMenuDualIllustration.getVal(), this.getNpcId());
+        return this.sendSimpleN(text, NpcMessageType.askZeroNext.getVal(), this.getNpcId());
+    }
+
+    public int askZeroWeaponSayNext(int npcid, String text) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        nsi.setSpeakerType(1);
+        nsi.setTemplateID(npcid);
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.askZeroNext)).longValue();
     }
 
     public int sendSimpleN(String text, byte type, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        nsi.setColor(1);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(idd);
-        nsi.setSpeakerType(4);
+        nsi.setSpeakerType(3);
+        nsi.setColor(0);
         nsi.setParam(type);
-//        // nsi.setInnerOverrideSpeakerTemplateID(diffnpc);
         nsi.setText(text);
-        return (int) (long) sendScriptMessage(text, AskMenu);
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int askAvatar(String text, int[] styles, int card, boolean isSecond) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        nsi.setTemplateID(npcId);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(4);
         nsi.setParam(0);
         nsi.setColor(0);
@@ -593,13 +576,31 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setOptions(styles);
         nsi.setItemID(card);
         nsi.setSrcBeauty(0);
-        return (int) (long) sendScriptMessage(text, AskAvatar);
-//        getClient().announce(NPCPacket.OnAskAvatar((byte) 4, npcId, card, isSecond, false, styles, text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAvatar)).longValue();
+    }
+
+    public int sendZeroSpirt(String text, byte type, int idd) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeInt(405996);
+        mplew.write(3);
+        mplew.writeInt(0);
+        mplew.writeShort(0);
+        mplew.write(type);
+        mplew.writeShort(0);
+        mplew.writeInt(1);
+        mplew.writeInt(idd);
+        mplew.writeMapleAsciiString(text);
+        mplew.write(0);
+        mplew.write(1);
+        mplew.write(0);
+        mplew.writeInt(0);
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAvatarZero)).longValue();
     }
 
     public int sendStyle(String text, int[] styles, int card, boolean isSecond) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        nsi.setTemplateID(npcId);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(4);
         nsi.setParam(0);
         nsi.setColor(0);
@@ -607,720 +608,688 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setOptions(styles);
         nsi.setItemID(card);
         nsi.setSrcBeauty(0);
-        return (int) (long) sendScriptMessage(text, AskAndroid);
-
-//        getClient().announce(NPCPacket.OnAskAndroid((byte) 4, npcId, card, styles, text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAndroid)).longValue();
     }
 
     public int sendAStyle(String text, int[] styles, int card) {
-        return askAndroid(text, styles, card);
-//        getClient().announce(NPCPacket.getNPCTalkStyle(npcId, text, styles, card, true, false));
+        return this.askAndroid(text, styles, card);
     }
 
     public int sendGetNumber(String text, long def, long min, long max) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
-        nsi.setTemplateID(npcId);
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(4);
         nsi.setParam(0);
         nsi.setText(text);
         nsi.setDefaultNumber(def);
         nsi.setMin(min);
         nsi.setMax(max);
-        return (int) (long) sendScriptMessage(text, AskNumber);
-//        getClient().announce(NPCPacket.OnAskNumber((byte) 4, npcId, (short) 0, def, min, max, text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskNumber)).longValue();
     }
 
     public String sendGetText(String text) {
-        return sendGetText(text, npcId);
+        return this.sendGetText(text, this.npcId);
     }
 
     public String sendGetText(String text, int id) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(id);
         nsi.setSpeakerType(4);
         nsi.setParam(0);
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
         nsi.setText(text);
         nsi.setDefaultText("");
-        nsi.setMin(0);
-        nsi.setMax(0);
-        return (String) sendScriptMessage(text, AskText);
-//        getClient().announce(NPCPacket.OnAskText((byte) 4, id, 0, (short) 0, (short) 0, (short) 0, text, ""));
+        nsi.setMin(0L);
+        nsi.setMax(0L);
+        return (String)this.sendScriptMessage(text, NpcMessageType.AskText);
     }
 
     public int sendPlayerOk(String text) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
-        nsi.setTemplateID(npcId);
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(ScriptParam.PlayerAsSpeakerFlip.getValue());
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, 0, ScriptParam.PlayerAsSpeakerFlip.getValue(), false, false, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerOk(String text, byte type, int npcId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(npcId);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, npcId, type, false, false, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerPrev(String text, byte type, int npcId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(npcId);
         nsi.setText(text);
         nsi.setPrevPossible(true);
         nsi.setNextPossible(false);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, npcId, type, true, false, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerNext(String text) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
-        nsi.setTemplateID(npcId);
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
-        nsi.setParam((short) (ScriptParam.PlayerAsSpeaker.getValue() | ScriptParam.PlayerAsSpeakerFlip.getValue()));
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
+        nsi.setParam((short)(ScriptParam.PlayerAsSpeaker.getValue() | ScriptParam.PlayerAsSpeakerFlip.getValue()));
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, 0, (short) (ScriptParam.PlayerAsSpeaker.getValue() | ScriptParam.PlayerAsSpeakerFlip.getValue()), false, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerNext(String text, byte type, int npcId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(npcId);
         nsi.setText(text);
         nsi.setPrevPossible(false);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, npcId, type, false, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerNextPrev(String text) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
-        nsi.setTemplateID(npcId);
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
-        nsi.setParam((short) (ScriptParam.PlayerAsSpeaker.getValue() | ScriptParam.PlayerAsSpeakerFlip.getValue()));
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
+        nsi.setParam((short)(ScriptParam.PlayerAsSpeaker.getValue() | ScriptParam.PlayerAsSpeakerFlip.getValue()));
         nsi.setText(text);
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, 0, (short) (ScriptParam.PlayerAsSpeaker.getValue() | ScriptParam.PlayerAsSpeakerFlip.getValue()), true, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
     public int sendPlayerNextPrev(String text, byte type, int npcId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(npcId);
         nsi.setSpeakerType(3);
         nsi.setOverrideSpeakerTemplateID(0);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(npcId);
         nsi.setText(text);
         nsi.setPrevPossible(true);
         nsi.setNextPossible(true);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(text, Say);
-//        getClient().announce(NPCPacket.OnSay((byte) 3, npcId, false, 0, npcId, type, true, true, text, 0));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.Say)).longValue();
     }
 
-    /*
-     * 復活寵物選擇對話框
-     * 未知正式啟用
-     * 1個寵物 寵物位置 9
-     * Recv NPC_TALK [02B9] (65)
-     * B9 02
-     * 04
-     * A6 BF 0F 00
-     * 0C 00
-     * 2C 00 C4 E3 CF EB C8 C3 C4 C4 D2 BB B8 F6 B3 E8 CE EF B8 B4 BB EE C4 D8 A3 BF C7 EB D1 A1 D4 F1 CF EB B8 B4 BB EE B5 C4 B3 E8 CE EF A1 AD
-     * 01
-     * 11 6E 3B 00 00 00 00 00 - 寵物的唯一ID
-     * 09 寵物在背包的位置
-     * ?.....,.你想讓哪一個寵物復活呢？請選擇想復活的寵物…..n;......
-     */
     public int sendRevivePet(String text) {
-        return askPetRevive(text);
+        return this.askPetRevive(text);
     }
 
     public int sendPlayerStart(String text) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
-        nsi.setTemplateID(npcId);
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(3);
         nsi.setParam(ScriptParam.PlayerAsSpeakerFlip.getValue());
-        // nsi.setInnerOverrideSpeakerTemplateID(0);
         nsi.setText(text);
-        return (int) (long) sendScriptMessage(text, AskAccept);
-
-//        getClient().announce(NPCPacket.OnAskAccept((byte) 3, npcId, 0, ScriptParam.PlayerAsSpeakerFlip.getValue(), text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskAccept)).longValue();
     }
 
-    public int sendSlideMenu(final int type, final String sel) {
+    public int sendSlideMenu(int type, String sel) {
         String[] arrstring = sel.split("#");
         if (arrstring.length < 3) {
             return -1;
         }
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        nsi.setTemplateID(npcId);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(NpcMessageType.AskText.getVal());
         nsi.setParam(0);
         nsi.setColor(0);
         nsi.setDlgType(type);
         nsi.setDefaultSelect(Integer.valueOf(arrstring[arrstring.length - 2]));
         nsi.setText(sel);
-        return (int) (long) sendScriptMessage(sel, AskSlideMenu);
-
-//        getClient().announce(NPCPacket.OnAskSlideMenu(NpcMessageType.AskText.getVal(), npcId, type, Integer.valueOf(arrstring[arrstring.length - 2]), sel));
+        return (int)((Long)this.sendScriptMessage(sel, NpcMessageType.AskSlideMenu)).longValue();
     }
 
     public String getSlideMenuSelection(int type) {
         switch (type) {
-            case 1:
-                return MapleSlideMenu.SlideMenu1.getSelectionInfo(getPlayer(), npcId);
-            case 2:
-                return MapleSlideMenu.SlideMenu2.getSelectionInfo(getPlayer(), npcId);
-            case 3:
-                return MapleSlideMenu.SlideMenu3.getSelectionInfo(getPlayer(), npcId);
-            case 4:
-                return MapleSlideMenu.SlideMenu4.getSelectionInfo(getPlayer(), npcId);
-            case 5:
-                return MapleSlideMenu.SlideMenu5.getSelectionInfo(getPlayer(), npcId);
-            case 6:
-                return MapleSlideMenu.SlideMenu6.getSelectionInfo(getPlayer(), npcId);
-            case 0:
-            default:
-                return MapleSlideMenu.SlideMenu0.getSelectionInfo(getPlayer(), npcId);
+            case 1: {
+                return MapleSlideMenu.SlideMenu1.getSelectionInfo((MapleCharacter)this.getPlayer(), (int)this.npcId);
+            }
+            case 2: {
+                return MapleSlideMenu.SlideMenu2.getSelectionInfo((MapleCharacter)this.getPlayer(), (int)this.npcId);
+            }
+            case 3: {
+                return MapleSlideMenu.SlideMenu3.getSelectionInfo((MapleCharacter)this.getPlayer(), (int)this.npcId);
+            }
+            case 4: {
+                return MapleSlideMenu.SlideMenu4.getSelectionInfo((MapleCharacter)this.getPlayer(), (int)this.npcId);
+            }
+            case 5: {
+                return MapleSlideMenu.SlideMenu5.getSelectionInfo((MapleCharacter)this.getPlayer(), (int)this.npcId);
+            }
+            case 6: {
+                return MapleSlideMenu.SlideMenu6.getSelectionInfo((MapleCharacter)this.getPlayer(), (int)this.npcId);
+            }
         }
+        return MapleSlideMenu.SlideMenu0.getSelectionInfo((MapleCharacter)this.getPlayer(), (Integer)this.npcId);
     }
 
     public int[] getSlideMenuDataIntegers(int type, int selection) {
         switch (type) {
-            case 1:
-                return MapleSlideMenu.SlideMenu1.getDataIntegers(selection);
-            case 2:
-                return MapleSlideMenu.SlideMenu2.getDataIntegers(selection);
-            case 3:
-                return MapleSlideMenu.SlideMenu3.getDataIntegers(selection);
-            case 4:
-                return MapleSlideMenu.SlideMenu4.getDataIntegers(selection);
-            case 5:
-                return MapleSlideMenu.SlideMenu5.getDataIntegers(selection);
-            case 6:
-                return MapleSlideMenu.SlideMenu6.getDataIntegers(selection);
-            case 0:
-            default:
-                return MapleSlideMenu.SlideMenu0.getDataIntegers(selection);
+            case 1: {
+                return MapleSlideMenu.SlideMenu1.getDataIntegers((int)selection);
+            }
+            case 2: {
+                return MapleSlideMenu.SlideMenu2.getDataIntegers((int)selection);
+            }
+            case 3: {
+                return MapleSlideMenu.SlideMenu3.getDataIntegers((int)selection);
+            }
+            case 4: {
+                return MapleSlideMenu.SlideMenu4.getDataIntegers((int)selection);
+            }
+            case 5: {
+                return MapleSlideMenu.SlideMenu5.getDataIntegers((int)selection);
+            }
+            case 6: {
+                return MapleSlideMenu.SlideMenu6.getDataIntegers((int)selection);
+            }
         }
+        return MapleSlideMenu.SlideMenu0.getDataIntegers((Integer)selection);
     }
 
-    public int sendOk(final String s) {
-        return this.sendOk(s, npcId, ScriptParam.Normal, true);
+    public int sendOk(String s) {
+        return this.sendOk(s, this.npcId, ScriptParam.Normal, true);
     }
 
-    public int say(final String s) {
-        return this.sendOk(s, npcId, ScriptParam.Normal, true);
+    public int say(String s) {
+        return this.sendOk(s, this.npcId, ScriptParam.Normal, true);
     }
 
-    public int sendOk(final String s, final int n) {
+    public int sendOk(String s, int n) {
         return this.sendOk(s, n, ScriptParam.Normal, true);
     }
 
-    public int say(final String s, final int n) {
+    public int say(String s, int n) {
         return this.sendOk(s, n, ScriptParam.Normal, true);
     }
 
-    public int sendOk(final String message, final boolean bLeft) {
+    public int sendOk(String message, boolean bLeft) {
         return this.sendOk(message, this.getNpcId(), ScriptParam.Normal, bLeft);
     }
 
-    public int say(final String message, final boolean bLeft) {
+    public int say(String message, boolean bLeft) {
         return this.sendOk(message, this.getNpcId(), ScriptParam.Normal, bLeft);
     }
 
-    public int sendOkNoESC(final String message) {
-        return sendOkNoESC(message, true);
+    public int sendOkNoESC(String message) {
+        return this.sendOkNoESC(message, true);
     }
 
-    public int sayNoESC(final String message) {
-        return sendOkNoESC(message, true);
+    public int sayNoESC(String message) {
+        return this.sendOkNoESC(message, true);
     }
 
-    public int sendOkNoESC(final String message, final boolean bLeft) {
+    public int sendOkNoESC(String message, boolean bLeft) {
         return this.sendOk(message, this.getNpcId(), ScriptParam.NoEsc, bLeft);
     }
 
-    public int sayNoESC(final String message, final boolean bLeft) {
+    public int sayNoESC(String message, boolean bLeft) {
         return this.sendOk(message, this.getNpcId(), ScriptParam.NoEsc, bLeft);
     }
 
-    public int sendOkS(final String s) {
+    public int sendOkS(String s) {
         return this.sendOkS(s, ScriptParam.Normal, true);
     }
 
-    public int sayS(final String s) {
+    public int sayS(String s) {
         return this.sendOkS(s, ScriptParam.Normal, true);
     }
 
-    public int sendOkS(final String s, final boolean b) {
+    public int sendOkS(String s, boolean b) {
         return this.sendOkS(s, ScriptParam.Normal, b);
     }
 
-    public int sayS(final String s, final boolean b) {
+    public int sayS(String s, boolean b) {
         return this.sendOkS(s, ScriptParam.Normal, b);
     }
 
-    public int sendOkE(final String s) {
+    public int sendOkE(String s) {
         return this.sendOkE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sayE(final String s) {
+    public int sayE(String s) {
         return this.sendOkE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sendOkE(final String s, final int n) {
+    public int sendOkE(String s, int n) {
         return this.sendOkE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sayE(final String s, final int n) {
+    public int sayE(String s, int n) {
         return this.sendOkE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sendOkENoESC(final String s) {
+    public int sendOkENoESC(String s) {
         return this.sendOkE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sayENoESC(final String s) {
+    public int sayENoESC(String s) {
         return this.sendOkE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sendOkENoESC(final String s, final int n) {
+    public int sendOkENoESC(String s, int n) {
         return this.sendOkE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sayENoESC(final String s, final int n) {
+    public int sayENoESC(String s, int n) {
         return this.sendOkE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sayENoESC(final String s, final int n, final int n2) {
+    public int sayENoESC(String s, int n, int n2) {
         return this.sendOkE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int sendNext(final String s) {
+    public int sendNext(String s) {
         return this.sendNext(s, 0, ScriptParam.Normal, true);
     }
 
-    public int sayNext(final String s) {
+    public int sayNext(String s) {
         return this.sendNext(s, 0, ScriptParam.Normal, true);
     }
 
-    public int sendNext(final String s, final int n) {
+    public int sendNext(String s, int n) {
         return this.sendNext(s, n, ScriptParam.Normal, false);
     }
 
-    public int sayNext(final String s, final int n) {
+    public int sayNext(String s, int n) {
         return this.sendNext(s, n, ScriptParam.Normal, false);
     }
 
-    public int sendNext(final String s, final boolean b) {
+    public int sendNext(String s, boolean b) {
         return this.sendNext(s, this.getNpcId(), ScriptParam.Normal, b);
     }
 
-    public int sayNext(final String s, final boolean b) {
+    public int sayNext(String s, boolean b) {
         return this.sendNext(s, this.getNpcId(), ScriptParam.Normal, b);
     }
 
-    public int sendNextNoESC(final String s) {
+    public int sendNextNoESC(String s) {
         return this.sendNext(s, this.getNpcId(), ScriptParam.NoEsc, true);
     }
 
-    public int sayNextNoESC(final String s) {
+    public int sayNextNoESC(String s) {
         return this.sendNext(s, this.getNpcId(), ScriptParam.NoEsc, true);
     }
 
-    public int sendNextNoESC(final String s, final boolean b) {
+    public int sendNextNoESC(String s, boolean b) {
         return this.sendNext(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int sayNextNoESC(final String s, final boolean b) {
+    public int sayNextNoESC(String s, boolean b) {
         return this.sendNext(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int sendNextNoESC(final String s, final int n) {
+    public int sendNextNoESC(String s, int n) {
         return this.sendNext(s, n, ScriptParam.NoEsc, false);
     }
 
-    public int sayNextNoESC(final String s, final int n) {
+    public int sayNextNoESC(String s, int n) {
         return this.sendNext(s, n, ScriptParam.NoEsc, false);
     }
 
-    public int sendNextS(final String s) {
+    public int sendNextS(String s) {
         return this.sendNextS(s, ScriptParam.Normal, true);
     }
 
-    public int sayNextS(final String s) {
+    public int sayNextS(String s) {
         return this.sendNextS(s, ScriptParam.Normal, true);
     }
 
-    public int sendNextS(final String s, final boolean b) {
+    public int sendNextS(String s, boolean b) {
         return this.sendNextS(s, ScriptParam.Normal, b);
     }
 
-    public int sayNextS(final String s, final boolean b) {
+    public int sayNextS(String s, boolean b) {
         return this.sendNextS(s, ScriptParam.Normal, b);
     }
 
-    public int sendNextSNoESC(final String s) {
+    public int sendNextSNoESC(String s) {
         return this.sendNextS(s, ScriptParam.NoEsc, true);
     }
 
-    public int sayNextSNoESC(final String s) {
+    public int sayNextSNoESC(String s) {
         return this.sendNextS(s, ScriptParam.NoEsc, true);
     }
 
-    public int sendNextE(final String s) {
+    public int sendNextE(String s) {
         return this.sendNextE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sayNextE(final String s) {
+    public int sayNextE(String s) {
         return this.sendNextE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sendNextE(final String s, final int n) {
+    public int sendNextE(String s, int n) {
         return this.sendNextE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sayNextE(final String s, final int n) {
+    public int sayNextE(String s, int n) {
         return this.sendNextE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sendNextENoESC(final String s) {
+    public int sendNextENoESC(String s) {
         return this.sendNextE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sayNextENoESC(final String s) {
+    public int sayNextENoESC(String s) {
         return this.sendNextE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sendNextENoESC(final String s, final int n) {
+    public int sendNextENoESC(String s, int n) {
         return this.sendNextE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sayNextENoESC(final String s, final int n) {
+    public int sayNextENoESC(String s, int n) {
         return this.sendNextE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sendNextENoESC(final String s, final int n, final int n2) {
+    public int sendNextENoESC(String s, int n, int n2) {
         return this.sendNextE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int sayNextENoESC(final String s, final int n, final int n2) {
+    public int sayNextENoESC(String s, int n, int n2) {
         return this.sendNextE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int sendPrev(final String s) {
+    public int sendPrev(String s) {
         return this.sendPrev(s, 0, ScriptParam.Normal, true);
     }
 
-    public int sayPrev(final String s) {
+    public int sayPrev(String s) {
         return this.sendPrev(s, 0, ScriptParam.Normal, true);
     }
 
-    public int sendPrevS(final String s) {
+    public int sendPrevS(String s) {
         return this.sendPrevS(s, ScriptParam.Normal, true);
     }
 
-    public int sayPrevS(final String s) {
+    public int sayPrevS(String s) {
         return this.sendPrevS(s, ScriptParam.Normal, true);
     }
 
-    public int sendPrevE(final String s) {
+    public int sendPrevE(String s) {
         return this.sendPrevE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sayPrevE(final String s) {
+    public int sayPrevE(String s) {
         return this.sendPrevE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sendPrevE(final String s, final int n) {
+    public int sendPrevE(String s, int n) {
         return this.sendPrevE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sayPrevE(final String s, final int n) {
+    public int sayPrevE(String s, int n) {
         return this.sendPrevE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sendPrevENoESC(final String s) {
+    public int sendPrevENoESC(String s) {
         return this.sendPrevE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sayPrevENoESC(final String s) {
+    public int sayPrevENoESC(String s) {
         return this.sendPrevE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sendPrevENoESC(final String s, final int n) {
+    public int sendPrevENoESC(String s, int n) {
         return this.sendPrevE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sayPrevENoESC(final String s, final int n) {
+    public int sayPrevENoESC(String s, int n) {
         return this.sendPrevE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sendPrevENoESC(final String s, final int n, final int n2) {
+    public int sendPrevENoESC(String s, int n, int n2) {
         return this.sendPrevE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int sayPrevENoESC(final String s, final int n, final int n2) {
+    public int sayPrevENoESC(String s, int n, int n2) {
         return this.sendPrevE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int sendNextPrev(final String s) {
+    public int sendNextPrev(String s) {
         return this.sendNextPrev(s, 0, ScriptParam.Normal, true);
     }
 
-    public int sayNextPrev(final String s) {
+    public int sayNextPrev(String s) {
         return this.sendNextPrev(s, 0, ScriptParam.Normal, true);
     }
 
-    public int sendNextPrev(final String s, final boolean b) {
+    public int sendNextPrev(String s, boolean b) {
         return this.sendNextPrev(s, this.getNpcId(), ScriptParam.Normal, b);
     }
 
-    public int sayNextPrev(final String s, final boolean b) {
+    public int sayNextPrev(String s, boolean b) {
         return this.sendNextPrev(s, this.getNpcId(), ScriptParam.Normal, b);
     }
 
-    public int sendNextPrev(final String s, final int n) {
+    public int sendNextPrev(String s, int n) {
         return this.sendNextPrev(s, n, ScriptParam.Normal, false);
     }
 
-    public int sayNextPrev(final String s, final int n) {
+    public int sayNextPrev(String s, int n) {
         return this.sendNextPrev(s, n, ScriptParam.Normal, false);
     }
 
-    public int sendNextPrevNoESC(final String s) {
+    public int sendNextPrevNoESC(String s) {
         return this.sendNextPrevNoESC(s, true);
     }
 
-    public int sayNextPrevNoESC(final String s) {
+    public int sayNextPrevNoESC(String s) {
         return this.sendNextPrevNoESC(s, true);
     }
 
-    public int sendNextPrevNoESC(final String s, final boolean b) {
+    public int sendNextPrevNoESC(String s, boolean b) {
         return this.sendNextPrev(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int sayNextPrevNoESC(final String s, final boolean b) {
+    public int sayNextPrevNoESC(String s, boolean b) {
         return this.sendNextPrev(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int sendNextPrevNoESC(final String s, final int n) {
+    public int sendNextPrevNoESC(String s, int n) {
         return this.sendNextPrev(s, n, ScriptParam.NoEsc, false);
     }
 
-    public int sayNextPrevNoESC(final String s, final int n) {
+    public int sayNextPrevNoESC(String s, int n) {
         return this.sendNextPrev(s, n, ScriptParam.NoEsc, false);
     }
 
-    public int sendNextPrevS(final String s) {
+    public int sendNextPrevS(String s) {
         return this.sendNextPrevS(s, ScriptParam.Normal, true);
     }
 
-    public int sayNextPrevS(final String s) {
+    public int sayNextPrevS(String s) {
         return this.sendNextPrevS(s, ScriptParam.Normal, true);
     }
 
-    public int sendNextPrevS(final String s, final boolean b) {
+    public int sendNextPrevS(String s, boolean b) {
         return this.sendNextPrevS(s, ScriptParam.Normal, b);
     }
 
-    public int sayNextPrevS(final String s, final boolean b) {
+    public int sayNextPrevS(String s, boolean b) {
         return this.sendNextPrevS(s, ScriptParam.Normal, b);
     }
 
-    public int sendNextPrevSNoESC(final String s) {
+    public int sendNextPrevSNoESC(String s) {
         return this.sendNextPrevS(s, ScriptParam.NoEsc, true);
     }
 
-    public int sayNextPrevSNoESC(final String s) {
+    public int sayNextPrevSNoESC(String s) {
         return this.sendNextPrevS(s, ScriptParam.NoEsc, true);
     }
 
-    public int sendNextPrevSNoESC(final String s, final boolean b) {
+    public int sendNextPrevSNoESC(String s, boolean b) {
         return this.sendNextPrevS(s, ScriptParam.NoEsc, b);
     }
 
-    public int sayNextPrevSNoESC(final String s, final boolean b) {
+    public int sayNextPrevSNoESC(String s, boolean b) {
         return this.sendNextPrevS(s, ScriptParam.NoEsc, b);
     }
 
-    public int sendNextPrevE(final String s) {
+    public int sendNextPrevE(String s) {
         return this.sendNextPrevE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sayNextPrevE(final String s) {
+    public int sayNextPrevE(String s) {
         return this.sendNextPrevE(s, 0, ScriptParam.Normal, false, 0);
     }
 
-    public int sendNextPrevE(final String s, final int n) {
+    public int sendNextPrevE(String s, int n) {
         return this.sendNextPrevE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sayNextPrevE(final String s, final int n) {
+    public int sayNextPrevE(String s, int n) {
         return this.sendNextPrevE(s, n, ScriptParam.Normal, n < 0, 0);
     }
 
-    public int sendNextPrevENoESC(final String s) {
+    public int sendNextPrevENoESC(String s) {
         return this.sendNextPrevE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sayNextPrevENoESC(final String s) {
+    public int sayNextPrevENoESC(String s) {
         return this.sendNextPrevE(s, 0, ScriptParam.NoEsc, false, 0);
     }
 
-    public int sendNextPrevENoESC(final String s, final int n) {
+    public int sendNextPrevENoESC(String s, int n) {
         return this.sendNextPrevE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sayNextPrevENoESC(final String s, final int n) {
+    public int sayNextPrevENoESC(String s, int n) {
         return this.sendNextPrevE(s, n, ScriptParam.NoEsc, n < 0, 0);
     }
 
-    public int sendNextPrevENoESC(final String s, final int n, final int n2) {
+    public int sendNextPrevENoESC(String s, int n, int n2) {
         return this.sendNextPrevE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int sayNextPrevENoESC(final String s, final int n, final int n2) {
+    public int sayNextPrevENoESC(String s, int n, int n2) {
         return this.sendNextPrevE(s, n, ScriptParam.NoEsc, n < 0, n2);
     }
 
-    public int askReplace(final String s) {
+    public int askReplace(String s) {
         return this.askYesNo(s, this.getNpcId(), ScriptParam.Replace, true);
     }
 
-    public int askYesNo(final String s) {
+    public int askYesNo(String s) {
         return this.askYesNo(s, true);
     }
 
-    public int askYesNo(final String s, final int n) {
+    public int askYesNo(String s, int n) {
         return this.askYesNo(s, n, ScriptParam.Normal, false);
     }
 
-    public int askYesNo(final String s, final boolean b) {
+    public int askYesNo(String s, boolean b) {
         return this.askYesNo(s, this.getNpcId(), ScriptParam.Normal, b);
     }
 
-    public int askYesNoNoESC(final String s) {
+    public int askYesNoNoESC(String s) {
         return this.askYesNo(s, this.getNpcId(), ScriptParam.NoEsc, true);
     }
 
-    public int askYesNoNoESC(final String s, final boolean b) {
+    public int askYesNoNoESC(String s, boolean b) {
         return this.askYesNo(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int askYesNoS(final String s) {
+    public int askYesNoS(String s) {
         return this.askYesNoS(s, ScriptParam.Normal, true);
     }
 
-    public int askYesNoS(final String s, final boolean b) {
+    public int askYesNoS(String s, boolean b) {
         return this.askYesNoS(s, ScriptParam.Normal, b);
     }
 
-    public int askYesNoE(final String s) {
+    public int askYesNoE(String s) {
         return this.askYesNoE(s, 0, ScriptParam.Normal, false);
     }
 
-    public int askYesNoE(final String s, final int n) {
+    public int askYesNoE(String s, int n) {
         return this.askYesNoE(s, n, ScriptParam.Normal, n < 0);
     }
 
-    public int askMenu(final String s) {
-        return this.askMenu(s, npcId, ScriptParam.Normal, false);
+    public int askMenu(String s) {
+        return this.askMenu(s, this.npcId, ScriptParam.Normal, false);
     }
 
-    public int askMenu(final String s, final int n) {
+    public int askMenu(String s, int n) {
         return this.askMenu(s, n, ScriptParam.Normal, false);
     }
 
-    public int askMenu(final String s, final boolean b) {
-        return this.askMenu(s, npcId, ScriptParam.Normal, b);
+    public int askMenu(String s, boolean b) {
+        return this.askMenu(s, this.npcId, ScriptParam.Normal, b);
     }
 
-    public int askMenuNoESC(final String s) {
+    public int askMenuNoESC(String s) {
         return this.askMenu(s, this.getNpcId(), ScriptParam.NoEsc, true);
     }
 
-    public int askMenuNoESC(final String s, final boolean b) {
+    public int askMenuNoESC(String s, boolean b) {
         return this.askMenu(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int askMenuNoESC(final String s, final int n) {
+    public int askMenuNoESC(String s, int n) {
         return this.askMenu(s, n, ScriptParam.NoEsc, false);
     }
 
-    public int askMenuS(final String s) {
+    public int askMenuS(String s) {
         return this.askMenuS(s, ScriptParam.Normal, true);
     }
 
-    public int askMenuE(final String s) {
+    public int askMenuE(String s) {
         return this.askMenuE(s, false);
     }
 
-    public int askMenuE(final String s, final boolean b) {
+    public int askMenuE(String s, boolean b) {
         return this.askMenuE(s, 0, ScriptParam.Normal, b);
     }
 
-    public int askMenuA(final String s) {
+    public int askMenuA(String s) {
         return this.askMenuA(s, false);
     }
 
-    public int askMenuA(final String s, final boolean b) {
+    public int askMenuA(String s, boolean b) {
         return this.askMenuA(s, 0, ScriptParam.Normal, b);
     }
 
-    public int askMenuA(final String msg, final int diffnpc) {
+    public int askMenuA(String msg, int diffnpc) {
         return this.askMenuA(msg, diffnpc, ScriptParam.Normal, false);
     }
 
-    public int askAccept(final String s) {
+    public int askAccept(String s) {
         return this.askAccept(s, 0, ScriptParam.Normal, true);
     }
 
@@ -1328,360 +1297,327 @@ public class ScriptNpc extends PlayerScriptInteraction {
         return this.askAccept(msg, diffNpcID, ScriptParam.Normal, true);
     }
 
-    public int askAccept(final String s, final boolean bLeft) {
+    public int askAccept(String s, boolean bLeft) {
         return this.askAccept(s, this.getNpcId(), ScriptParam.Normal, bLeft);
     }
 
-    public int askAcceptNoESC(final String s) {
-        return askAccept(s, this.getNpcId(), ScriptParam.NoEsc, true);
+    public int askAcceptNoESC(String s) {
+        return this.askAccept(s, this.getNpcId(), ScriptParam.NoEsc, true);
     }
 
-    public int askAcceptNoESC(final String s, final boolean b) {
+    public int askAcceptNoESC(String s, boolean b) {
         return this.askAccept(s, this.getNpcId(), ScriptParam.NoEsc, b);
     }
 
-    public int askAcceptS(final String s) {
+    public int askAcceptS(String s) {
         return this.askAcceptS(s, ScriptParam.Normal, true);
     }
 
-    public int askAcceptE(final String s) {
+    public int askAcceptE(String s) {
         return this.askAcceptE(s, 0, ScriptParam.Normal, false);
     }
 
-    public void askText(final String s, final short n, final short n2) {
-        askText(s, "", n, n2);
+    public void askText(String s, short n, short n2) {
+        this.askText(s, "", n, n2);
     }
 
-//    public void askText(final String s, final String def, final short n, final short n2) {
-//              return this.askText(s, this.getNpcId(), ScriptParam.Normal, n, n2, true, def);
-//    }
-
-    public void askTextNoESC(final String s, final short n, final short n2) {
-        askTextNoESC(s, "", n, n2);
+    public void askTextNoESC(String s, short n, short n2) {
+        this.askTextNoESC(s, "", n, n2);
     }
 
-    public String askTextNoESC(final String s, final String def, final short n, final short n2) {
+    public String askTextNoESC(String s, String def, short n, short n2) {
         return this.askText(s, this.getNpcId(), ScriptParam.NoEsc, n, n2, true, def);
     }
 
-    public String askTextS(final String s, final short n, final short n2) {
-        return askTextS(s, "", n, n2);
+    public String askTextS(String s, short n, short n2) {
+        return this.askTextS(s, "", n, n2);
     }
 
-    public String askTextS(final String s, final String def, final short n, final short n2) {
+    public String askTextS(String s, String def, short n, short n2) {
         return this.askTextS(s, n, n2, true, def);
     }
 
-    public String askTextE(final String s, final short n, final short n2) {
-        return askTextE(s, "", n, n2);
+    public String askTextE(String s, short n, short n2) {
+        return this.askTextE(s, "", n, n2);
     }
 
-    public String askTextE(final String s, final String def, final short n, final short n2) {
+    public String askTextE(String s, String def, short n, short n2) {
         return this.askTextE(s, n, n2, false, def);
     }
 
-    public int askNumber(final String s, final int n, final int n2, final int n3) {
+    public int askNumber(String s, int n, int n2, int n3) {
         return this.askNumber(s, 0, n, n2, n3, true);
     }
 
-    public int askNumberKeypad(final int n) {
-        return this.askNumberKeypad((byte) 4, this.getNpcId(), 0, ScriptParam.Normal.getValue(), n);
+    public int askNumberKeypad(int n) {
+        return this.askNumberKeypad((byte)4, this.getNpcId(), 0, ScriptParam.Normal.getValue(), n);
     }
 
-    public int askUserSurvey(final int n, final String s) {
-        return this.askUserSurvey((byte) 4, this.getNpcId(), 0, ScriptParam.Normal.getValue(), n, s);
+    public int askUserSurvey(int n, String s) {
+        return this.askUserSurvey((byte)4, this.getNpcId(), 0, ScriptParam.Normal.getValue(), n, s);
     }
 
-    public int askNumberS(final String s, final int n, final int n2, final int n3) {
+    public int askNumberS(String s, int n, int n2, int n3) {
         return this.askNumberS(s, n, n2, n3, true);
     }
 
-    public int askNumberE(final String s, final int n, final int n2, final int n3) {
+    public int askNumberE(String s, int n, int n2, int n3) {
         return this.askNumberE(s, n, n2, n3, false);
     }
 
-    public String askBoxText(final String s, final String s2, final short n, final short n2) {
+    public String askBoxText(String s, String s2, short n, short n2) {
         return this.askBoxText(s, s2, 0, n, n2, true);
     }
 
-    public String askBoxTextS(final String s, final String s2, final short n, final short n2) {
+    public String askBoxTextS(String s, String s2, short n, short n2) {
         return this.askBoxTextS(s, s2, n, n2, true);
     }
 
-    public String askBoxTextE(final String s, final String s2, final short n, final short n2) {
+    public String askBoxTextE(String s, String s2, short n, short n2) {
         return this.askBoxTextE(s, s2, n, n2, false);
     }
 
-    public int askSlideMenu(final int n, final String s) {
-        final String[] split;
-        if ((split = s.split("#")).length < 3) {
+    public int askSlideMenu(int n, String s) {
+        String[] split = s.split("#");
+        if (split.length < 3) {
             return -1;
         }
-        return this.askSlideMenu((byte) 4, this.getNpcId(), n, Integer.valueOf(split[split.length - 2]), s);
+        return this.askSlideMenu((byte)4, this.getNpcId(), n, Integer.valueOf(split[split.length - 2]), s);
     }
 
-    public int askAvatar(final String message, final int[] array, final int needItem, final boolean isangel, final boolean isbeta) {
-        return this.askAvatar((byte) 4, this.getNpcId(), needItem, isangel, isbeta, array, message);
+    public int askAvatar(String message, int[] array, int needItem, boolean isangel, boolean isbeta) {
+        return this.askAvatar((byte)4, this.getNpcId(), needItem, isangel, isbeta, array, message);
     }
 
-    public int askAndroid(final String s, final int[] array, final int n) {
-        return this.askAndroid((byte) 4, this.getNpcId(), n, array, s);
+    public int askAndroid(String s, int[] array, int n) {
+        return this.askAndroid((byte)4, this.getNpcId(), n, array, s);
     }
 
-    public int askPetRevive(final String s) {
-        final ArrayList<Item> list = new ArrayList<>();
+    public int askPetRevive(String s) {
+        ArrayList<Item> list = new ArrayList<Item>();
         for (Item pet : this.getAllPetItem()) {
-            if (pet.getExpiration() > 0L && pet.getExpiration() < System.currentTimeMillis()) {
-                list.add(pet);
-            }
+            if (pet.getExpiration() <= 0L || pet.getExpiration() >= System.currentTimeMillis()) continue;
+            list.add(pet);
         }
         if (list.isEmpty()) {
-            return sendOk("你沒有失去魔法的寵物.");
+            return this.sendOk("你沒有失去魔法的寵物.");
         }
         return this.askPet(s, list);
     }
 
     public List<Item> getAllPetItem() {
-        final ArrayList<Item> list = new ArrayList<Item>();
+        ArrayList<Item> list = new ArrayList<Item>();
         for (Item item : this.getPlayer().getInventory(MapleInventoryType.CASH).getInventory().values()) {
-            if (ItemConstants.類型.寵物(item.getItemId())) {
-                list.add(item);
-            }
+            if (!ItemConstants.類型.寵物(item.getItemId())) continue;
+            list.add(item);
         }
         return list;
     }
 
-//    public void askPet(final String s, final List<Item> list) {
-//              return this.askPet((byte) 4, this.getNpcId(), list, s);
-//    }
-
-    public int askSelectMenu(final int n) {
-        return this.askSelectMenu((byte) 3, n, 1, null);
+    public int askSelectMenu(int n) {
+        return this.askSelectMenu((byte)3, n, 1, null);
     }
 
-    public int askSelectMenu(final int n, final int n2, final String[] array) {
-        return this.askSelectMenu((byte) 4, n, n2, array);
+    public int askSelectMenu(int n, int n2, String[] array) {
+        return this.askSelectMenu((byte)4, n, n2, array);
     }
 
-    public int askPetEvolution(final String s, final List<Item> list) {
-        return this.askPetEvolution((byte) 4, this.getNpcId(), list, s);
+    public int askPetEvolution(String s, List<Item> list) {
+        return this.askPetEvolution((byte)4, this.getNpcId(), list, s);
     }
 
-    public int askPetAll(final String s) {
+    public int askPetAll(String s) {
         return this.askPetAll(s, this.getAllPetItem());
     }
 
-    public int askPetAll(final String s, final List<Item> list) {
-        return this.askPetAll((byte) 4, this.getNpcId(), list, s);
+    public int askPetAll(String s, List<Item> list) {
+        return this.askPetAll((byte)4, this.getNpcId(), list, s);
     }
 
-    public int sayImage(final String[] array) {
-        return this.sayImage((byte) 4, 3, 0, (byte) 3, array);
+    public int sayImage(String[] array) {
+        return this.sayImage((byte)4, 3, 0, (short)3, array);
     }
 
-//    public void chrSayYesNo(final String[] array) {
-//        MaplePacketLittleEndianWriter talk = new MaplePacketLittleEndianWriter();
-//        talk.writeShort(array.length);
-//        talk.writeHexString("");
-//        talk.writeAsciiString(Arrays.toString(array));
-//        Objects.requireNonNull(client.get()).getPlayer().send(talk.getPacket());
-//    }
-
-    public String askQuiz(final boolean b, final int n, final int n2, final String s, final String s2, final String s3) {
-        return this.askQuiz((byte) 0, this.getNpcId(), 0, 0, b, n, n2, s, s2, s3);
+    public String askQuiz(boolean b, int n, int n2, String s, String s2, String s3) {
+        return this.askQuiz((byte)0, this.getNpcId(), 0, 0, b, n, n2, s, s2, s3);
     }
 
-    public String askSpeedQuiz(final boolean b, final int n, final int n2, final int n3, final int n4, final int n5) {
-        return this.askSpeedQuiz((byte) 0, this.getNpcId(), 0, 0, b, n, n2, n3, n4, n5);
+    public String askSpeedQuiz(boolean b, int n, int n2, int n3, int n4, int n5) {
+        return this.askSpeedQuiz((byte)0, this.getNpcId(), 0, 0, b, n, n2, n3, n4, n5);
     }
 
-    public String askICQuiz(final boolean b, final String s, final String s2, final int n) {
-        return this.askICQuiz((byte) 0, this.getNpcId(), 0, 0, b, s, s2, n);
+    public String askICQuiz(boolean b, String s, String s2, int n) {
+        return this.askICQuiz((byte)0, this.getNpcId(), 0, 0, b, s, s2, n);
     }
 
-    public String askOlympicQuiz(final boolean b, final int n, final int n2, final int n3, final int n4, final int n5) {
-        return this.askOlympicQuiz((byte) 0, this.getNpcId(), 0, 0, b, n, n2, n3, n4, n5);
+    public String askOlympicQuiz(boolean b, int n, int n2, int n3, int n4, int n5) {
+        return this.askOlympicQuiz((byte)0, this.getNpcId(), 0, 0, b, n, n2, n3, n4, n5);
     }
 
     public String sendGetText(String text, String def, int col, int line) {
-        return askText((byte) 4, npcId, npcId, ScriptParam.OverrideSpeakerID.getValue(), (short) col, (short) line, text, def);
+        return this.askText((byte)4, this.npcId, this.npcId, ScriptParam.OverrideSpeakerID.getValue(), (short)col, (short)line, text, def);
     }
 
-    public int sendOkIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sendOkIllu(String s, int n, int n2, boolean b) {
         return this.sendOkIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sayIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sayIllu(String s, int n, int n2, boolean b) {
         return this.sendOkIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sendOkIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sendOkIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendOkIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sayIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sayIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendOkIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sendNextIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sendNextIllu(String s, int n, int n2, boolean b) {
         return this.sendNextIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sayNextIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sayNextIllu(String s, int n, int n2, boolean b) {
         return this.sendNextIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sendNextIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sendNextIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendNextIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sayNextIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sayNextIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendNextIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sendPrevIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sendPrevIllu(String s, int n, int n2, boolean b) {
         return this.sendPrevIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sayPrevIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sayPrevIllu(String s, int n, int n2, boolean b) {
         return this.sendPrevIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sendPrevIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sendPrevIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendPrevIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sayPrevIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sayPrevIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendPrevIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sendNextPrevIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sendNextPrevIllu(String s, int n, int n2, boolean b) {
         return this.sendNextPrevIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sayNextPrevIllu(final String s, final int n, final int n2, final boolean b) {
+    public int sayNextPrevIllu(String s, int n, int n2, boolean b) {
         return this.sendNextPrevIllu(s, n, ScriptParam.Normal, true, n, n2, b);
     }
 
-    public int sendNextPrevIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sendNextPrevIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendNextPrevIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    public int sayNextPrevIlluNoESC(final String s, final int n, final int n2, final boolean b) {
+    public int sayNextPrevIlluNoESC(String s, int n, int n2, boolean b) {
         return this.sendNextPrevIllu(s, n, ScriptParam.NoEsc, true, n, n2, b);
     }
 
-    //-----------------------------------------------
-    // private npc talk impl start
-    //-----------------------------------------------
-
-    private int sendSay(final byte type, final int npcId, final int n3, final int u2, final boolean bPrev, final boolean bNext, final String sText, final int n5) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int sendSay(byte type, int npcId, int n3, int u2, boolean bPrev, boolean bNext, String sText, int n5) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(npcId);
         nsi.setSpeakerType(type);
         nsi.setOverrideSpeakerTemplateID(npcId);
-        nsi.setParam((short) u2);
-//        // nsi.setInnerOverrideSpeakerTemplateID(npcId);
+        nsi.setParam((short)u2);
         nsi.setText(sText);
         nsi.setPrevPossible(bPrev);
         nsi.setNextPossible(bNext);
         nsi.setDelay(0);
-        return (int) (long) sendScriptMessage(sText, Say);
-
-//        getClient().announce(NPCPacket.OnSay(type, npcId, false, 0, n3, (short) u2, bPrev, bNext, sText, n5));
+        return (int)((Long)this.sendScriptMessage(sText, NpcMessageType.Say)).longValue();
     }
 
-    private int sendOk(final String s, final int n, final ScriptParam j906, final boolean bLeft) {
-        return this.sendSay((byte) 4, npcId, n, (bLeft ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, false, s, 0);
+    private int sendOk(String s, int n, ScriptParam j906, boolean bLeft) {
+        return this.sendSay((byte)4, this.npcId, n, (bLeft ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, false, s, 0);
     }
 
-    private int sendOkS(final String s, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), false, false, s, 0);
+    private int sendOkS(String s, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), false, false, s, 0);
     }
 
-    private int sendOkE(final String msg, final int npcId, final ScriptParam j906, final boolean b, final int n2) {
-        return this.sendSay((byte) (b ? 3 : 4), npcId, npcId, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), false, false, msg, n2);
+    private int sendOkE(String msg, int npcId, ScriptParam j906, boolean b, int n2) {
+        return this.sendSay((byte)(b ? 3 : 4), npcId, npcId, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), false, false, msg, n2);
     }
 
-    private int sendNext(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 4, npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, true, s, 0);
+    private int sendNext(String s, int n, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)4, this.npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, true, s, 0);
     }
 
-    private int sendNextS(final String s, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), false, true, s, 0);
+    private int sendNextS(String s, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), false, true, s, 0);
     }
 
-    private int sendNextE(final String s, final int n, final ScriptParam j906, final boolean b, final int n2) {
-        return this.sendSay((byte) (b ? 3 : 4), npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ((n > 0) ? ScriptParam.OverrideSpeakerID.getValue() : ScriptParam.Normal.getValue())) | ScriptParam.BoxChat.getValue() | j906.getValue(), false, true, s, n2);
+    private int sendNextE(String s, int n, ScriptParam j906, boolean b, int n2) {
+        return this.sendSay((byte)(b ? 3 : 4), this.npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : (n > 0 ? ScriptParam.OverrideSpeakerID.getValue() : ScriptParam.Normal.getValue())) | ScriptParam.BoxChat.getValue() | j906.getValue(), false, true, s, n2);
     }
 
-    private int sendPrev(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 4, npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, false, s, 0);
+    private int sendPrev(String s, int n, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)4, this.npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, false, s, 0);
     }
 
-    private int sendPrevS(final String s, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), true, false, s, 0);
+    private int sendPrevS(String s, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), true, false, s, 0);
     }
 
-    private int sendPrevE(final String s, final int n, final ScriptParam j906, final boolean b, final int n2) {
-        return this.sendSay((byte) (b ? 3 : 4), npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ((n > 0) ? ScriptParam.OverrideSpeakerID.getValue() : ScriptParam.Normal.getValue())) | ScriptParam.BoxChat.getValue() | j906.getValue(), true, false, s, n2);
+    private int sendPrevE(String s, int n, ScriptParam j906, boolean b, int n2) {
+        return this.sendSay((byte)(b ? 3 : 4), this.npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : (n > 0 ? ScriptParam.OverrideSpeakerID.getValue() : ScriptParam.Normal.getValue())) | ScriptParam.BoxChat.getValue() | j906.getValue(), true, false, s, n2);
     }
 
-    private int sendNextPrev(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 4, npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, true, s, 0);
+    private int sendNextPrev(String s, int n, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)4, this.npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, true, s, 0);
     }
 
-    private int sendNextPrevS(final String s, final ScriptParam j906, final boolean b) {
-        return this.sendSay((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), true, true, s, 0);
+    private int sendNextPrevS(String s, ScriptParam j906, boolean b) {
+        return this.sendSay((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), true, true, s, 0);
     }
 
-    private int sendNextPrevE(final String s, final int n, final ScriptParam j906, final boolean b, final int n2) {
-        return this.sendSay((byte) (b ? 3 : 4), npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ((n > 0) ? ScriptParam.OverrideSpeakerID.getValue() : ScriptParam.Normal.getValue())) | ScriptParam.BoxChat.getValue() | j906.getValue(), true, true, s, n2);
+    private int sendNextPrevE(String s, int n, ScriptParam j906, boolean b, int n2) {
+        return this.sendSay((byte)(b ? 3 : 4), this.npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : (n > 0 ? ScriptParam.OverrideSpeakerID.getValue() : ScriptParam.Normal.getValue())) | ScriptParam.BoxChat.getValue() | j906.getValue(), true, true, s, n2);
     }
 
-    private int askYesNo(final byte b, final int n, final int n2, final int n3, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askYesNo(byte b, int n, int n2, int n3, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
-        // nsi.setInnerOverrideSpeakerTemplateID(n2);
         nsi.setText(s);
-        return (int) (long) sendScriptMessage(s, AskYesNo);
-
-//        getClient().announce(NPCPacket.OnAskYesNo(b, n, n2, (short) n3, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskYesNo)).longValue();
     }
 
-    private int askYesNo(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.askYesNo((byte) 4, npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), s);
+    private int askYesNo(String s, int n, ScriptParam j906, boolean b) {
+        return this.askYesNo((byte)4, this.npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), s);
     }
 
     public int sendYesNo(String text) {
-        return sendYesNo(text, npcId);
+        return this.sendYesNo(text, this.npcId);
     }
 
     public int sendYesNo(String text, int idd) {
-        return askYesNo(text, idd);
+        return this.askYesNo(text, idd);
     }
 
     public int sendYesNoS(String text, byte type) {
-        return sendYesNoS(text, type, npcId);
+        return this.sendYesNoS(text, type, this.npcId);
     }
 
     public int sendYesNoS(String text, byte type, int idd) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
-        nsi.setTemplateID(npcId);
+        nsi.setTemplateID(this.npcId);
         nsi.setSpeakerType(3);
         nsi.setParam(type);
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
         nsi.setText(text);
-        return (int) (long) sendScriptMessage(text, AskYesNo);
-
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskYesNo)).longValue();
     }
 
     public int sendYesNoN(String text) {
@@ -1689,164 +1625,147 @@ public class ScriptNpc extends PlayerScriptInteraction {
     }
 
     public int sendYesNoN(String text, int idd) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(idd);
         nsi.setSpeakerType(4);
-        nsi.setParam((short) (ScriptParam.OverrideSpeakerID.getValue() | ScriptParam.BoxChat.getValue()));
-        // nsi.setInnerOverrideSpeakerTemplateID(idd);
+        nsi.setParam((short)(ScriptParam.OverrideSpeakerID.getValue() | ScriptParam.BoxChat.getValue()));
         nsi.setText(text);
-        return (int) (long) sendScriptMessage(text, AskYesNo);
-
-//        getClient().announce(NPCPacket.OnAskYesNo((byte) 4, idd, idd, (short) (ScriptParam.OverrideSpeakerID.getValue() | ScriptParam.BoxChat.getValue()), text));
+        return (int)((Long)this.sendScriptMessage(text, NpcMessageType.AskYesNo)).longValue();
     }
 
-    private int askYesNoS(final String s, final ScriptParam j906, final boolean b) {
-        return this.askYesNo((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), s);
+    private int askYesNoS(String s, ScriptParam j906, boolean b) {
+        return this.askYesNo((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), s);
     }
 
-    private int askYesNoE(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.askYesNo((byte) (b ? 3 : 4), npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), s);
+    private int askYesNoE(String s, int n, ScriptParam j906, boolean b) {
+        return this.askYesNo((byte)(b ? 3 : 4), this.npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), s);
     }
 
-    private int askMenu(final byte b, final int n, final int diffnpc, final int n3, final String s) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askMenu(byte b, int n, int diffnpc, int n3, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(diffnpc > 0 ? diffnpc : n);
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
-//        // nsi.setInnerOverrideSpeakerTemplateID(diffnpc);
         nsi.setText(s);
-        return (int) (long)sendScriptMessage(s, AskMenu);
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskMenu)).longValue();
     }
 
-    private int askMenu(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.askMenu((byte) 4, npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), s);
+    private int askMenu(String s, int n, ScriptParam j906, boolean b) {
+        return this.askMenu((byte)4, this.npcId, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), s);
     }
 
-    private int askMenuS(final String s, final ScriptParam j906, final boolean b) {
-        return this.askMenu((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), s);
+    private int askMenuS(String s, ScriptParam j906, boolean b) {
+        return this.askMenu((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), s);
     }
 
-    private int askMenuE(final String s, final int n, final ScriptParam j906, final boolean b) {
-        return this.askMenu((byte) (b ? 3 : 4), npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), s);
+    private int askMenuE(String s, int n, ScriptParam j906, boolean b) {
+        return this.askMenu((byte)(b ? 3 : 4), this.npcId, n, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), s);
     }
 
-    private int askMenuA(final String s, final int diffnpc, final ScriptParam j906, final boolean b) {
-        return this.askMenu((byte) (b ? 3 : 4), npcId, diffnpc, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.LargeBoxChat.getValue() | j906.getValue(), s);
+    private int askMenuA(String s, int diffnpc, ScriptParam j906, boolean b) {
+        return this.askMenu((byte)(b ? 3 : 4), this.npcId, diffnpc, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.LargeBoxChat.getValue() | j906.getValue(), s);
     }
 
-    private int askAccept(final byte b, final int n, final int diffnpc, final int n3, final String s) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askAccept(byte b, int n, int diffnpc, int n3, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
-        // nsi.setInnerOverrideSpeakerTemplateID(diffnpc);
         nsi.setText(s);
-        return (int) (long) sendScriptMessage(s, AskAccept);
-//        getClient().announce(NPCPacket.OnAskAccept(b, n, diffnpc, (short) n3, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAccept)).longValue();
     }
 
-    private int askAccept(final String s, final int diffnpc, final ScriptParam j906, final boolean b) {
-        return askAccept((byte) 4, npcId, diffnpc, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), s);
+    private int askAccept(String s, int diffnpc, ScriptParam j906, boolean b) {
+        return this.askAccept((byte)4, this.npcId, diffnpc, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), s);
     }
 
-    private int askAcceptS(final String s, final ScriptParam j906, final boolean b) {
-        return askAccept((byte) 3, npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), s);
+    private int askAcceptS(String s, ScriptParam j906, boolean b) {
+        return this.askAccept((byte)3, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue()) | j906.getValue(), s);
     }
 
-    private int askAcceptE(final String s, final int diffnpc, final ScriptParam j906, final boolean b) {
-        return this.askAccept((byte) (b ? 3 : 4), npcId, diffnpc, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), s);
+    private int askAcceptE(String s, int diffnpc, ScriptParam j906, boolean b) {
+        return this.askAccept((byte)(b ? 3 : 4), this.npcId, diffnpc, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue() | j906.getValue(), s);
     }
 
-    private String askText(final byte b, final int n, final int n2, final int n3, final short nLenMin, final short nLenMax, final String sMsg, final String sMsgDefault) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private String askText(byte b, int n, int n2, int n3, short nLenMin, short nLenMax, String sMsg, String sMsgDefault) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
-        nsi.setParam((short) n3);
-        // nsi.setInnerOverrideSpeakerTemplateID(n2);
+        nsi.setParam((short)n3);
         nsi.setText(sMsg);
         nsi.setDefaultText(sMsgDefault);
         nsi.setMin(nLenMin);
         nsi.setMax(nLenMax);
-        return (String) sendScriptMessage(sMsg.isEmpty() ? sMsgDefault : sMsg, AskText);
-
-//        getClient().announce(NPCPacket.OnAskText(b, n, n2, (short) n3, nLenMin, nLenMax, sMsg, sMsgDefault));
+        return (String)this.sendScriptMessage(sMsg.isEmpty() ? sMsgDefault : sMsg, NpcMessageType.AskText);
     }
 
-    private String askText(final String sMsg, final int n, final ScriptParam j906, final short nLenMin, final short nLenMax, final boolean bLeft, final String sMsgDefault) {
-        return this.askText((byte) 4, npcId, n, (bLeft ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), nLenMin, nLenMax, sMsg, sMsgDefault);
+    private String askText(String sMsg, int n, ScriptParam j906, short nLenMin, short nLenMax, boolean bLeft, String sMsgDefault) {
+        return this.askText((byte)4, this.npcId, n, (bLeft ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), nLenMin, nLenMax, sMsg, sMsgDefault);
     }
 
-    private String askTextS(final String s, final short n, final short n2, final boolean b, final String sMsgDefault) {
-        return this.askText((byte) 3, npcId, 0, b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue(), n, n2, s, sMsgDefault);
+    private String askTextS(String s, short n, short n2, boolean b, String sMsgDefault) {
+        return this.askText((byte)3, this.npcId, 0, b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue(), n, n2, s, sMsgDefault);
     }
 
-    private String askTextE(final String s, final short n, final short n2, final boolean b, final String sMsgDefault) {
-        return this.askText((byte) 4, npcId, 0, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue(), n, n2, s, sMsgDefault);
+    private String askTextE(String s, short n, short n2, boolean b, String sMsgDefault) {
+        return this.askText((byte)4, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue(), n, n2, s, sMsgDefault);
     }
 
-    private int askNumber(final byte b, final int n, final int n2, final int n3, final long n4, final long n5, final long n6, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askNumber(byte b, int n, int n2, int n3, long n4, long n5, long n6, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
-        nsi.setParam((short) n3);
+        nsi.setParam((short)n3);
         nsi.setText(s);
         nsi.setDefaultNumber(n4);
         nsi.setMin(n5);
         nsi.setMax(n6);
-        return (int) (long) sendScriptMessage(s, AskNumber);
-
-//        getClient().announce(NPCPacket.OnAskNumber(b, n, (short) n3, n4, n5, n6, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskNumber)).longValue();
     }
 
-    private int askNumber(final String s, final int n, final int n2, final int n3, final int n4, final boolean b) {
-        return this.askNumber((byte) 4, npcId, n, b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue(), n2, n3, n4, s);
+    private int askNumber(String s, int n, int n2, int n3, int n4, boolean b) {
+        return this.askNumber((byte)4, this.npcId, n, b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue(), n2, n3, n4, s);
     }
 
-    private int askNumberS(final String s, final int n, final int n2, final int n3, final boolean b) {
-        return this.askNumber((byte) 3, npcId, 0, b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue(), n, n2, n3, s);
+    private int askNumberS(String s, int n, int n2, int n3, boolean b) {
+        return this.askNumber((byte)3, this.npcId, 0, b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue(), n, n2, n3, s);
     }
 
-    private int askNumberE(final String s, final int n, final int n2, final int n3, final boolean b) {
-        return this.askNumber((byte) 4, npcId, 0, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue(), n, n2, n3, s);
+    private int askNumberE(String s, int n, int n2, int n3, boolean b) {
+        return this.askNumber((byte)4, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue(), n, n2, n3, s);
     }
 
-    private String askBoxText(final byte b, final int n, final int n2, final int n3, final short n4, final short n5, final String s, final String s2) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private String askBoxText(byte b, int n, int n2, int n3, short n4, short n5, String s, String s2) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
-        // nsi.setInnerOverrideSpeakerTemplateID(n2);
         nsi.setText(s);
         nsi.setDefaultText(s2);
         nsi.setCol(n4);
         nsi.setLine(n4);
-        return (String) sendScriptMessage(s.isEmpty() ? s2 : s, AskBoxtext);
-
-//        getClient().announce(NPCPacket.OnAskBoxText(b, n, n2, (short) n3, n4, n5, s, s2));
+        return (String)this.sendScriptMessage(s.isEmpty() ? s2 : s, NpcMessageType.AskBoxtext);
     }
 
-    private String askBoxText(final String s, final String s2, final int n, final short n2, final short n3, final boolean b) {
-        return this.askBoxText((byte) 4, npcId, n, b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue(), n2, n3, s, s2);
+    private String askBoxText(String s, String s2, int n, short n2, short n3, boolean b) {
+        return this.askBoxText((byte)4, this.npcId, n, b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue(), n2, n3, s, s2);
     }
 
-    private String askBoxTextS(final String s, final String s2, final short n, final short n2, final boolean b) {
-        return this.askBoxText((byte) 3, npcId, 0, b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue(), n, n2, s, s2);
+    private String askBoxTextS(String s, String s2, short n, short n2, boolean b) {
+        return this.askBoxText((byte)3, this.npcId, 0, b ? ScriptParam.PlayerAsSpeakerFlip.getValue() : ScriptParam.PlayerAsSpeaker.getValue(), n, n2, s, s2);
     }
 
-    private String askBoxTextE(final String s, final String s2, final short n, final short n2, final boolean b) {
-        return this.askBoxText((byte) 4, npcId, 0, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue(), n, n2, s, s2);
+    private String askBoxTextE(String s, String s2, short n, short n2, boolean b) {
+        return this.askBoxText((byte)4, this.npcId, 0, (b ? ScriptParam.PlayerAsSpeaker.getValue() : ScriptParam.Normal.getValue()) | ScriptParam.BoxChat.getValue(), n, n2, s, s2);
     }
 
-    private int askSlideMenu(final byte b, final int n, final int n2, final int n3, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askSlideMenu(byte b, int n, int n2, int n3, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(0);
@@ -1854,35 +1773,29 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setDlgType(n2);
         nsi.setDefaultSelect(n3);
         nsi.setText(s);
-        return (int) (long) sendScriptMessage(s, AskSlideMenu);
-
-//        getClient().announce(NPCPacket.OnAskSlideMenu(b, n, n2, n3, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskSlideMenu)).longValue();
     }
 
-    private int askAvatar(final byte b, final int n, final int n2, final boolean b2, final boolean b3, final int[] array, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askAvatar(byte b, int n, int n2, boolean b2, boolean b3, int[] array, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(0);
         nsi.setColor(0);
-        nsi.setSecondLookValue(b2 ? 1 : b3 ? 2 : 0);
+        nsi.setSecondLookValue(b2 ? 1 : (b3 ? 2 : 0));
         nsi.setText(s);
         nsi.setOptions(array);
         nsi.setItemID(n2);
         nsi.setSrcBeauty(0);
-        return (int) (long) sendScriptMessage(s, AskAvatar);
-
-//        getClient().announce(NPCPacket.OnAskAvatar(b, n, n2, b2, b3, array, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAvatar)).longValue();
     }
 
-    public void askAvatarZero(int cardID, final int[] array, int[] array2, final String s) {
-        askAvatarZero((byte) 4, npcId, cardID, array, array2, s);
+    public void askAvatarZero(int cardID, int[] array, int[] array2, String s) {
+        this.askAvatarZero((byte)4, this.npcId, cardID, array, array2, s);
     }
 
-    public int askAvatarZero(final byte nSpeakerTypeID, final int nSpeakerTemplateID, int cardID, final int[] array, int[] array2, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    public int askAvatarZero(byte nSpeakerTypeID, int nSpeakerTemplateID, int cardID, int[] array, int[] array2, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(nSpeakerTemplateID);
         nsi.setSpeakerType(nSpeakerTypeID);
         nsi.setParam(0);
@@ -1893,18 +1806,15 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setOptions2(array2);
         nsi.setSrcBeauty(0);
         nsi.setSrcBeauty2(0);
-        return (int) (long) sendScriptMessage(s, AskAvatarZero);
-
-//        getClient().announce(NPCPacket.OnAskZeroAvatar(nSpeakerTypeID, nSpeakerTemplateID, cardID, array, array2, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAvatarZero)).longValue();
     }
 
-    public void askAndroid(final int cardID, final int[] array, final String s) {
-        askAndroid((byte) 4, npcId, cardID, array, s);
+    public void askAndroid(int cardID, int[] array, String s) {
+        this.askAndroid((byte)4, this.npcId, cardID, array, s);
     }
 
-    public int askAndroid(final byte nSpeakerTypeID, final int nSpeakerTemplateID, final int cardID, final int[] array, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    public int askAndroid(byte nSpeakerTypeID, int nSpeakerTemplateID, int cardID, int[] array, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(nSpeakerTemplateID);
         nsi.setSpeakerType(nSpeakerTypeID);
         nsi.setParam(0);
@@ -1913,26 +1823,22 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setOptions(array);
         nsi.setItemID(cardID);
         nsi.setSrcBeauty(0);
-        return (int) (long) sendScriptMessage(s, AskAndroid);
-
-//        getClient().announce(NPCPacket.OnAskAndroid(nSpeakerTypeID, nSpeakerTemplateID, cardID, array, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskAndroid)).longValue();
     }
 
-    private int askPet(final byte b, final int n, final List<Item> list, final String s) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askPet(byte b, int n, List<Item> list, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(0);
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-        return (int) (long) sendScriptMessage(s, AskPet);
-//        getClient().announce(NPCPacket.OnAskPet(b, n, list, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskPet)).longValue();
     }
 
-    private int askSelectMenu(final byte b, final int n, final int n2, final String[] array) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askSelectMenu(byte b, int n, int n2, String[] array) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(0);
@@ -1941,86 +1847,74 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setDlgType(n2);
         nsi.setDefaultSelect(0);
         nsi.setSelectText(array);
-        return (int) (long) sendScriptMessage("", AskSelectMenu);
-
-//        getClient().announce(NPCPacket.OnAskSelectMenu(b, n, n2, array));
+        return (int)((Long)this.sendScriptMessage("", NpcMessageType.AskSelectMenu)).longValue();
     }
 
-    private int askPetEvolution(final byte b, final int n, final List<Item> list, final String s) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askPetEvolution(byte b, int n, List<Item> list, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(0);
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-        return (int) (long) sendScriptMessage(s, AskActionPetEvolution);
-
-//        getClient().announce(NPCPacket.OnAskPetEvolution(b, n, list, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskActionPetEvolution)).longValue();
     }
 
-    private int askPetAll(final byte b, final int n, final List<Item> list, final String s) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askPetAll(byte b, int n, List<Item> list, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(0);
         nsi.setColor(0);
         nsi.setText(s);
         nsi.setItems(list);
-        return (int) (long) sendScriptMessage(s, AskPetAll);
-
-//        getClient().announce(NPCPacket.OnAskPetAll(b, n, list, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskPetAll)).longValue();
     }
 
-    private int sayImage(final byte b, final int n, final int n2, final short n3, final String[] array) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int sayImage(byte b, int n, int n2, short n3, String[] array) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(n2);
         nsi.setImages(array);
-        return (int) (long) sendScriptMessage("", AskPetAll);
-//        getClient().announce(NPCPacket.OnSayImage(b, n, n3, array));
+        return (int)((Long)this.sendScriptMessage("", NpcMessageType.AskPetAll)).longValue();
     }
 
-    private int sendSayIllu(final byte b, final int n, final int n2, final int n3, final boolean b2, final boolean b3, final String s, final int n4, final int n5, final boolean b4) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int sendSayIllu(byte b, int n, int n2, int n3, boolean b2, boolean b3, String s, int n4, int n5, boolean b4) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
         nsi.setParam(n3);
-        // nsi.setInnerOverrideSpeakerTemplateID(n2);
         nsi.setText(s);
         nsi.setPrevPossible(b2);
         nsi.setNextPossible(b3);
         nsi.setDelay(n4);
         nsi.setUnk(n5);
         nsi.setBUnk(b4);
-        return (int) (long) sendScriptMessage(s, SayIllustration);
-//        getClient().announce(NPCPacket.OnSayIllu(b, n, false, 0, n2, (short) n3, b2, b3, s, n4, n5, b4));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.SayIllustration)).longValue();
     }
 
-    private int sendOkIllu(final String s, final int n, final ScriptParam j906, final boolean b, final int n2, final int n3, final boolean b2) {
-        return this.sendSayIllu((byte) 4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, false, s, n2, n3, b2);
+    private int sendOkIllu(String s, int n, ScriptParam j906, boolean b, int n2, int n3, boolean b2) {
+        return this.sendSayIllu((byte)4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, false, s, n2, n3, b2);
     }
 
-    private int sendNextIllu(final String s, final int n, final ScriptParam j906, final boolean b, final int n2, final int n3, final boolean b2) {
-        return this.sendSayIllu((byte) 4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, true, s, n2, n3, b2);
+    private int sendNextIllu(String s, int n, ScriptParam j906, boolean b, int n2, int n3, boolean b2) {
+        return this.sendSayIllu((byte)4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), false, true, s, n2, n3, b2);
     }
 
-    private int sendPrevIllu(final String s, final int n, final ScriptParam j906, final boolean b, final int n2, final int n3, final boolean b2) {
-        return this.sendSayIllu((byte) 4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, false, s, n2, n3, b2);
+    private int sendPrevIllu(String s, int n, ScriptParam j906, boolean b, int n2, int n3, boolean b2) {
+        return this.sendSayIllu((byte)4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, false, s, n2, n3, b2);
     }
 
-    private int sendNextPrevIllu(final String s, final int n, final ScriptParam j906, final boolean b, final int n2, final int n3, final boolean b2) {
-        return this.sendSayIllu((byte) 4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, true, s, n2, n3, b2);
+    private int sendNextPrevIllu(String s, int n, ScriptParam j906, boolean b, int n2, int n3, boolean b2) {
+        return this.sendSayIllu((byte)4, n, n, (b ? ScriptParam.Normal.getValue() : ScriptParam.OverrideSpeakerID.getValue()) | j906.getValue(), true, true, s, n2, n3, b2);
     }
 
-    private String askQuiz(final byte b, final int n, final int n2, final int n3, final boolean b2, final int n4, final int n5, final String s, final String s2, final String s3) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private String askQuiz(byte b, int n, int n2, int n3, boolean b2, int n4, int n5, String s, String s2, String s3) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
@@ -2032,14 +1926,11 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setMin(n4);
         nsi.setMax(n5);
         nsi.setTime(0);
-        return (String) sendScriptMessage("", InitialQuiz);
-
-//        getClient().announce(NPCPacket.OnAskQuiz(b, n, (short) n3, b2, n4, n5, s, s2, s3));
+        return (String)this.sendScriptMessage("", NpcMessageType.InitialQuiz);
     }
 
-    private String askSpeedQuiz(final byte b, final int n, final int n2, final int n3, final boolean b2, final int n4, final int n5, final int n6, final int n7, final int n8) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private String askSpeedQuiz(byte b, int n, int n2, int n3, boolean b2, int n4, int n5, int n6, int n7, int n8) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
@@ -2050,14 +1941,11 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setCorrectAnswers(n6);
         nsi.setRemaining(n7);
         nsi.setTime(n8);
-        return (String) sendScriptMessage("", InitialSpeedQuiz);
-
-//        getClient().announce(NPCPacket.OnAskSpeedQuiz(b, n, (short) n3, b2, n4, n5, n6, n7, n8));
+        return (String)this.sendScriptMessage("", NpcMessageType.InitialSpeedQuiz);
     }
 
-    private String askICQuiz(final byte b, final int n, final int n2, final int n3, final boolean b2, final String s, final String s2, final int n4) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private String askICQuiz(byte b, int n, int n2, int n3, boolean b2, String s, String s2, int n4) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
@@ -2066,14 +1954,11 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setText(s);
         nsi.setHintText(s2);
         nsi.setTime(n4);
-        return (String) sendScriptMessage(s, ICQuiz);
-
-//        getClient().announce(NPCPacket.OnAskICQuiz(b, n, (short) n3, b2, s, s2, n4));
+        return (String)this.sendScriptMessage(s, NpcMessageType.ICQuiz);
     }
 
-    private String askOlympicQuiz(final byte b, final int n, final int n2, final int n3, final boolean b2, final int nType, final int nQuestion, final int nCorrect, final int nRemain, final int tRemainInitialQuiz) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private String askOlympicQuiz(byte b, int n, int n2, int n3, boolean b2, int nType, int nQuestion, int nCorrect, int nRemain, int tRemainInitialQuiz) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(1);
         nsi.setTemplateID(n);
         nsi.setSpeakerType(b);
@@ -2084,513 +1969,413 @@ public class ScriptNpc extends PlayerScriptInteraction {
         nsi.setCorrectAnswers(nCorrect);
         nsi.setRemaining(nRemain);
         nsi.setTime(tRemainInitialQuiz);
-        return (String) sendScriptMessage("", AskOlympicQuiz);
-
-//        getClient().announce(NPCPacket.OnAskOlympicQuiz(b, n, (short) n3, b2, nType, nQuestion, nCorrect, nRemain, tRemainInitialQuiz));
+        return (String)this.sendScriptMessage("", NpcMessageType.AskOlympicQuiz);
     }
 
-    private int askNumberKeypad(final byte b, final int n, final int n2, final int n3, final int n4) {
-
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askNumberKeypad(byte b, int n, int n2, int n3, int n4) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(3);
         nsi.setParam(n3);
         nsi.setColor(0);
         nsi.setDefaultNumber(n4);
-        return (int) (long) sendScriptMessage("", OnAskNumberUseKeyPad);
-
-//        getClient().announce(NPCPacket.OnAskNumberKeypad(n, (short) n3, n4));
+        return (int)((Long)this.sendScriptMessage("", NpcMessageType.OnAskNumberUseKeyPad)).longValue();
     }
 
-    private int askUserSurvey(final byte b, final int n, final int n2, final int n3, final int n4, final String s) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+    private int askUserSurvey(byte b, int n, int n2, int n3, int n4, String s) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(n);
         nsi.setSpeakerType(3);
         nsi.setParam(n3);
         nsi.setColor(0);
         nsi.setDefaultNumber(n4);
         nsi.setText(s);
-        return (int) (long) sendScriptMessage(s, AskUserSurvey);
-//        getClient().announce(NPCPacket.OnAskUserSurvey(n, (short) n3, n4, s));
+        return (int)((Long)this.sendScriptMessage(s, NpcMessageType.AskUserSurvey)).longValue();
     }
 
-    //-----------------------------------------------
-    // private npc talk impl end
-    //-----------------------------------------------
-
-
-    //-----------------------------------------------
-    // private new npc talk start
-    //-----------------------------------------------
     public ScriptNpc id(int npcId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTemplateID(npcId);
         return this;
     }
 
     public ScriptNpc overrideSpeakerId(int npcId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
-        // nsi.setInnerOverrideSpeakerTemplateID(npcId);
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         return this;
     }
 
     public ScriptNpc noEsc() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.NoEsc);
         return this;
     }
 
     public ScriptNpc me() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.PlayerAsSpeakerFlip);
         return this;
     }
 
     public ScriptNpc npcFlip() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.FlipSpeaker);
         return this;
     }
 
     public ScriptNpc meFlip() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.PlayerAsSpeaker);
         return this;
     }
 
     public ScriptNpc npcRightSide() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.OverrideSpeakerID);
         return this;
     }
 
     public ScriptNpc replace() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.Replace);
         return this;
     }
 
     public ScriptNpc line(int line) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setLine(line);
         return this;
     }
 
-    //    配合uiMax
-    //    UI 1~3
     public ScriptNpc ui(int ui) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setColor(ui);
         return this;
     }
 
     public ScriptNpc uiMax() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.addParam(ScriptParam.LargeBoxChat);
         return this;
     }
 
     public ScriptNpc prev() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setPrevPossible(true);
         return this;
     }
 
     public ScriptNpc next() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setNextPossible(true);
         return this;
     }
 
     public ScriptNpc defText(String defText) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setDefaultText(defText);
         return this;
     }
 
     public ScriptNpc minLen(int minLen) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setMin(minLen);
         return this;
     }
 
     public ScriptNpc maxLen(int maxLen) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setMax(maxLen);
         return this;
     }
 
     public ScriptNpc defNum(int defNum) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setDefaultNumber(defNum);
         return this;
     }
 
     public ScriptNpc minNum(int minNum) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setMin(minNum);
         return this;
     }
 
     public ScriptNpc maxNum(int maxNum) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setMax(maxNum);
         return this;
     }
 
     public ScriptNpc time(int time) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setTime(time);
         return this;
     }
 
     public ScriptNpc delay(int delay) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setDelay(delay);
         return this;
     }
 
     public ScriptNpc cardId(int cardId) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItemID(cardId);
         return this;
     }
 
     public ScriptNpc col(int col) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setCol(col);
         return this;
     }
 
     public ScriptNpc styles(int[] styles) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setOptions(styles);
         return this;
     }
 
-    /**
-     * 神之子專用
-     * styles
-     *
-     * @return
-     */
     public ScriptNpc styles2(int[] styles) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setOptions2(styles);
         return this;
     }
 
     public ScriptNpc defSel(int defSel) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setDefaultSelect(defSel);
         return this;
     }
 
     public ScriptNpc speakerType(int speakerType) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setSpeakerType(speakerType);
         return this;
     }
 
     public ScriptNpc items(List<Item> list) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setItems(list);
         return this;
     }
 
     public ScriptNpc setSrcBeautyX(int setSrcBeauty) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setSrcBeauty(setSrcBeauty);
         return this;
     }
 
-    /**
-     * 神之子專用
-     * setSrcBeauty
-     *
-     * @return
-     */
     public ScriptNpc setSrcBeautyX2(int setSrcBeauty) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setSrcBeauty2(setSrcBeauty);
         return this;
     }
 
     public ScriptNpc secondLookValueX(int secondLookValue) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setSecondLookValue(secondLookValue);
         return this;
     }
 
     public void sayX(String text) {
-        sendScriptMessage(text, Say);
+        this.sendScriptMessage(text, NpcMessageType.Say);
     }
 
     public void sayImageX(String[] text) {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         nsi.setImages(text);
-        sendScriptMessage("", SayImage);
-        resetNpc();
+        this.sendScriptMessage("", NpcMessageType.SayImage);
+        this.resetNpc();
     }
 
     public String askTextX(String text) {
-        String result = (String) sendScriptMessage(text, AskText);
-        resetNpc();
+        String result = (String)this.sendScriptMessage(text, NpcMessageType.AskText);
+        this.resetNpc();
         return result;
     }
 
     public String askBoxTextX(String text) {
-        String result = (String) sendScriptMessage(text, AskBoxtext);
-        resetNpc();
+        String result = (String)this.sendScriptMessage(text, NpcMessageType.AskBoxtext);
+        this.resetNpc();
         return result;
     }
 
     public int askMenuX(String text) {
-        long result = (long) sendScriptMessage(text, AskMenu);
-        resetNpc();
-        return (int) result;
+        long result = (Long)this.sendScriptMessage(text, NpcMessageType.AskMenu);
+        this.resetNpc();
+        return (int)result;
     }
 
     public boolean askYesNoX(String text) {
-        boolean result = (long) sendScriptMessage(text, AskYesNo) == 1;
-        resetNpc();
+        boolean result = (Long)this.sendScriptMessage(text, NpcMessageType.AskYesNo) == 1L;
+        this.resetNpc();
         return result;
     }
 
     public boolean askAcceptX(String text) {
-        boolean result = (long) sendScriptMessage(text, AskAccept) == 1;
-        resetNpc();
+        boolean result = (Long)this.sendScriptMessage(text, NpcMessageType.AskAccept) == 1L;
+        this.resetNpc();
         return result;
     }
 
     public long askNumberX(String message) {
-        long result = (long) sendScriptMessage(message, AskNumber);
-        resetNpc();
+        long result = (Long)this.sendScriptMessage(message, NpcMessageType.AskNumber);
+        this.resetNpc();
         return result;
     }
 
     public boolean askAngelicBusterX() {
-        boolean result = ((long) sendScriptMessage("", AskAngelicBuster)) != 0;
-        resetNpc();
+        boolean result = (Long)this.sendScriptMessage("", NpcMessageType.AskAngelicBuster) != 0L;
+        this.resetNpc();
         return result;
     }
 
-    /**
-     * message
-     * itemId
-     * secondLookValue
-     * srcBeauty
-     * styles
-     *
-     * @return
-     */
     public int askAvatarX(String message) {
-        int result = (int) (long) sendScriptMessage(message, AskAvatar);
-        resetNpc();
+        int result = (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatar)).longValue();
+        this.resetNpc();
         return result;
     }
 
-    /**
-     * message
-     * list
-     *
-     * @return
-     */
     public long askPetX(String message) {
-        long result = (long) sendScriptMessage(message, AskPet);
-        resetNpc();
+        long result = (Long)this.sendScriptMessage(message, NpcMessageType.AskPet);
+        this.resetNpc();
         return result;
     }
 
     public long askAndroidX(String message) {
-
-        long result = (long) sendScriptMessage(message, AskAndroid);
-        resetNpc();
+        long result = (Long)this.sendScriptMessage(message, NpcMessageType.AskAndroid);
+        this.resetNpc();
         return result;
-
     }
 
-    /**
-     * message
-     * itemId
-     * srcBeauty
-     * srcBeauty2
-     * styles
-     * styles2
-     *
-     * @return
-     */
     public int askAvatarZeroX(String message) {
-        int result = (int) (long) sendScriptMessage(message, AskAvatarZero);
-        resetNpc();
+        int result = (int)((Long)this.sendScriptMessage(message, NpcMessageType.AskAvatarZero)).longValue();
+        this.resetNpc();
         return result;
-
     }
 
-    /**
-     * cardID
-     * msg
-     * secondLookValue
-     * srcBeauty
-     *
-     * @return
-     */
     public int askAvatarMixColorX(String msg) {
-        int result = (int) (long) sendScriptMessage(msg, AskAvatarMixColor);
-        resetNpc();
+        int result = (int)((Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarMixColor)).longValue();
+        this.resetNpc();
         return result;
     }
 
-    /**
-     * itemID
-     * secondLookValue
-     * msg
-     *
-     * @return
-     */
     public boolean askAvatarRandomMixColorX(String msg) {
-        boolean result = ((long) sendScriptMessage(msg, AskAvatarRandomMixColor)) != 0;
-        resetNpc();
+        boolean result = (Long)this.sendScriptMessage(msg, NpcMessageType.AskAvatarRandomMixColor) != 0L;
+        this.resetNpc();
         return result;
     }
 
-    /**
-     * msg
-     * itemID
-     * srcBeauty
-     * drtBeauty
-     * srcBeauty2
-     * drtBeauty2
-     *
-     * @return
-     */
     public int sayAvatarMixColorChangedX(String msg) {
-        int result = (int) (long) sendScriptMessage(msg, SayAvatarMixColorChanged);
-        resetNpc();
+        int result = (int)((Long)this.sendScriptMessage(msg, NpcMessageType.SayAvatarMixColorChanged)).longValue();
+        this.resetNpc();
         return result;
     }
 
-    /**
-     * itemID
-     * secondLookValue
-     * srcBeauty
-     * srcBeauty2
-     *
-     * @return
-     */
     public boolean askConfirmAvatarChangeX() {
-        boolean result = ((long) sendScriptMessage("", AskConfirmAvatarChange)) != 0;
-        resetNpc();
+        boolean result = (Long)this.sendScriptMessage("", NpcMessageType.AskConfirmAvatarChange) != 0L;
+        this.resetNpc();
         return result;
-
     }
 
     private void resetNpc() {
-        NpcScriptInfo nsi = getPlayer().getScriptManager().getNpcScriptInfo();
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
         NpcScriptInfo new_nsi = new NpcScriptInfo();
         new_nsi.setTemplateID(nsi.getTemplateID());
-        getPlayer().getScriptManager().setNpcScriptInfo(new_nsi);
+        this.getPlayer().getScriptManager().setNpcScriptInfo(new_nsi);
     }
 
-    //-----------------------------------------------
-    // private new npc talk end
-    //-----------------------------------------------
-
-
     public void openWebUI(int n, String sUOL, String sURL) {
-        getClient().announce(MaplePacketCreator.openWebUI(n, sUOL, sURL));
+        this.getClient().announce(MaplePacketCreator.openWebUI(n, sUOL, sURL));
     }
 
     public void openWeb(String sURL) {
-        getClient().announce(MaplePacketCreator.openWeb((byte) 0, (byte) 1, sURL));
+        this.getClient().announce(MaplePacketCreator.openWeb((byte)0, (byte)1, sURL));
     }
 
     public void createParty() {
-        if (getPlayer().getParty() == null) {
-            Party party = Party.createNewParty(false, false, getPlayer().getName() + "的隊伍", getPlayer().getClient().getWorld());
-            PartyMember pm = new PartyMember(getPlayer());
+        if (this.getPlayer().getParty() == null) {
+            Party party = Party.createNewParty((boolean)false, (boolean)false, (String)(this.getPlayer().getName() + "的隊伍"), (World)this.getPlayer().getClient().getWorld());
+            PartyMember pm = new PartyMember(this.getPlayer());
             party.setPartyLeaderID(pm.getCharID());
             party.getPartyMembers()[0] = pm;
-            getPlayer().setParty(party);
-            getPlayer().write(WvsContext.partyResult(PartyResult.createNewParty(party)));
+            this.getPlayer().setParty(party);
+            this.getPlayer().write(WvsContext.partyResult((PartyResult)PartyResult.createNewParty((Party)party)));
         }
     }
 
     public void disbandParty() {
-        getClient().getPlayer().getParty().disband();
+        this.getClient().getPlayer().getParty().disband();
     }
 
     public void startQuest() {
-        MapleQuest quest = MapleQuest.getInstance((int) obj);
-        int npc_id = npcId;
+        MapleQuest quest = MapleQuest.getInstance((Integer)this.obj);
+        int npc_id = this.npcId;
         for (MapleQuestRequirement qr : quest.getStartReqs()) {
-            if (qr.getType() == MapleQuestRequirementType.npc) {
-                npc_id = qr.getIntStore();
-                break;
-            }
+            if (qr.getType() != MapleQuestRequirementType.npc) continue;
+            npc_id = qr.getIntStore();
+            break;
         }
-        quest.forceStart(getPlayer(), npc_id, "");
+        quest.forceStart(this.getPlayer(), npc_id, "");
     }
 
     public void completeQuest() {
-        MapleQuest quest = MapleQuest.getInstance((int) obj);
-        int npc_id = npcId;
+        MapleQuest quest = MapleQuest.getInstance((Integer)this.obj);
+        int npc_id = this.npcId;
         for (MapleQuestRequirement qr : quest.getCompleteReqs()) {
-            if (qr.getType() == MapleQuestRequirementType.npc) {
-                npc_id = qr.getIntStore();
-                break;
-            }
+            if (qr.getType() != MapleQuestRequirementType.npc) continue;
+            npc_id = qr.getIntStore();
+            break;
         }
-        quest.forceComplete(getPlayer(), npc_id, false);
+        quest.forceComplete(this.getPlayer(), npc_id, false);
     }
 
+    @Override
     public ScriptEvent makeEvent(String script, Object attachment) {
-//        getPlayer().getScriptManager().stop(scriptType);
-        ScriptEvent event = new EventManager(script, getPlayer().getClient().getChannel(), null).runScript(getPlayer(), script, true, attachment);
+        ScriptEvent event = new EventManager(script, this.getPlayer().getClient().getChannel(), null).runScript(this.getPlayer(), script, true, attachment);
         return event;
     }
 
     public short getPosition() {
-        return ((Item) obj).getPosition();
+        return ((Item)this.obj).getPosition();
     }
 
-    /***
-     * 道具是否正在使用
-     * @return
-     */
     public boolean used() {
-        return used(1);
+        return this.used(1);
     }
 
-    /***
-     * 道具是否正在使用
-     * @param q
-     * @return
-     */
     public boolean used(int q) {
-        return MapleInventoryManipulator.removeFromSlot(getClient(), ItemConstants.getInventoryType(getItemId()), getPosition(), (short) q, true, false);
+        return MapleInventoryManipulator.removeFromSlot(this.getClient(), ItemConstants.getInventoryType(this.getItemId()), this.getPosition(), (short)q, true, false);
     }
 
     public void showPopupSay(int npcid, int time, String msg, String sound) {
-        getClient().announce(UIPacket.addPopupSay(npcid, time, msg, sound));
+        this.getClient().announce(UIPacket.addPopupSay(npcid, time, msg, sound));
     }
 
-    /***
-     * 取的道具工具
-     * @return
-     */
+    @Override
     public MapleItemInformationProvider getItemInfo() {
-
         return MapleItemInformationProvider.getInstance();
     }
 
-
     public Map<Integer, String> getSearchData(int type, String search) {
-        return SearchGenerator.getSearchData(type, search);
+        return SearchGenerator.getSearchData((int)type, (String)search);
     }
 
     public String searchData(int type, String search) {
-        return SearchGenerator.searchData(SearchGenerator.SearchType.valueOf(SearchGenerator.SearchType.nameOf(type)), search);
+        return SearchGenerator.searchData((SearchGenerator.SearchType)SearchGenerator.SearchType.valueOf((String)SearchGenerator.SearchType.nameOf((int)type)), (String)search);
+    }
+
+    public void greenTip(String message) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_ProgressMessageFont.getValue());
+        mplew.writeInt(3);
+        mplew.writeInt(20);
+        mplew.writeInt(20);
+        mplew.writeInt(0);
+        mplew.write(0);
+        mplew.writeMapleAsciiString(message);
+        this.getPlayer().send(mplew.getPacket());
     }
 
     public void saying(String message) {
@@ -2602,7 +2387,7 @@ public class ScriptNpc extends PlayerScriptInteraction {
         mplew.write(1);
         mplew.writeInt(0);
         mplew.write(0);
-        mplew.writeShort(57); // type
+        mplew.writeShort(57);
         mplew.write(1);
         mplew.write(1);
         mplew.write(0);
@@ -2616,6 +2401,55 @@ public class ScriptNpc extends PlayerScriptInteraction {
         mplew.write(0);
         mplew.write(0);
         mplew.write(0);
-        getPlayer().send(mplew.getPacket());
+        this.getPlayer().send(mplew.getPacket());
+    }
+
+    public int zeroSayNext(int npc, String message) {
+        NpcScriptInfo nsi = this.getPlayer().getScriptManager().getNpcScriptInfo();
+        nsi.setParam(1);
+        nsi.setColor(1);
+        nsi.setTemplateID(npc);
+        return (int)((Long)this.sendScriptMessage(message, NpcMessageType.askZeroNext)).longValue();
+    }
+
+    public void playScreen(String s) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_FieldEffect.getValue());
+        mplew.write(19);
+        mplew.writeMapleAsciiString(s);
+        this.getPlayer().send(mplew.getPacket());
+    }
+
+    public void playSound(String s) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_FieldEffect.getValue());
+        mplew.write(7);
+        mplew.writeMapleAsciiString(s);
+        mplew.writeInt(100);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        this.getPlayer().send(mplew.getPacket());
+    }
+
+    @Generated
+    public String getScriptPath() {
+        return this.scriptPath;
+    }
+
+    @Override
+    @Generated
+    public MapleClient getClient() {
+        return this.client;
+    }
+
+    @Generated
+    public int getLastSMType() {
+        return this.lastSMType;
+    }
+
+    @Generated
+    public void setLastSMType(int lastSMType) {
+        this.lastSMType = lastSMType;
     }
 }
+

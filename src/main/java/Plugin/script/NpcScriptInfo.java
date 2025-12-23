@@ -1,16 +1,18 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.script;
 
 import Client.inventory.Item;
 import Config.constants.enums.NpcMessageType;
 import Config.constants.enums.ScriptParam;
-
 import java.util.List;
 
 public class NpcScriptInfo {
-
     private List<Item> items;
-    private int[] options, options2;
-    private byte speakerType = 3; // ?
+    private int[] options;
+    private int[] options2;
+    private byte speakerType = (byte)3;
     private int overrideSpeakerTemplateID = 0;
     private short param;
     private byte color = 0;
@@ -44,7 +46,8 @@ public class NpcScriptInfo {
     private int objectID;
     private int templateID;
     private int innerOverrideSpeakerTemplateID;
-    private boolean prevPossible, nextPossible;
+    private boolean prevPossible;
+    private boolean nextPossible;
     private int delay;
     private int unk;
     private boolean bUnk;
@@ -52,69 +55,69 @@ public class NpcScriptInfo {
 
     public NpcScriptInfo deepCopy() {
         NpcScriptInfo nsi = new NpcScriptInfo();
-        nsi.items = items;
-        if (options != null) {
-            nsi.options = new int[options.length];
-            System.arraycopy(options, 0, nsi.options, 0, options.length);
+        nsi.items = this.items;
+        if (this.options != null) {
+            nsi.options = new int[this.options.length];
+            System.arraycopy(this.options, 0, nsi.options, 0, this.options.length);
         }
-        if (options2 != null) {
-            nsi.options2 = new int[options2.length];
-            System.arraycopy(options2, 0, nsi.options2, 0, options2.length);
+        if (this.options2 != null) {
+            nsi.options2 = new int[this.options2.length];
+            System.arraycopy(this.options2, 0, nsi.options2, 0, this.options2.length);
         }
-        nsi.speakerType = speakerType;
-        nsi.overrideSpeakerTemplateID = overrideSpeakerTemplateID;
-        nsi.param = param;
-        nsi.color = color;
-        nsi.text = text;
-        nsi.messageType = messageType;
-        if (images != null) {
-            nsi.images = images.clone();
+        nsi.speakerType = this.speakerType;
+        nsi.overrideSpeakerTemplateID = this.overrideSpeakerTemplateID;
+        nsi.param = this.param;
+        nsi.color = this.color;
+        nsi.text = this.text;
+        nsi.messageType = this.messageType;
+        if (this.images != null) {
+            nsi.images = (String[])this.images.clone();
         }
-        nsi.srcBeauty = srcBeauty;
-        nsi.drtBeauty = drtBeauty;
-        nsi.srcBeauty2 = srcBeauty2;
-        nsi.drtBeauty2 = drtBeauty2;
-        nsi.min = min;
-        nsi.max = max;
-        nsi.col = col;
-        nsi.line = line;
-        nsi.itemID = itemID;
-        nsi.defaultText = defaultText;
-        nsi.defaultNumber = defaultNumber;
-        nsi.type = type;
-        nsi.time = time;
-        nsi.title = title;
-        nsi.problemText = problemText;
-        nsi.hintText = hintText;
-        nsi.quizType = quizType;
-        nsi.answer = answer;
-        nsi.correctAnswers = correctAnswers;
-        nsi.remaining = remaining;
-        nsi.secondLookValue = secondLookValue;
-        nsi.dlgType = dlgType;
-        nsi.defaultSelect = defaultSelect;
-        nsi.selectText = selectText;
-        nsi.objectID = objectID;
-        nsi.templateID = templateID;
-        nsi.prevPossible = prevPossible;
-        nsi.nextPossible = nextPossible;
-        nsi.delay = delay;
-        nsi.unk = unk;
-        nsi.bUnk = bUnk;
-        nsi.index = index;
+        nsi.srcBeauty = this.srcBeauty;
+        nsi.drtBeauty = this.drtBeauty;
+        nsi.srcBeauty2 = this.srcBeauty2;
+        nsi.drtBeauty2 = this.drtBeauty2;
+        nsi.min = this.min;
+        nsi.max = this.max;
+        nsi.col = this.col;
+        nsi.line = this.line;
+        nsi.itemID = this.itemID;
+        nsi.defaultText = this.defaultText;
+        nsi.defaultNumber = this.defaultNumber;
+        nsi.type = this.type;
+        nsi.time = this.time;
+        nsi.title = this.title;
+        nsi.problemText = this.problemText;
+        nsi.hintText = this.hintText;
+        nsi.quizType = this.quizType;
+        nsi.answer = this.answer;
+        nsi.correctAnswers = this.correctAnswers;
+        nsi.remaining = this.remaining;
+        nsi.secondLookValue = this.secondLookValue;
+        nsi.dlgType = this.dlgType;
+        nsi.defaultSelect = this.defaultSelect;
+        nsi.selectText = this.selectText;
+        nsi.objectID = this.objectID;
+        nsi.templateID = this.templateID;
+        nsi.prevPossible = this.prevPossible;
+        nsi.nextPossible = this.nextPossible;
+        nsi.delay = this.delay;
+        nsi.unk = this.unk;
+        nsi.bUnk = this.bUnk;
+        nsi.index = this.index;
         return nsi;
     }
 
     public byte getSpeakerType() {
-        return speakerType;
+        return this.speakerType;
     }
 
     public void setSpeakerType(int speakerType) {
-        this.speakerType = (byte) speakerType;
+        this.speakerType = (byte)speakerType;
     }
 
     public int getOverrideSpeakerTemplateID() {
-        return overrideSpeakerTemplateID;
+        return this.overrideSpeakerTemplateID;
     }
 
     public void setOverrideSpeakerTemplateID(int overrideSpeakerTemplateID) {
@@ -122,39 +125,39 @@ public class NpcScriptInfo {
     }
 
     public short getParam() {
-        return param;
+        return this.param;
     }
 
     public void addParam(ScriptParam param) {
-        addParam(param.getValue());
+        this.addParam(param.getValue());
     }
 
     public void addParam(int param) {
-        this.param |= (short) param;
+        this.param = (short)(this.param | (short)param);
     }
 
     public void removeParam(ScriptParam param) {
-        removeParam(param.getValue());
+        this.removeParam(param.getValue());
     }
 
     public void removeParam(int param) {
-        this.param &= (short) ~param;
+        this.param = (short)(this.param & (short)(~param));
     }
 
     public void setParam(int param) {
-        this.param = (short) param;
+        this.param = (short)param;
     }
 
     public byte getColor() {
-        return color;
+        return this.color;
     }
 
     public void setColor(int color) {
-        this.color = (byte) color;
+        this.color = (byte)color;
     }
 
     public String getText() {
-        return text;
+        return this.text;
     }
 
     public void setText(String text) {
@@ -166,7 +169,7 @@ public class NpcScriptInfo {
     }
 
     public NpcMessageType getMessageType() {
-        return messageType;
+        return this.messageType;
     }
 
     public void setImages(String[] images) {
@@ -174,7 +177,7 @@ public class NpcScriptInfo {
     }
 
     public String[] getImages() {
-        return images;
+        return this.images;
     }
 
     public void setSrcBeauty(int srcBeauty) {
@@ -182,7 +185,7 @@ public class NpcScriptInfo {
     }
 
     public int getSrcBeauty() {
-        return srcBeauty;
+        return this.srcBeauty;
     }
 
     public void setDrtBeauty(int drtBeauty) {
@@ -190,7 +193,7 @@ public class NpcScriptInfo {
     }
 
     public int getDrtBeauty() {
-        return drtBeauty;
+        return this.drtBeauty;
     }
 
     public void setSrcBeauty2(int srcBeauty) {
@@ -198,7 +201,7 @@ public class NpcScriptInfo {
     }
 
     public int getSrcBeauty2() {
-        return srcBeauty2;
+        return this.srcBeauty2;
     }
 
     public void setDrtBeauty2(int drtBeauty) {
@@ -206,7 +209,7 @@ public class NpcScriptInfo {
     }
 
     public int getDrtBeauty2() {
-        return drtBeauty2;
+        return this.drtBeauty2;
     }
 
     public void setMin(long min) {
@@ -214,7 +217,7 @@ public class NpcScriptInfo {
     }
 
     public long getMin() {
-        return min;
+        return this.min;
     }
 
     public void setMax(long max) {
@@ -222,7 +225,7 @@ public class NpcScriptInfo {
     }
 
     public long getMax() {
-        return max;
+        return this.max;
     }
 
     public void setCol(int col) {
@@ -230,7 +233,7 @@ public class NpcScriptInfo {
     }
 
     public int getCol() {
-        return col;
+        return this.col;
     }
 
     public void setLine(int line) {
@@ -238,7 +241,7 @@ public class NpcScriptInfo {
     }
 
     public int getLine() {
-        return line;
+        return this.line;
     }
 
     public void setItemID(int itemID) {
@@ -246,7 +249,7 @@ public class NpcScriptInfo {
     }
 
     public int getItemID() {
-        return itemID;
+        return this.itemID;
     }
 
     public void setDefaultText(String defaultText) {
@@ -254,11 +257,11 @@ public class NpcScriptInfo {
     }
 
     public String getDefaultText() {
-        return defaultText;
+        return this.defaultText;
     }
 
     public long getDefaultNumber() {
-        return defaultNumber;
+        return this.defaultNumber;
     }
 
     public void setDefaultNumber(long defaultNumber) {
@@ -266,15 +269,15 @@ public class NpcScriptInfo {
     }
 
     public byte getType() {
-        return type;
+        return this.type;
     }
 
     public void setType(int type) {
-        this.type = (byte) type;
+        this.type = (byte)type;
     }
 
     public int getTime() {
-        return time;
+        return this.time;
     }
 
     public void setTime(int time) {
@@ -282,7 +285,7 @@ public class NpcScriptInfo {
     }
 
     public String getTitle() {
-        return title;
+        return this.title;
     }
 
     public void setTitle(String title) {
@@ -290,7 +293,7 @@ public class NpcScriptInfo {
     }
 
     public String getProblemText() {
-        return problemText;
+        return this.problemText;
     }
 
     public void setProblemText(String problemText) {
@@ -298,7 +301,7 @@ public class NpcScriptInfo {
     }
 
     public String getHintText() {
-        return hintText;
+        return this.hintText;
     }
 
     public void setHintText(String hintText) {
@@ -306,7 +309,7 @@ public class NpcScriptInfo {
     }
 
     public int getQuizType() {
-        return quizType;
+        return this.quizType;
     }
 
     public void setQuizType(int quizType) {
@@ -314,7 +317,7 @@ public class NpcScriptInfo {
     }
 
     public int getAnswer() {
-        return answer;
+        return this.answer;
     }
 
     public void setAnswer(int answer) {
@@ -322,7 +325,7 @@ public class NpcScriptInfo {
     }
 
     public int getCorrectAnswers() {
-        return correctAnswers;
+        return this.correctAnswers;
     }
 
     public void setCorrectAnswers(int correctAnswers) {
@@ -330,7 +333,7 @@ public class NpcScriptInfo {
     }
 
     public int getRemaining() {
-        return remaining;
+        return this.remaining;
     }
 
     public void setRemaining(int remaining) {
@@ -338,15 +341,15 @@ public class NpcScriptInfo {
     }
 
     public byte getSecondLookValue() {
-        return secondLookValue;
+        return this.secondLookValue;
     }
 
     public void setSecondLookValue(int vale) {
-        this.secondLookValue = (byte) vale;
+        this.secondLookValue = (byte)vale;
     }
 
     public int getDlgType() {
-        return dlgType;
+        return this.dlgType;
     }
 
     public void setDlgType(int dlgType) {
@@ -358,7 +361,7 @@ public class NpcScriptInfo {
     }
 
     public int getDefaultSelect() {
-        return defaultSelect;
+        return this.defaultSelect;
     }
 
     public void setSelectText(String[] selectText) {
@@ -366,7 +369,7 @@ public class NpcScriptInfo {
     }
 
     public String[] getSelectText() {
-        return selectText;
+        return this.selectText;
     }
 
     public void setItems(List<Item> items) {
@@ -374,7 +377,7 @@ public class NpcScriptInfo {
     }
 
     public List<Item> getItems() {
-        return items;
+        return this.items;
     }
 
     public void setOptions(int[] options) {
@@ -382,7 +385,7 @@ public class NpcScriptInfo {
     }
 
     public int[] getOptions() {
-        return options;
+        return this.options;
     }
 
     public void setOptions2(int[] options) {
@@ -390,15 +393,15 @@ public class NpcScriptInfo {
     }
 
     public int[] getOptions2() {
-        return options2;
+        return this.options2;
     }
 
     public boolean hasParam(ScriptParam param) {
-        return param.check(getParam());
+        return param.check(this.getParam());
     }
 
     public int getObjectID() {
-        return objectID;
+        return this.objectID;
     }
 
     public void setObjectID(int objectID) {
@@ -406,7 +409,7 @@ public class NpcScriptInfo {
     }
 
     public int getTemplateID() {
-        return templateID;
+        return this.templateID;
     }
 
     public void setTemplateID(int templateID) {
@@ -414,15 +417,16 @@ public class NpcScriptInfo {
     }
 
     public void setInnerOverrideSpeakerTemplateID(int innerOverrideSpeakerTemplateID) {
-        if (innerOverrideSpeakerTemplateID > 0)
-            addParam(ScriptParam.OverrideSpeakerID);
-        else
-            removeParam(ScriptParam.OverrideSpeakerID);
+        if (innerOverrideSpeakerTemplateID > 0) {
+            this.addParam(ScriptParam.OverrideSpeakerID);
+        } else {
+            this.removeParam(ScriptParam.OverrideSpeakerID);
+        }
         this.innerOverrideSpeakerTemplateID = innerOverrideSpeakerTemplateID;
     }
 
     public boolean isPrevPossible() {
-        return prevPossible;
+        return this.prevPossible;
     }
 
     public void setPrevPossible(boolean prevPossible) {
@@ -430,7 +434,7 @@ public class NpcScriptInfo {
     }
 
     public boolean isNextPossible() {
-        return nextPossible;
+        return this.nextPossible;
     }
 
     public void setNextPossible(boolean nextPossible) {
@@ -438,7 +442,7 @@ public class NpcScriptInfo {
     }
 
     public int getDelay() {
-        return delay;
+        return this.delay;
     }
 
     public void setDelay(int delay) {
@@ -446,7 +450,7 @@ public class NpcScriptInfo {
     }
 
     public int getUnk() {
-        return unk;
+        return this.unk;
     }
 
     public void setUnk(int unk) {
@@ -454,7 +458,7 @@ public class NpcScriptInfo {
     }
 
     public boolean isUnk() {
-        return bUnk;
+        return this.bUnk;
     }
 
     public void setBUnk(boolean unk) {
@@ -462,14 +466,15 @@ public class NpcScriptInfo {
     }
 
     public int getInnerOverrideSpeakerTemplateID() {
-        return innerOverrideSpeakerTemplateID;
+        return this.innerOverrideSpeakerTemplateID;
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public void setIndex(int index) {
         this.index = index;
     }
 }
+

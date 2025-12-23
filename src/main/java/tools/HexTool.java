@@ -1,203 +1,119 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools;
 
-
 import Config.constants.ServerConstants;
-
 import java.io.ByteArrayOutputStream;
+import tools.StringUtil;
 
-/**
- * Provides a class for manipulating hexadecimal numbers.
- *
- * @author Frz
- * @version 1.0
- * @since Revision 206
- */
 public class HexTool {
+    private static final char[] HEX = new char[]{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 
-    private static final char[] HEX = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
-
-    /**
-     * Turns a byte into a hexadecimal string.
-     *
-     * @param byteValue The byte to convert.
-     * @return The hexadecimal representation of
-     * <code>byteValue</code>
-     */
     public static String toString(byte byteValue) {
         int tmp = byteValue << 8;
-        char[] retstr = new char[]{HEX[(tmp >> 12) & 0x0F], HEX[(tmp >> 8) & 0x0F]};
+        char[] retstr = new char[]{HEX[tmp >> 12 & 0xF], HEX[tmp >> 8 & 0xF]};
         return String.valueOf(retstr);
     }
 
-    /**
-     * Turns a
-     * <code>org.apache.mina.common.ByteBuffer</code> into a
-     * hexadecimal string.
-     *
-     * @param buf The
-     *            <code>org.apache.mina.common.ByteBuffer</code> to
-     *            convert.
-     * @return The hexadecimal representation of
-     * <code>buf</code>
-     */
-//    public static String toString(IoBuffer buf) {
-//        buf.flip();
-//        byte arr[] = new byte[buf.remaining()];
-//        buf.get(arr);
-//        String ret = toString(arr);
-//        buf.flip();
-//        buf.put(arr);
-//        return ret;
-//    }
-
-    /**
-     * Turns an integer into a hexadecimal string.
-     *
-     * @param intValue The integer to transform.
-     * @return The hexadecimal representation of
-     * <code>intValue</code>.
-     */
     public static String toString(int intValue) {
         return Integer.toHexString(intValue);
     }
 
-    /**
-     * Turns an array of bytes into a hexadecimal string.
-     *
-     * @param bytes The bytes to convert.
-     * @return The hexadecimal representation of
-     * <code>bytes</code>
-     */
     public static String toString(byte[] bytes) {
         if (bytes == null || bytes.length < 1) {
             return "";
         }
         StringBuilder hexed = new StringBuilder();
         for (byte aByte : bytes) {
-            hexed.append(toString(aByte));
+            hexed.append(HexTool.toString(aByte));
             hexed.append(' ');
         }
         return hexed.substring(0, hexed.length() - 1);
     }
 
-    /**
-     * Turns an array of bytes into a ASCII string. Any non-printable characters
-     * are replaced by a period (
-     * <code>.</code>)
-     *
-     * @param bytes The bytes to convert.
-     * @return The ASCII hexadecimal representation of
-     * <code>bytes</code>
-     */
     public static String toStringFromAscii(byte[] bytes) {
         byte[] ret = new byte[bytes.length];
-        for (int x = 0; x < bytes.length; x++) {
-            if (bytes[x] < 32 && bytes[x] >= 0) {
-                ret[x] = '.';
-            } else {
-                ret[x] = bytes[x];
-            }
+        for (int x = 0; x < bytes.length; ++x) {
+            ret[x] = bytes[x] < 32 && bytes[x] >= 0 ? 46 : bytes[x];
         }
         try {
             return new String(ret, ServerConstants.MapleType.getByType(ServerConstants.MapleRegion).getCharset());
-        } catch (Exception ignored) {
         }
-        return "";
+        catch (Exception exception) {
+            return "";
+        }
     }
 
     public static String toPaddedStringFromAscii(byte[] bytes) {
-        String str = toStringFromAscii(bytes);
+        String str = HexTool.toStringFromAscii(bytes);
         StringBuilder ret = new StringBuilder(str.length() * 3);
-        for (int i = 0; i < str.length(); i++) {
+        for (int i = 0; i < str.length(); ++i) {
             ret.append(str.charAt(i));
             ret.append("  ");
         }
         return ret.toString();
     }
 
-    /**
-     * Turns an hexadecimal string into a byte array.
-     *
-     * @param hex The string to convert.
-     * @return The byte array representation of
-     * <code>hex</code>
-     */
     public static byte[] getByteArrayFromHexString(String hex) {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         int nexti = 0;
         int nextb = 0;
         boolean highoc = true;
-        outer:
-        for (; ; ) {
+        block0: while (true) {
             int number = -1;
             while (number == -1) {
-                if (nexti == hex.length()) {
-                    break outer;
-                }
+                if (nexti == hex.length()) break block0;
                 char chr = hex.charAt(nexti);
-                if (chr >= '0' && chr <= '9') {
-                    number = chr - '0';
-                } else if (chr >= 'a' && chr <= 'f') {
-                    number = chr - 'a' + 10;
-                } else if (chr >= 'A' && chr <= 'F') {
-                    number = chr - 'A' + 10;
-                } else {
-                    number = -1;
-                }
-                nexti++;
+                number = chr >= '0' && chr <= '9' ? chr - 48 : (chr >= 'a' && chr <= 'f' ? chr - 97 + 10 : (chr >= 'A' && chr <= 'F' ? chr - 65 + 10 : -1));
+                ++nexti;
             }
             if (highoc) {
                 nextb = number << 4;
                 highoc = false;
-            } else {
-                nextb |= number;
-                highoc = true;
-                baos.write(nextb);
+                continue;
             }
+            highoc = true;
+            baos.write(nextb |= number);
         }
         return baos.toByteArray();
     }
 
     public static String getOpcodeToString(int op) {
-        String hexString = Integer.toHexString(op).toUpperCase();
-        while (hexString.length() < 4) {
-            hexString = "0" + hexString;
+        Object hexString = Integer.toHexString(op).toUpperCase();
+        while (((String)hexString).length() < 4) {
+            hexString = "0" + (String)hexString;
         }
-        if (hexString.length() > 4) {
-            hexString = hexString.substring(hexString.length() - 4);
+        if (((String)hexString).length() > 4) {
+            hexString = ((String)hexString).substring(((String)hexString).length() - 4);
         }
-        return "0x" + hexString;
+        return "0x" + (String)hexString;
     }
 
     public static String getBuffStatToString(int buffstat) {
         String ret = "0x";
-        ret += StringUtil.getLeftPaddedStr(Integer.toHexString(buffstat).toUpperCase(), '0', 1);
+        ret = (String)ret + StringUtil.getLeftPaddedStr(Integer.toHexString(buffstat).toUpperCase(), '0', 1);
         return ret;
     }
 
-    /*
-     * 截取字符串
-     */
     public static String getSubstring(String pStr, int pStart, int pEnd) {
-        byte[] b = pStr.getBytes();
+        byte[] b = ((String)pStr).getBytes();
         pStr = "";
-        for (int i = pStart - 1, point = pStart - 1; i < pEnd; ) {
-            if (i >= b.length) {
-                break;
-            }
+        int i = pStart - 1;
+        int point = pStart - 1;
+        while (i < pEnd && i < b.length) {
             if (i == pEnd - 1 && b[i] < 0) {
                 int length = i - point + 1;
                 if (length % 2 == 1) {
-                    length--;
+                    --length;
                 }
-                pStr += new String(b, point, length);
+                pStr = (String)pStr + new String(b, point, length);
             }
-            i++;
-            if (b[i] >= 0) {
-                pStr += new String(b, point, i - point);
-                point = i;
-            }
+            if (b[++i] < 0) continue;
+            pStr = (String)pStr + new String(b, point, i - point);
+            point = i;
         }
         return pStr;
     }
 }
+

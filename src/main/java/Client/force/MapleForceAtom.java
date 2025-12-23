@@ -1,6 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.force;
 
-import java.awt.*;
+import Client.force.MapleForceInfo;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.List;
 
 public class MapleForceAtom {
@@ -24,7 +29,7 @@ public class MapleForceAtom {
         return this.forcedTarget;
     }
 
-    public final void setForcedTarget(final Point pos) {
+    public final void setForcedTarget(Point pos) {
         this.forcedTarget = pos;
     }
 
@@ -32,7 +37,7 @@ public class MapleForceAtom {
         return this.bulletItemID;
     }
 
-    public final void setBulletItemID(final int bulletItemID) {
+    public final void setBulletItemID(int bulletItemID) {
         this.bulletItemID = bulletItemID;
     }
 
@@ -40,7 +45,7 @@ public class MapleForceAtom {
         return this.rect;
     }
 
-    public final void setRect(final Rectangle rect) {
+    public final void setRect(Rectangle rect) {
         this.rect = rect;
     }
 
@@ -48,7 +53,7 @@ public class MapleForceAtom {
         return this.skillId;
     }
 
-    public final void setSkillId(final int skillId) {
+    public final void setSkillId(int skillId) {
         this.skillId = skillId;
     }
 
@@ -56,7 +61,7 @@ public class MapleForceAtom {
         return this.info;
     }
 
-    public final void setInfo(final List<MapleForceInfo> info) {
+    public final void setInfo(List<MapleForceInfo> info) {
         this.info = info;
     }
 
@@ -64,7 +69,7 @@ public class MapleForceAtom {
         return this.arriveRange;
     }
 
-    public final void setArriveRange(final int arriveRange) {
+    public final void setArriveRange(int arriveRange) {
         this.arriveRange = arriveRange;
     }
 
@@ -72,7 +77,7 @@ public class MapleForceAtom {
         return this.arriveDir;
     }
 
-    public final void setArriveDir(final int arriveDir) {
+    public final void setArriveDir(int arriveDir) {
         this.arriveDir = arriveDir;
     }
 
@@ -80,7 +85,7 @@ public class MapleForceAtom {
         return this.firstMobID;
     }
 
-    public final void setFirstMobID(final int firstMobID) {
+    public final void setFirstMobID(int firstMobID) {
         this.firstMobID = firstMobID;
     }
 
@@ -88,7 +93,7 @@ public class MapleForceAtom {
         return this.toMobOid;
     }
 
-    public final void setToMobOid(final List<Integer> toMobOid) {
+    public final void setToMobOid(List<Integer> toMobOid) {
         this.toMobOid = toMobOid;
     }
 
@@ -96,7 +101,7 @@ public class MapleForceAtom {
         return this.forceType;
     }
 
-    public final void setForceType(final int forceType) {
+    public final void setForceType(int forceType) {
         this.forceType = forceType;
     }
 
@@ -104,7 +109,7 @@ public class MapleForceAtom {
         return this.fromMobOid;
     }
 
-    public final void setFromMobOid(final int fromMobOid) {
+    public final void setFromMobOid(int fromMobOid) {
         this.fromMobOid = fromMobOid;
     }
 
@@ -112,7 +117,7 @@ public class MapleForceAtom {
         return this.ownerId;
     }
 
-    public final void setOwnerId(final int ownerId) {
+    public final void setOwnerId(int ownerId) {
         this.ownerId = ownerId;
     }
 
@@ -120,12 +125,12 @@ public class MapleForceAtom {
         return this.fromMob;
     }
 
-    public final void setFromMob(final boolean fromMob) {
+    public final void setFromMob(boolean fromMob) {
         this.fromMob = fromMob;
     }
 
     public Point getPos2() {
-        return pos2;
+        return this.pos2;
     }
 
     public void setPos2(Point pos2) {
@@ -136,9 +141,8 @@ public class MapleForceAtom {
         return this.rect2;
     }
 
-    public final void setRect2(final Rectangle rect) {
+    public final void setRect2(Rectangle rect) {
         this.rect2 = rect;
     }
-
-
 }
+

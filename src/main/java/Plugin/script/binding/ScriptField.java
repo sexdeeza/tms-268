@@ -1,52 +1,79 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Plugin.script.binding.ScriptMob
+ *  Server.BossEventHandler.Angel
+ *  Server.BossEventHandler.BlackMage
+ *  Server.BossEventHandler.Caning
+ *  Server.BossEventHandler.Demian.Demian
+ *  Server.BossEventHandler.Dusk.Dusk
+ *  Server.BossEventHandler.Jin.JinHillah
+ *  Server.BossEventHandler.Lucid
+ *  Server.BossEventHandler.Seren
+ *  Server.BossEventHandler.Will
+ *  Server.BossEventHandler.kalos
+ *  SwordieX.field.ClockPacket
+ *  SwordieX.field.fieldeffect.FieldEffect
+ *  connection.packet.FieldPacket
+ *  lombok.Generated
+ */
 package Plugin.script.binding;
 
 import Client.MapleCharacter;
 import Net.server.life.MapleLifeFactory;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MaplePacketCreator;
-import Server.BossEventHandler.*;
+import Plugin.script.binding.ScriptEvent;
+import Plugin.script.binding.ScriptMob;
+import Plugin.script.binding.ScriptPlayer;
+import Server.BossEventHandler.Angel;
+import Server.BossEventHandler.BlackMage;
+import Server.BossEventHandler.Caning;
 import Server.BossEventHandler.Demian.Demian;
 import Server.BossEventHandler.Dusk.Dusk;
 import Server.BossEventHandler.Jin.JinHillah;
-import connection.packet.FieldPacket;
+import Server.BossEventHandler.Lucid;
+import Server.BossEventHandler.Seren;
+import Server.BossEventHandler.Will;
+import Server.BossEventHandler.kalos;
 import SwordieX.field.ClockPacket;
 import SwordieX.field.fieldeffect.FieldEffect;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import tools.data.MaplePacketLittleEndianWriter;
-
-import java.awt.*;
+import connection.packet.FieldPacket;
+import java.awt.Point;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import lombok.Generated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.data.MaplePacketLittleEndianWriter;
 
-@Slf4j
 public class ScriptField {
-
-    @Getter
+    @Generated
+    private static final Logger log = LoggerFactory.getLogger(ScriptField.class);
     private final MapleMap map;
-
     private List<MapleCharacter> characters;
 
     public ScriptField(MapleMap map) {
         this.map = map;
-        this.characters = new ArrayList<>(map.getCharacters());  // 初始化角色列表
+        this.characters = new ArrayList<MapleCharacter>(map.getCharacters());
     }
 
     public void reset() {
-        getMap().killAllMonsters(false);
-        getMap().reloadReactors();
-        getMap().resetNPCs();
-        getMap().resetSpawns();
-        getMap().resetPortals();
-        getMap().removeDrops();
-        getMap().setUserFirstEnter(false);
+        this.getMap().killAllMonsters(false);
+        this.getMap().reloadReactors();
+        this.getMap().resetNPCs();
+        this.getMap().resetSpawns();
+        this.getMap().resetPortals();
+        this.getMap().removeDrops();
+        this.getMap().setUserFirstEnter(false);
     }
 
     public int getMonsterSize() {
-        return getMap().getMonsters().size();
+        return this.getMap().getMonsters().size();
     }
 
     public void startDojangRandTimer(int sec, int wait) {
@@ -56,74 +83,72 @@ public class ScriptField {
         mplew.write(1);
         mplew.writeInt(sec);
         mplew.writeInt(wait);
-        getMap().broadcastMessage(mplew.getPacket());
+        this.getMap().broadcastMessage(mplew.getPacket());
     }
 
     public void spawnRune(int type) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_RuneStoneAppear.getValue());
-        mplew.writeInt(1);
+        mplew.writeInt(0);
         mplew.writeInt(0);
         mplew.writeInt(2);
-        mplew.writeInt(type); // ERuneStoneType
-        mplew.writeInt((int) getMap().getAllChracater().getFirst().getPosition().getX());
-        mplew.writeInt((int) getMap().getAllChracater().getFirst().getPosition().getY());
+        mplew.writeInt(type);
+        mplew.writeInt((int)((MapleCharacter)this.getMap().getAllChracater().getFirst()).getPosition().getX());
+        mplew.writeInt((int)((MapleCharacter)this.getMap().getAllChracater().getFirst()).getPosition().getY());
         mplew.write(0);
-        getMap().broadcastMessage(mplew.getPacket());
+        this.getMap().broadcastMessage(mplew.getPacket());
     }
 
-
     public void reset(int level) {
-        getMap().resetPQ(level);
+        this.getMap().resetPQ(level);
     }
 
     public void overrideFieldLimit(int var) {
-        getMap().setFieldLimit(var);
+        this.getMap().setFieldLimit(var);
     }
 
     public void showWeatherEffectNotice(String msg, int type, int duration) {
-        getMap().showWeatherEffectNotice(msg, type, duration);
+        this.getMap().showWeatherEffectNotice(msg, type, duration);
     }
 
     public void changeBGM(String name) {
-        FieldPacket.fieldEffect(FieldEffect.changeBGM(name, 0, 0, 0));
+        FieldPacket.fieldEffect((FieldEffect)FieldEffect.changeBGM((String)name, (int)0, (int)0, (int)0));
     }
 
     public void clearMobs() {
-        getMap().killAllMonsters(true);
+        this.getMap().killAllMonsters(true);
     }
 
     public void clearDrops() {
-        getMap().removeDrops();
+        this.getMap().removeDrops();
     }
 
     public void createObtacleAtom(int count, int type1, int type2, int DamageRang, int SpeedRang) {
-        getMap().getAllChracater().forEach(chr -> chr.send(MaplePacketCreator.createObtacleAtom(count, type1, type2, getMap())));
-//        getMap().getAllChracater().forEach(chr -> chr.send(MaplePacketCreator.createObtacleAtom(count, type1, type2, DamageRang, SpeedRang, getMap())));
+        this.getMap().getAllChracater().forEach(chr -> chr.send(MaplePacketCreator.createObtacleAtom(count, type1, type2, this.getMap())));
     }
 
     public void destroyTempNpc(int npcId) {
-        getMap().removeNpc(npcId);
+        this.getMap().removeNpc(npcId);
     }
 
     public void spawnTempNpc(int npcId, int x, int y) {
-        getMap().spawnNpc(npcId, new Point(x, y));
+        this.getMap().spawnNpc(npcId, new Point(x, y));
     }
 
     public int getId() {
-        return getMap().getId();
+        return this.getMap().getId();
     }
 
     public int getInstanceId() {
-        return getMap().getInstanceId();
+        return this.getMap().getInstanceId();
     }
 
     public int getNumPlayersInArea(int id) {
-        return getMap().getNumPlayersInArea(id);
+        return this.getMap().getNumPlayersInArea(id);
     }
 
     public int getPlayerCount() {
-        return getMap().getAllChracater().size();
+        return this.getMap().getAllChracater().size();
     }
 
     public ScriptMob makeMob(int mobId) {
@@ -133,93 +158,90 @@ public class ScriptField {
 
     public void spawnMob(int mobId, int x, int y) {
         MapleMonster Mob = MapleLifeFactory.getMonster(mobId);
-        getMap().spawnMonsterOnGroundBelow(Mob, new Point(x, y));
+        this.getMap().spawnMonsterOnGroundBelow(Mob, new Point(x, y));
     }
 
     public void spawnMob(ScriptMob Mob, int x, int y) {
-
-        getMap().spawnMonsterOnGroundBelow(Mob.getMob(), new Point(x, y));
+        this.getMap().spawnMonsterOnGroundBelow(Mob.getMob(), new Point(x, y));
     }
+
     public void portalEffect(String name, int i) {
-        getMap().showPortalEffect(name, i);
+        this.getMap().showPortalEffect(name, i);
     }
 
     public void resetMobsSpawns() {
-        getMap().resetSpawns();
+        this.getMap().resetSpawns();
     }
 
     public void screenEffect(String name) {
-        getMap().showScreenEffect(name);
+        this.getMap().showScreenEffect(name);
     }
 
     public void scriptProgressMessage(String msg) {
-        getMap().showScriptProgressMessage(msg);
+        this.getMap().showScriptProgressMessage(msg);
     }
 
     public void setNoSpawn(boolean value) {
-        getMap().setSpawns(value);
+        this.getMap().setSpawns(value);
     }
 
     public void showTimer(double seconds) {
-        long sec = (long) Math.ceil(seconds * 1000);
-        getMap().getAllChracater().forEach(chr -> chr.getClient().announce(FieldPacket.clock(ClockPacket.secondsClock(sec))));
+        long sec = (long)Math.ceil(seconds * 1000.0);
+        this.getMap().getAllChracater().forEach(chr -> chr.getClient().announce(FieldPacket.clock((ClockPacket)ClockPacket.secondsClock((long)sec))));
     }
 
     public void closeTimer() {
-        getMap().getAllChracater().forEach(chr -> chr.getClient().announce(FieldPacket.clock(ClockPacket.secondsClock(-1))));
+        this.getMap().getAllChracater().forEach(chr -> chr.getClient().announce(FieldPacket.clock((ClockPacket)ClockPacket.secondsClock((long)-1L))));
     }
 
     public List<ScriptPlayer> getPlayers() {
-        return getMap().getAllChracater().stream()
-                .map(ScriptPlayer::new)
-                .collect(Collectors.toList());
+        return this.getMap().getAllChracater().stream().map(ScriptPlayer::new).collect(Collectors.toList());
     }
 
-
     public void endFieldEvent() {
-        getMap().endFieldEvent();
+        this.getMap().endFieldEvent();
     }
 
     public void getName() {
-        getMap().getMapName();
+        this.getMap().getMapName();
     }
 
     public void setReactorState(String name, byte state) {
-        getMap().setReactorState(name, state);
+        this.getMap().setReactorState(name, state);
     }
 
     public int getReactorStateId(String var1) {
-        return getMap().getReactorStat(var1);
+        return this.getMap().getReactorStat(var1);
     }
 
     public int getEventMobCount() {
-        return getMap().getMonsters().size();
-
+        return this.getMap().getMonsters().size();
     }
 
     public int getEventMobCountById(int mobId) {
-        List<MapleMonster> monsters = getMap().getMonsters();
+        List<MapleMonster> monsters = this.getMap().getMonsters();
         int count = 0;
         for (MapleMonster monster : monsters) {
-            if (monster.getId() == mobId) count++;
+            if (monster.getId() != mobId) continue;
+            ++count;
         }
         return count;
     }
 
     public void blowWeather(int itemId, String msg, int time) {
-        getMap().startMapEffect(msg, itemId, time);
+        this.getMap().startMapEffect(msg, itemId, time);
     }
 
     public void blowWeather(int itemId, String msg) {
-        getMap().startMapEffect(msg, itemId, 3000);
+        this.getMap().startMapEffect(msg, itemId, 3000);
     }
 
     public ScriptEvent getEvent() {
-        return getMap().getEvent();
+        return this.getMap().getEvent();
     }
 
     public void setEvent(ScriptEvent event) {
-        getMap().setEvent(event);
+        this.getMap().setEvent(event);
     }
 
     public List<MapleCharacter> getCharacters() {
@@ -227,86 +249,214 @@ public class ScriptField {
     }
 
     public void startFieldEvent() {
-        for (MapleCharacter chr : map.getAllCharactersThreadsafe()) {
+        for (MapleCharacter chr : this.map.getAllCharactersThreadsafe()) {
             chr.getMap().startFieldEvent();
         }
     }
 
     public void startDemianField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            Demian.start(chr);
+            Demian.start((MapleCharacter)chr);
         }
     }
 
     public void startLucidField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            Lucid.start(chr);
+            Lucid.start((MapleCharacter)chr);
         }
     }
 
     public void startDuskField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            Dusk.start(chr);
+            Dusk.start((MapleCharacter)chr);
         }
     }
 
     public void startJinField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            JinHillah.start(chr);
+            JinHillah.start((MapleCharacter)chr);
         }
     }
 
     public void startAngelField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            Angel.start(chr);
+            Angel.start((MapleCharacter)chr);
         }
     }
 
     public void startWillField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            Will.start(chr);
+            Will.start((MapleCharacter)chr);
         }
     }
 
     public void startSerenField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            Seren.start(chr, chr.getMap().getMonsters().getFirst());
+            Seren.start((MapleCharacter)chr, (MapleMonster)((MapleMonster)chr.getMap().getMonsters().getFirst()));
         }
     }
 
     public void startKalosField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            kalos.start(chr);
+            kalos.start((MapleCharacter)chr);
         }
     }
 
     public void startBlackMageField() {
         for (MapleCharacter chr : this.getCharacters()) {
-            BlackMage.start(chr);
+            BlackMage.start((MapleCharacter)chr);
         }
     }
 
     public void startBlackMageField_II() {
         for (MapleCharacter chr : this.getCharacters()) {
-            BlackMage.start2(chr);
+            BlackMage.start2((MapleCharacter)chr);
         }
     }
 
     public void startBlackMageField_III() {
         for (MapleCharacter chr : this.getCharacters()) {
-            BlackMage.start3(chr);
+            BlackMage.start3((MapleCharacter)chr);
         }
     }
 
     public void startBlackMageField_IV() {
         for (MapleCharacter chr : this.getCharacters()) {
-            BlackMage.start4(chr);
+            BlackMage.start4((MapleCharacter)chr);
         }
     }
 
-    public void StartKarNingField(){
+    public void StartKarNingField() {
         for (MapleCharacter player : this.getCharacters()) {
-            Caning.startEvent_Field(player);
+            Caning.startEvent_Field((MapleCharacter)player);
         }
     }
+
+    public void StartFieldMessage(int type, String message) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_BlowWeather.getValue());
+        mplew.write(0);
+        mplew.writeInt(type);
+        mplew.writeMapleAsciiString(message);
+        mplew.write(15);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(0);
+        for (MapleCharacter chr : this.getCharacters()) {
+            chr.send(mplew.getPacket());
+        }
+    }
+
+    public void showMoviePath(String intro, String path, String animation, int str) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_FieldEffect.getValue());
+        mplew.write(75);
+        mplew.writeMapleAsciiString(intro);
+        mplew.writeMapleAsciiString(path);
+        mplew.write(1);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.writeMapleAsciiString(animation);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(str);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(0);
+        for (MapleCharacter chr : this.getCharacters()) {
+            chr.send(mplew.getPacket());
+        }
+    }
+
+    public void showMoviePath(String intro, String path, int str) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_FieldEffect.getValue());
+        mplew.write(75);
+        mplew.writeMapleAsciiString(intro);
+        mplew.writeMapleAsciiString(path);
+        mplew.write(1);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        mplew.writeInt(2);
+        mplew.writeInt(0);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(1);
+        mplew.write(0);
+        mplew.writeInt(49);
+        mplew.writeInt(0);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(str);
+        mplew.write(0);
+        mplew.write(0);
+        mplew.write(0);
+        for (MapleCharacter chr : this.getCharacters()) {
+            chr.send(mplew.getPacket());
+        }
+    }
+
+    public void playSound(String SoundPath, int str) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.LP_FieldEffect.getValue());
+        mplew.write(7);
+        mplew.writeMapleAsciiString(SoundPath);
+        mplew.writeInt(str);
+        mplew.writeInt(0);
+        mplew.writeInt(0);
+        for (MapleCharacter chr : this.getCharacters()) {
+            chr.send(mplew.getPacket());
+        }
+    }
+
+    public void DemianSpace(boolean open) {
+        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
+        mplew.writeShort(OutHeader.BOSS_DEMIAN_KEYMAP_SPACE.getValue());
+        if (open) {
+            mplew.writeInt(13);
+            mplew.writeInt(13);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.write(0);
+            mplew.writeInt(1);
+            mplew.write(0);
+            mplew.writeInt(80001974);
+            mplew.writeInt(1);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeShort(0);
+            mplew.write(0);
+            for (MapleCharacter chr : this.getCharacters()) {
+                chr.send(mplew.getPacket());
+                chr.send(Demian.unkDemian());
+            }
+        } else {
+            mplew.writeInt(0);
+            for (MapleCharacter chr : this.getCharacters()) {
+                chr.send(mplew.getPacket());
+            }
+        }
+    }
+
+    @Generated
+    public MapleMap getMap() {
+        return this.map;
+    }
 }
+

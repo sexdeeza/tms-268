@@ -1,23 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.config.transformers;
 
-import tools.config.TransformationException;
-
 import java.lang.reflect.Field;
+import tools.config.TransformationException;
+import tools.config.transformers.PropertyTransformer;
 
 public class BooleanTransformer
-        implements PropertyTransformer<Boolean> {
-    /* 20 */ public static final BooleanTransformer SHARED_INSTANCE = new BooleanTransformer();
+implements PropertyTransformer<Boolean> {
+    public static final BooleanTransformer SHARED_INSTANCE = new BooleanTransformer();
 
+    @Override
     public Boolean transform(String value, Field field) throws TransformationException {
-        /* 35 */
-        if ("true".equalsIgnoreCase(value) || "1".equals(value))
-            /* 36 */ return Boolean.valueOf(true);
-        /* 37 */
-        if ("false".equalsIgnoreCase(value) || "0".equals(value)) {
-            /* 38 */
-            return Boolean.valueOf(false);
+        if ("true".equalsIgnoreCase(value) || "1".equals(value)) {
+            return true;
         }
-        /* 40 */
+        if ("false".equalsIgnoreCase(value) || "0".equals(value)) {
+            return false;
+        }
         throw new TransformationException("Invalid boolean string: " + value);
     }
 }
+

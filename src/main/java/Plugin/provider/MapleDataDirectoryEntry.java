@@ -1,18 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider;
 
-import java.util.*;
+import Plugin.provider.MapleDataEntity;
+import Plugin.provider.MapleDataEntry;
+import Plugin.provider.MapleDataFileEntry;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-/**
- * @author Matze
- */
-public class MapleDataDirectoryEntry extends MapleDataEntry {
-
-    private final List<MapleDataDirectoryEntry> subdirs = new ArrayList<>();
-    private final List<MapleDataFileEntry> files = new ArrayList<>();
-    private final Map<String, MapleDataEntry> entries = new HashMap<>();
+public class MapleDataDirectoryEntry
+extends MapleDataEntry {
+    private final List<MapleDataDirectoryEntry> subdirs = new ArrayList<MapleDataDirectoryEntry>();
+    private final List<MapleDataFileEntry> files = new ArrayList<MapleDataFileEntry>();
+    private final Map<String, MapleDataEntry> entries = new HashMap<String, MapleDataEntry>();
 
     public MapleDataDirectoryEntry(String name, MapleDataEntity parent) {
-        this(name, 0, 0, 0, parent);
+        this(name, 0, 0, 0L, parent);
     }
 
     public MapleDataDirectoryEntry(String name, int size, int checksum, long offset, MapleDataEntity parent) {
@@ -20,41 +27,42 @@ public class MapleDataDirectoryEntry extends MapleDataEntry {
     }
 
     public void addDirectory(MapleDataDirectoryEntry dir) {
-        subdirs.add(dir);
-        entries.put(dir.getName(), dir);
+        this.subdirs.add(dir);
+        this.entries.put(dir.getName(), dir);
     }
 
     public void addFile(MapleDataFileEntry fileEntry) {
-        files.add(fileEntry);
-        entries.put(fileEntry.getName(), fileEntry);
+        this.files.add(fileEntry);
+        this.entries.put(fileEntry.getName(), fileEntry);
     }
 
     public List<MapleDataDirectoryEntry> getSubdirectories() {
-        return Collections.unmodifiableList(subdirs);
+        return Collections.unmodifiableList(this.subdirs);
     }
 
     public List<MapleDataFileEntry> getFiles() {
-        return Collections.unmodifiableList(files);
+        return Collections.unmodifiableList(this.files);
     }
 
     public MapleDataEntry getEntry(String name) {
-        return entries.get(name);
+        return this.entries.get(name);
     }
 
     public void addAll(MapleDataDirectoryEntry root) {
+        MapleDataEntry entry;
         for (MapleDataDirectoryEntry dir : root.getSubdirectories()) {
-            MapleDataEntry entry = getEntry(dir.getName());
+            entry = this.getEntry(dir.getName());
             if (entry != null && entry instanceof MapleDataDirectoryEntry) {
-                ((MapleDataDirectoryEntry) entry).addAll(dir);
-            } else {
-                addDirectory(dir);
+                ((MapleDataDirectoryEntry)entry).addAll(dir);
+                continue;
             }
+            this.addDirectory(dir);
         }
         for (MapleDataFileEntry f : root.getFiles()) {
-            MapleDataEntry entry = getEntry(f.getName());
-            if (!(entry instanceof MapleDataFileEntry)) {
-                addFile(f);
-            }
+            entry = this.getEntry(f.getName());
+            if (entry instanceof MapleDataFileEntry) continue;
+            this.addFile(f);
         }
     }
 }
+

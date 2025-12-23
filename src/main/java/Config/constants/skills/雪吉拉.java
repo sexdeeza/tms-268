@@ -1,9 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 雪吉拉 {
     public static final int 收納達人 = 130010111;
     public static final int 雪吉拉_變弱了 = 130010112;
-
     public static final int 給我零食 = 135001000;
     public static final int 給我零食_1 = 135002000;
     public static final int 給我零食_2 = 135001001;
@@ -46,3 +48,4 @@ public class 雪吉拉 {
     public static final int 憤怒強化_憤怒咆哮 = 135001020;
     public static final int 憤怒強化_憤怒咆哮_1 = 135002020;
 }
+

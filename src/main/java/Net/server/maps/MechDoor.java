@@ -1,28 +1,28 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server.maps;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
+import Net.server.maps.MapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.MaplePacketCreator;
+import java.awt.Point;
 
-import java.awt.*;
-
-public class MechDoor extends MapleMapObject {
-
-    private int owner, partyid, id;
+public class MechDoor
+extends MapleMapObject {
+    private int owner;
+    private int partyid;
+    private int id;
 
     public MechDoor() {
-
     }
 
     public MechDoor(MapleCharacter owner, Point pos, int id) {
-        super();
         this.owner = owner.getId();
         this.partyid = owner.getParty() == null ? 0 : owner.getParty().getId();
-        setPosition(pos);
+        this.setPosition(pos);
         this.id = id;
     }
 
@@ -58,3 +58,4 @@ public class MechDoor extends MapleMapObject {
         return MapleMapObjectType.TOWN_PORTAL;
     }
 }
+

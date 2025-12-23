@@ -6,7 +6,7 @@ import Net.server.Obstacle;
 import Net.server.Timer;
 import Net.server.life.MapleLifeFactory;
 import Net.server.life.MapleMonster;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.CField;
 import Packet.MaplePacketCreator;
 import Packet.MobPacket;

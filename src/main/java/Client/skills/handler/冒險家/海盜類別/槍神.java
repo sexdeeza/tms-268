@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.冒險家.海盜類別;
 
 import Client.MapleCharacter;
@@ -11,17 +14,6 @@ import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.status.MonsterStatus;
 import Config.constants.enums.UserChatMessageType;
-import Config.constants.skills.冒險家_技能群組.type_劍士.聖騎士;
-import Config.constants.skills.冒險家_技能群組.type_劍士.英雄;
-import Config.constants.skills.冒險家_技能群組.type_劍士.黑騎士;
-import Config.constants.skills.冒險家_技能群組.type_法師.主教;
-import Config.constants.skills.冒險家_技能群組.type_法師.冰雷;
-import Config.constants.skills.冒險家_技能群組.type_法師.火毒;
-import Config.constants.skills.冒險家_技能群組.拳霸;
-import Config.constants.skills.冒險家_技能群組.*;
-import Config.constants.skills.神射手;
-import Config.constants.skills.通用V核心;
-import Config.constants.skills.開拓者;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
@@ -30,30 +22,23 @@ import Net.server.maps.MapleSummon;
 import Packet.EffectPacket;
 import Packet.MaplePacketCreator;
 import Packet.SummonPacket;
-import tools.Randomizer;
-import tools.data.MaplePacketReader;
-
-import java.awt.*;
+import java.awt.Point;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import tools.Randomizer;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.冒險家_技能群組.槍神.*;
-
-public class 槍神 extends AbstractSkillHandler {
-
+public class 槍神
+extends AbstractSkillHandler {
     public 槍神() {
-        jobs = new MapleJob[]{
-                MapleJob.槍手,
-                MapleJob.神槍手,
-                MapleJob.槍神
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.槍手, MapleJob.神槍手, MapleJob.槍神};
         for (Field field : Config.constants.skills.冒險家_技能群組.槍神.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -62,31 +47,40 @@ public class 槍神 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case HEXA_非常召集_II:
-            case HEXA_非常召集_III:
-                return HEXA_非常召集;
-            case HEXA_瞬迅雷_VI_延伸:
-                return HEXA_瞬迅雷_VI;
-            case 召喚船員_2轉_1:
-                return 召喚船員_2轉;
-            case 緩降術:
-                return 飛翼;
-            case 船員強化:
-            case 船員強化_1:
-            case 船員強化_2:
-                return 召喚船員_3轉;
-            case 海盜砲擊艇:
-            case 海盜砲擊艇_1:
-            case 海盜砲擊艇_2:
-            case 砲艇標記:
-                return 船員指令;
-            case 霸王射_1:
-                return 霸王射;
-            case 鯨魚號突擊_1:
-            case 鯨魚號突擊_2:
-                return 鯨魚號突擊;
-            case 死亡板機_1:
-                return 死亡板機;
+            case 5241501: 
+            case 5241502: {
+                return 5241500;
+            }
+            case 5241001: {
+                return 5241000;
+            }
+            case 5201017: {
+                return 5201012;
+            }
+            case 5201005: {
+                return 5201011;
+            }
+            case 5211019: 
+            case 5211020: 
+            case 5211021: {
+                return 5210015;
+            }
+            case 5221022: 
+            case 5221027: 
+            case 0x4FAAA4: 
+            case 5221029: {
+                return 5220019;
+            }
+            case 5221026: {
+                return 5221017;
+            }
+            case 400051049: 
+            case 400051050: {
+                return 400051040;
+            }
+            case 400051081: {
+                return 400051073;
+            }
         }
         return -1;
     }
@@ -94,62 +88,70 @@ public class 槍神 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 幸運骰子:
-            case 雙倍幸運骰子:
+            case 5211007: 
+            case 5220014: {
                 statups.put(SecondaryStat.Dice, 0);
                 return 1;
-            case 召喚船員_2轉:
-            case 召喚船員_3轉:
-            case 船員強化:
-            case 海盜砲擊艇:
+            }
+            case 5201012: 
+            case 5210015: 
+            case 5211019: 
+            case 5221022: {
                 statups.put(SecondaryStat.IndieBuffIcon, 1);
                 return 1;
-            case 無盡追擊:
+            }
+            case 5221015: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.GuidedBullet, 1);
                 return 1;
-            case 傳說冒險:
+            }
+            case 5221053: {
                 effect.setPartyBuff(true);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
                 return 1;
-            case 槍神奧義:
+            }
+            case 5220020: {
                 effect.getInfo().put(MapleStatInfo.prob, 100);
                 return 1;
-            case 極速之指:
+            }
+            case 5220055: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.QuickDraw, 1);
                 return 1;
-            case 瞬_迅雷:
+            }
+            case 5221004: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
-                statups.put(SecondaryStat.KeyDownMoving, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.KeyDownMoving, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 楓葉祝福:
-                effect.setPartyBuff(true);
-                statups.put(SecondaryStat.BasicStatUp, effect.getInfo().get(MapleStatInfo.x));
-                return 1;
-            case 海盜風采:
-                statups.put(SecondaryStat.IndieEVA, effect.getInfo().get(MapleStatInfo.indieEva));
-                statups.put(SecondaryStat.IndieAsrR, effect.getInfo().get(MapleStatInfo.indieAsrR));
-                statups.put(SecondaryStat.IndieTerR, effect.getInfo().get(MapleStatInfo.indieTerR));
-                statups.put(SecondaryStat.IndiePADR, effect.getInfo().get(MapleStatInfo.indiePadR));
+            }
+            case 5221018: {
+                statups.put(SecondaryStat.IndieEVA, effect.getInfo().get((Object)MapleStatInfo.indieEva));
+                statups.put(SecondaryStat.IndieAsrR, effect.getInfo().get((Object)MapleStatInfo.indieAsrR));
+                statups.put(SecondaryStat.IndieTerR, effect.getInfo().get((Object)MapleStatInfo.indieTerR));
+                statups.put(SecondaryStat.IndiePADR, effect.getInfo().get((Object)MapleStatInfo.indiePadR));
                 statups.put(SecondaryStat.DamR, 0);
                 statups.put(SecondaryStat.TerR, 0);
                 return 1;
-            case 進攻姿態:
+            }
+            case 5220012: {
                 effect.getInfo().put(MapleStatInfo.cooltimeMS, 500);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
                 return 1;
-            case 船員指令:
+            }
+            case 5220019: {
                 effect.getInfo().put(MapleStatInfo.time, 120000);
                 statups.put(SecondaryStat.SpiritLink, 0);
                 return 1;
-            case 撫慰甘露:
+            }
+            case 5221054: {
                 statups.put(SecondaryStat.IgnoreMobDamR, effect.getW());
                 statups.put(SecondaryStat.UnwearyingRun, effect.getW());
                 return 1;
-            case 槍彈盛宴:
-                statups.put(SecondaryStat.BulletParty, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 400051006: {
+                statups.put(SecondaryStat.BulletParty, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
+            }
         }
         return -1;
     }
@@ -157,25 +159,23 @@ public class 槍神 extends AbstractSkillHandler {
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 召喚船員_3轉: {
+            case 5210015: {
                 slea.readPos();
                 slea.skip(3);
                 slea.readPosInt();
                 applier.pos = slea.readPosInt();
                 return 1;
             }
-            case 海盜砲擊艇: {
-                int value = (int) chr.getTempValues().getOrDefault("海盜砲擊艇", 0);
+            case 5221022: {
+                int value = (Integer)chr.getTempValues().getOrDefault("海盜砲擊艇", 0);
                 if (value == 0) {
                     applier.effect.applyTo(chr, chr.getPosition(), true);
                     chr.getTempValues().put("海盜砲擊艇", 1);
                 } else {
-                    Skill skill = SkillFactory.getSkill(海盜砲擊艇_1);
-                    if (skill != null) {
-                        MapleStatEffect effect = skill.getEffect(applier.effect.getLevel());
-                        if (effect != null) {
-                            effect.applyTo(chr, chr.getPosition(), true);
-                        }
+                    MapleStatEffect effect;
+                    Skill skill = SkillFactory.getSkill(5221027);
+                    if (skill != null && (effect = skill.getEffect(applier.effect.getLevel())) != null) {
+                        effect.applyTo(chr, chr.getPosition(), true);
                     }
                     chr.getTempValues().put("海盜砲擊艇", 0);
                 }
@@ -188,13 +188,13 @@ public class 槍神 extends AbstractSkillHandler {
     @Override
     public int onApplyTo(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 戰艦鯨魚號: {
-                if (applyfrom.getSkillEffect(鯨魚號突擊) != null && applyfrom.getCooldownLeftTime(鯨魚號突擊) < 8000) {
-                    applyfrom.registerSkillCooldown(鯨魚號突擊, 8000, true);
+            case 5221013: {
+                if (applyfrom.getSkillEffect(400051040) != null && applyfrom.getCooldownLeftTime(400051040) < 8000) {
+                    applyfrom.registerSkillCooldown(400051040, 8000, true);
                 }
                 return 1;
             }
-            case 死亡板機: {
+            case 400051073: {
                 if (applier.att || !applier.passive) {
                     applier.cooldown = 0;
                 }
@@ -204,43 +204,44 @@ public class 槍神 extends AbstractSkillHandler {
         return -1;
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         if (applier.effect instanceof MobSkill) {
             boolean isDebuff = false;
-            for (SecondaryStat stat : applier.localstatups.keySet()) {
-                if (stat.isNormalDebuff() || stat.isCriticalDebuff()) {
-                    isDebuff = true;
-                    break;
-                }
+            for (SecondaryStat secondaryStat : applier.localstatups.keySet()) {
+                if (!secondaryStat.isNormalDebuff() && !secondaryStat.isCriticalDebuff()) continue;
+                isDebuff = true;
+                break;
             }
             if (isDebuff) {
                 List<MapleSummon> sums = applyto.getSummonsReadLock();
                 try {
                     for (MapleSummon sum : sums) {
-                        if (sum.getSkillId() == 召喚船員_3轉 || sum.getSkillId() == 船員強化) {
-                            if (!sum.isResist()) {
-                                sum.setResist(true);
-                                applyto.getMap().broadcastMessage(SummonPacket.summonedSetAbleResist(sum.getOwnerId(), sum.getObjectId(), (byte) 0));
-                                return 0;
-                            }
-                        }
+                        if (sum.getSkillId() != 5210015 && sum.getSkillId() != 5211019 || sum.isResist()) continue;
+                        sum.setResist(true);
+                        applyto.getMap().broadcastMessage(SummonPacket.summonedSetAbleResist(sum.getOwnerId(), sum.getObjectId(), (byte)0));
+                        int n = 0;
+                        return n;
                     }
-                } finally {
+                }
+                finally {
                     applyto.unlockSummonsReadLock();
                 }
             }
             return -1;
         }
         switch (applier.effect.getSourceId()) {
-            case 幸運骰子: {
+            case 5211007: {
                 int dice = Randomizer.nextInt(6) + 1;
                 if (applyto.getSpecialStat().getRemoteDice() > 0) {
                     dice = applyto.getSpecialStat().getRemoteDice();
                     applyto.getSpecialStat().setRemoteDice(-1);
                 }
                 if (dice == 1) {
-                    applyto.reduceSkillCooldown(幸運骰子, 90000);
+                    applyto.reduceSkillCooldown(5211007, 90000);
                 }
                 applyto.send(MaplePacketCreator.spouseMessage(UserChatMessageType.系統, "幸運骰子 技能發動[" + dice + "]號效果。"));
                 applier.localstatups.put(SecondaryStat.Dice, dice);
@@ -248,120 +249,116 @@ public class 槍神 extends AbstractSkillHandler {
                 applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), applier.effect.getSourceId(), applier.effect.getLevel(), dice, -1, false), false);
                 return 1;
             }
-            case 雙倍幸運骰子: {
+            case 5220014: {
+                int i = 0;
+                int n = 0;
                 int remote = 0;
                 int trueSource = applier.effect.getSourceId();
-                int trueLevel = applier.effect.getLevel();
-                MapleStatEffect effect = applyfrom.getSkillEffect(通用V核心.海盜通用.滿載骰子);
+                int n2 = applier.effect.getLevel();
+                MapleStatEffect effect = applyfrom.getSkillEffect(400051000);
                 if (effect != null) {
                     remote = applyfrom.getBuffedIntValue(SecondaryStat.LoadedDice);
                     trueSource = effect.getSourceId();
-                    trueLevel = effect.getLevel();
+                    n = effect.getLevel();
                 }
-                boolean seven = applyfrom.getSkillEffect(雙倍幸運骰子_替代數字) != null;
+                boolean seven = applyfrom.getSkillEffect(5220044) != null;
                 int prop = 0;
                 Object chance = applyfrom.getTempValues().remove("雙倍幸運骰子_再一次機會");
-                if (chance instanceof Boolean && (boolean) chance) {
+                if (chance instanceof Boolean && ((Boolean)chance).booleanValue()) {
                     prop = 100;
                 } else {
-                    effect = applyfrom.getSkillEffect(雙倍幸運骰子_效果強化);
+                    effect = applyfrom.getSkillEffect(5220045);
                     if (effect != null) {
                         prop = effect.getProp();
                     }
                 }
-                int[] array = new int[1 + (trueSource == 通用V核心.海盜通用.滿載骰子 ? 1 : 0) + (applier.effect.makeChanceResult(applyto) ? 1 : 0)];
-                for (int i = 0; i < array.length; i++) {
-                    if (i == 0 && remote > 0) {
-                        array[i] = remote;
-                    } else {
-                        array[i] = Randomizer.rand(Randomizer.isSuccess(prop) ? 4 : 1, seven ? 7 : 6);
-                        if (array.length == 3 && array[0] == array[1] && array[1] == array[2] && Randomizer.isSuccess(50)) {
-                            array[i] = Randomizer.rand(Randomizer.isSuccess(prop) ? 4 : 1, seven ? 7 : 6);
-                        }
+                int[] array = new int[1 + (trueSource == 400051000 ? 1 : 0) + (applier.effect.makeChanceResult(applyto) ? 1 : 0)];
+                for (int i2 = 0; i2 < array.length; ++i2) {
+                    if (i2 == 0 && remote > 0) {
+                        array[i2] = remote;
+                        continue;
                     }
+                    array[i2] = Randomizer.rand(Randomizer.isSuccess(prop) ? 4 : 1, seven ? 7 : 6);
+                    if (array.length != 3 || array[0] != array[1] || array[1] != array[2] || !Randomizer.isSuccess(50)) continue;
+                    array[i2] = Randomizer.rand(Randomizer.isSuccess(prop) ? 4 : 1, seven ? 7 : 6);
                 }
                 int buffId = 0;
-                for (int i = 0; i < array.length; i++) {
+                for (i = 0; i < array.length; ++i) {
                     if (array[i] == 1) {
-                        applyto.reduceSkillCooldown(雙倍幸運骰子, 90000);
+                        applyto.reduceSkillCooldown(5220014, 90000);
                     }
-                    buffId += array[i] * (int) Math.pow(10, i);
-                    if (array[i] > 0) {
-                        applyto.send(MaplePacketCreator.spouseMessage(UserChatMessageType.系統, "雙倍幸運骰子 技能發動[" + array[i] + "]號效果。"));
-                    }
+                    buffId += array[i] * (int)Math.pow(10.0, i);
+                    if (array[i] <= 0) continue;
+                    applyto.send(MaplePacketCreator.spouseMessage(UserChatMessageType.系統, "雙倍幸運骰子 技能發動[" + array[i] + "]號效果。"));
                 }
-                if (array.length < 2 || (array.length < 3 && trueSource == 通用V核心.海盜通用.滿載骰子)) {
-                    effect = applyfrom.getSkillEffect(雙倍幸運骰子_再一次機會);
-                    if (effect != null && effect.makeChanceResult(applyfrom)) {
-                        applyto.cancelSkillCooldown(雙倍幸運骰子);
-                        applyfrom.getTempValues().put("雙倍幸運骰子_再一次機會", true);
-                    }
+                if ((array.length < 2 || array.length < 3 && trueSource == 400051000) && (effect = applyfrom.getSkillEffect(5220043)) != null && effect.makeChanceResult(applyfrom)) {
+                    applyto.cancelSkillCooldown(5220014);
+                    applyfrom.getTempValues().put("雙倍幸運骰子_再一次機會", true);
                 }
-                if (trueSource == 通用V核心.海盜通用.滿載骰子) {
-                    applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, trueLevel, -1, 1, false));
-                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, trueLevel, -1, 1, false), false);
-                    for (int i = 0; i < array.length; i++) {
-                        if (array[i] > 0) {
-                            applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, trueLevel, array[i], i == array.length - 1 ? 0 : -1, i != 0));
-                            applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, trueLevel, array[i], i == array.length - 1 ? 0 : -1, i != 0), false);
-                        }
+                if (trueSource == 400051000) {
+                    applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, n, -1, 1, false));
+                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, n, -1, 1, false), false);
+                    for (i = 0; i < array.length; ++i) {
+                        if (array[i] <= 0) continue;
+                        applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, n, array[i], i == array.length - 1 ? 0 : -1, i != 0));
+                        applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, n, array[i], i == array.length - 1 ? 0 : -1, i != 0), false);
                     }
-                    applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, trueLevel, -1, 2, false));
-                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, trueLevel, -1, 2, false), false);
+                    applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, n, -1, 2, false));
+                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, n, -1, 2, false), false);
                 } else {
-                    applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, trueLevel, buffId, -1, false));
-                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, trueLevel, buffId, -1, false), false);
+                    applyto.getClient().announce(EffectPacket.showDiceEffect(-1, trueSource, n, buffId, -1, false));
+                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showDiceEffect(applyto.getId(), trueSource, n, buffId, -1, false), false);
                 }
                 applier.localstatups.put(SecondaryStat.Dice, buffId);
                 return 1;
             }
-            case 無盡追擊:
-            case 海盜砲擊艇:
-            case 海盜砲擊艇_1: {
+            case 5221015: 
+            case 5221022: 
+            case 5221027: {
                 if (!applier.passive) {
                     return 0;
                 }
                 return 1;
             }
-            case 召喚船員_3轉: {
-                applyto.dispelEffect(召喚船員_2轉);
+            case 5210015: {
+                applyto.dispelEffect(5201012);
                 return 1;
             }
-            case 船員指令: {
+            case 5220019: {
                 Object value = applyfrom.getTempValues().remove("船員指令");
                 if (!(value instanceof Integer)) {
                     return 0;
                 }
-                applier.localstatups.put(SecondaryStat.SpiritLink, (int) value);
+                applier.localstatups.put(SecondaryStat.SpiritLink, (int)((Integer)value));
                 applier.cancelEffect = false;
                 return 1;
             }
-            case 傳說冒險: {
+            case 5221053: {
                 if (applyfrom.getJob() / 1000 != applyto.getJob() / 1000) {
                     return 0;
                 }
-                applyto.dispelEffect(英雄.傳說冒險);
-                applyto.dispelEffect(聖騎士.傳說冒險);
-                applyto.dispelEffect(黑騎士.傳說冒險);
-                applyto.dispelEffect(火毒.傳說冒險);
-                applyto.dispelEffect(冰雷.傳說冒險);
-                applyto.dispelEffect(主教.傳說冒險);
-                applyto.dispelEffect(箭神.傳說冒險);
-                applyto.dispelEffect(神射手.傳說冒險);
-                applyto.dispelEffect(開拓者.傳說冒險);
-                applyto.dispelEffect(暗影神偷.傳說冒險);
-                applyto.dispelEffect(夜使者.傳說冒險);
-                applyto.dispelEffect(影武者.傳說冒險);
-                applyto.dispelEffect(拳霸.傳說冒險);
-                applyto.dispelEffect(Config.constants.skills.冒險家_技能群組.槍神.傳說冒險);
-                applyto.dispelEffect(Config.constants.skills.重砲指揮官.傳說冒險);
+                applyto.dispelEffect(0x111B1D);
+                applyto.dispelEffect(1221053);
+                applyto.dispelEffect(1321053);
+                applyto.dispelEffect(2121053);
+                applyto.dispelEffect(2221053);
+                applyto.dispelEffect(2321053);
+                applyto.dispelEffect(3121053);
+                applyto.dispelEffect(3221053);
+                applyto.dispelEffect(3321041);
+                applyto.dispelEffect(4221053);
+                applyto.dispelEffect(4121053);
+                applyto.dispelEffect(4341053);
+                applyto.dispelEffect(5121053);
+                applyto.dispelEffect(5221053);
+                applyto.dispelEffect(5321053);
                 return 1;
             }
-            case 撫慰甘露: {
+            case 5221054: {
                 applyto.addHPMP(applier.effect.getZ(), 0);
                 return 1;
             }
-            case 槍彈盛宴: {
+            case 400051006: {
                 if (applier.att) {
                     return 0;
                 }
@@ -372,26 +369,23 @@ public class 槍神 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onApplySummonEffect(final MapleCharacter applyto, SkillClassApplier applier) {
+    public int onApplySummonEffect(MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 召喚船員_3轉: {
-                Skill skill = SkillFactory.getSkill(船員強化);
-                if (skill != null) {
-                    MapleStatEffect effect = skill.getEffect(applier.effect.getLevel());
-                    if (effect != null) {
-                        effect.applySummonEffect(applyto, new Point(applier.pos.x + 170, applier.pos.y), applier.duration, applyto.getSpecialStat().getMaelstromMoboid(), applier.startTime);
-                    }
-                }
+            case 5210015: {
                 MapleStatEffect effect;
-                if ((effect = applyto.getSkillEffect(船員指令)) != null) {
+                Skill skill = SkillFactory.getSkill(5211019);
+                if (skill != null && (effect = skill.getEffect(applier.effect.getLevel())) != null) {
+                    effect.applySummonEffect(applyto, new Point(applier.pos.x + 170, applier.pos.y), applier.duration, applyto.getSpecialStat().getMaelstromMoboid(), applier.startTime);
+                }
+                if ((effect = applyto.getSkillEffect(5220019)) != null) {
                     applyto.getTempValues().put("船員指令", applier.effect.getSourceId());
                     effect.applyBuffEffect(applyto, applyto, effect.getBuffDuration(applyto), false, false, false, null);
                 }
                 return 1;
             }
-            case 船員強化: {
-                MapleStatEffect effect;
-                if ((effect = applyto.getSkillEffect(船員指令)) != null) {
+            case 5211019: {
+                MapleStatEffect effect = applyto.getSkillEffect(5220019);
+                if (effect != null) {
                     applyto.getTempValues().put("船員指令", applier.effect.getSourceId());
                     effect.applyBuffEffect(applyto, applyto, effect.getBuffDuration(applyto), false, false, false, null);
                 }
@@ -403,11 +397,11 @@ public class 槍神 extends AbstractSkillHandler {
 
     @Override
     public int onApplyAttackEffect(MapleCharacter applyfrom, MapleMonster applyto, SkillClassApplier applier) {
-        MapleStatEffect effect;
-        if (applier.totalDamage > 0L && applier.effect != null && applyto.isAlive() && applier.effect.getSourceId() == 無盡追擊) {
+        if (applier.totalDamage > 0L && applier.effect != null && applyto.isAlive() && applier.effect.getSourceId() == 5221015) {
+            MapleStatEffect effect;
             applyfrom.setLinkMobObjectID(applyto.getObjectId());
             applier.effect.unprimaryPassiveApplyTo(applyfrom);
-            if ("1".equals(applyfrom.getOneInfo(1544, String.valueOf(砲艇標記))) && (effect = applyfrom.getSkillEffect(砲艇標記)) != null && !applyfrom.isSkillCooling(砲艇標記)) {
+            if ("1".equals(applyfrom.getOneInfo(1544, String.valueOf(5221029))) && (effect = applyfrom.getSkillEffect(5221029)) != null && !applyfrom.isSkillCooling(5221029)) {
                 effect.applyTo(applyfrom, applyto.getPosition());
             }
         }
@@ -418,26 +412,27 @@ public class 槍神 extends AbstractSkillHandler {
     public int onAfterAttack(MapleCharacter player, SkillClassApplier applier) {
         if (!applier.ai.mobAttackInfo.isEmpty()) {
             MapleStatEffect effect;
-            if (!player.isSkillCooling(進攻姿態) && (effect = player.getSkillEffect(進攻姿態)) != null) {
+            if (!player.isSkillCooling(5220012) && (effect = player.getSkillEffect(5220012)) != null) {
                 player.registerSkillCooldown(effect, true);
                 effect.applyBuffEffect(player, player, effect.getBuffDuration(player), false, false, true, null);
             }
             if (player.getBuffedValue(SecondaryStat.QuickDraw) == null) {
-                if ((effect = player.getSkillEffect(極速之指)) != null && effect.makeChanceResult(player)) {
+                effect = player.getSkillEffect(5220055);
+                if (effect != null && effect.makeChanceResult(player)) {
                     effect.unprimaryPassiveApplyTo(player);
                 }
             } else if (applier.effect != null) {
                 switch (applier.effect.getSourceId()) {
-                    case 爆頭射擊:
-                    case 核爆巨彈:
-                    case 戰艦鯨魚號:
-                    case 死亡之眼:
+                    case 5221013: 
+                    case 5221016: 
+                    case 5221052: 
+                    case 400051021: {
                         player.dispelEffect(SecondaryStat.QuickDraw);
-                        break;
+                    }
                 }
             }
-            if (applier.ai.skillId == 死亡板機 || applier.ai.skillId == 死亡板機_1) {
-                ExtraSkill eskill = new ExtraSkill(死亡板機_1, applier.ai.pos);
+            if (applier.ai.skillId == 400051073 || applier.ai.skillId == 400051081) {
+                ExtraSkill eskill = new ExtraSkill(400051081, applier.ai.pos);
                 eskill.FaceLeft = (applier.ai.direction & 0x80) != 0 ? 1 : 0;
                 eskill.TriggerSkillID = applier.ai.unInt1;
                 eskill.Value = 1;
@@ -449,9 +444,10 @@ public class 槍神 extends AbstractSkillHandler {
 
     @Override
     public int onAfterCancelEffect(MapleCharacter player, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 召喚船員_3轉) {
-            player.dispelEffect(船員指令);
+        if (applier.effect.getSourceId() == 5210015) {
+            player.dispelEffect(5220019);
         }
         return -1;
     }
 }
+

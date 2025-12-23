@@ -1,23 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  tools.data.StringObfuscation
+ */
 package Handler.Telemetry;
 
 import Client.MapleClient;
 import Handler.Handler;
+import Opcode.header.InHeader;
 import connection.InPacket;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.StringObfuscation;
 
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-
-import static Opcode.Headler.InHeader.CHEAT_ENGINE;
-import static Opcode.Headler.InHeader.PROCESS_REPORT;
-
 public class TelemetryHandler {
-
     private static final Logger logger = LoggerFactory.getLogger("ClientLog");
 
-    @Handler(op = PROCESS_REPORT)
+    @Handler(op=InHeader.PROCESS_REPORT)
     public static byte[] handleProcessReport(MapleClient client, InPacket get) {
         int type = get.decodeInt();
         System.out.println("type = " + type);
@@ -25,14 +27,15 @@ public class TelemetryHandler {
             int rand = get.decodeInt();
             int len = get.decodeInt() ^ rand;
             byte[] buff = get.decodeArr(len);
-            decryptProcessReport(len, rand, buff);
+            TelemetryHandler.decryptProcessReport(len, rand, buff);
             InPacket iPacket = new InPacket(buff);
             int opc = iPacket.decodeInt();
             byte[] obs = iPacket.decodeRawString();
-            String deobs = StringObfuscation.DeobfuscateRor(obs, 3);
+            String deobs = StringObfuscation.DeobfuscateRor((byte[])obs, (int)3);
             System.out.println(opc + "," + deobs);
             return obs;
-        } else if (type == 49) {
+        }
+        if (type == 49) {
             String str = get.decodeString();
             System.out.println(str);
         } else if (type == 76) {
@@ -46,11 +49,11 @@ public class TelemetryHandler {
         return new byte[0];
     }
 
-    @Handler(op = CHEAT_ENGINE)
+    @Handler(op=InHeader.CHEAT_ENGINE)
     public static void handleCheatEngine(MapleClient client, InPacket iPacket) {
         int type = iPacket.decodeInt();
         byte[] raw = iPacket.decodeRawString();
-        String clog = StringObfuscation.DeobfuscateRor(raw, 3);
+        String clog = StringObfuscation.DeobfuscateRor((byte[])raw, (int)3);
         logger.info("客戶端回報：" + clog);
     }
 
@@ -62,22 +65,20 @@ public class TelemetryHandler {
             int v23 = 0;
             do {
                 int currentInt = buffer.getInt();
-                int xorResult = ((currentInt + v23) ^ rand) + (rand >>> 6) + rand + 0x4C99E329;
+                int xorResult = (currentInt + v23 ^ rand) + (rand >>> 6) + rand + 1285153577;
                 int decryptedInt = xorResult ^ 0xA0A0B0B0;
-                buffer.putInt(buffer.position() - Integer.BYTES, decryptedInt);
-                i += 4;
+                buffer.putInt(buffer.position() - 4, decryptedInt);
                 v23 += 4 * rand;
-            } while (i + 4 <= len);
+            } while ((i += 4) + 4 <= len);
         }
-
         if (i < len) {
             do {
                 byte currentByte = buffer.get();
-                byte decryptedByte = (byte) (((currentByte - (i * rand)) + (rand >>> 6) + 39) ^ (rand >>> 1));
-                decryptedByte ^= 0xBC;
+                byte decryptedByte = (byte)(currentByte - i * rand + (rand >>> 6) + 39 ^ rand >>> 1);
+                decryptedByte = (byte)(decryptedByte ^ 0xBC);
                 buffer.put(buffer.position() - 1, decryptedByte);
-                i += 1;
-            } while (i < len);
+            } while (++i < len);
         }
     }
 }
+

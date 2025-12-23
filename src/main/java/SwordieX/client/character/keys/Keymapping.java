@@ -1,10 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  lombok.Generated
+ */
 package SwordieX.client.character.keys;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Generated;
 
-@Setter
-@Getter
 public class Keymapping {
     private byte type;
     private int action;
@@ -13,4 +16,25 @@ public class Keymapping {
         this.type = type;
         this.action = action;
     }
+
+    @Generated
+    public void setType(byte type) {
+        this.type = type;
+    }
+
+    @Generated
+    public void setAction(int action) {
+        this.action = action;
+    }
+
+    @Generated
+    public byte getType() {
+        return this.type;
+    }
+
+    @Generated
+    public int getAction() {
+        return this.action;
+    }
 }
+

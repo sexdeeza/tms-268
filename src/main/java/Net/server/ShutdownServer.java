@@ -1,22 +1,28 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Server.world.WorldAllianceService
+ *  Server.world.WorldGuildService
+ */
 package Net.server;
 
 import Database.DatabaseLoader;
-import Net.server.Timer.*;
+import Net.server.Timer;
 import Server.auction.AuctionServer;
 import Server.cashshop.CashShopServer;
 import Server.channel.ChannelServer;
 import Server.login.LoginServer;
 import Server.world.WorldAllianceService;
 import Server.world.WorldGuildService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ShutdownServer implements Runnable {
-
+public class ShutdownServer
+implements Runnable {
     private static final Logger log = LoggerFactory.getLogger(ShutdownServer.class);
     private static final ShutdownServer instance = new ShutdownServer();
     private int time = 0;
@@ -28,17 +34,18 @@ public class ShutdownServer implements Runnable {
     }
 
     public int getTime() {
-        return time;
+        return this.time;
     }
 
     public void setTime(int time) {
         this.time = time;
     }
 
+    @Override
     public void run() {
-        shutdown.set(true);
-        log.info("正在準備關閉伺服端 " + shutdown);
-        if (!running.compareAndSet(false, true)) {
+        this.shutdown.set(true);
+        log.info("正在準備關閉伺服端 " + String.valueOf(this.shutdown));
+        if (!this.running.compareAndSet(false, true)) {
             return;
         }
         CountDownLatch countDownLatch = new CountDownLatch(ChannelServer.getChannelStartPort());
@@ -50,72 +57,65 @@ public class ShutdownServer implements Runnable {
                     cs.getPlayerStorage().disconnectAll();
                     cs.shutdown();
                     countDownLatch.countDown();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     log.error("關閉伺服端錯誤", e);
                 }
             }).start();
         }
-//        for (ChannelServer cs : ChannelServer.getAllInstances()) {
-//            try {
-//                cs.closeAllMerchants();
-//                cs.closeAllFisher();
-//            } catch (Exception e) {
-//                log.error("關閉伺服端錯誤", e);
-//            }
-//        }
         try {
             countDownLatch.await();
             ChannelServer.getSaveExecutor().shutdown();
-            while (true) {
-                try {
-                    if (ChannelServer.getSaveExecutor().awaitTermination(1, TimeUnit.SECONDS)) break;
-                } catch (InterruptedException e) {
-                    break;
+            try {
+                while (!ChannelServer.getSaveExecutor().awaitTermination(1L, TimeUnit.SECONDS)) {
                 }
             }
-        } catch (InterruptedException e) {
+            catch (InterruptedException e) {}
+        }
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
         for (ChannelServer cs : ChannelServer.getAllInstances()) {
             new Thread(() -> {
                 try {
                     cs.shutdown();
-                } catch (Exception e) {
+                }
+                catch (Exception e) {
                     log.error("關閉伺服端錯誤", e);
                 }
             }).start();
         }
-
         WorldGuildService.getInstance().save();
         WorldAllianceService.getInstance().save();
         LoginServer.shutdown();
         CashShopServer.shutdown();
         AuctionServer.getInstance().shutdown();
         System.out.println("正在關閉時鐘線程...");
-        WorldTimer.getInstance().stop();
-        MapTimer.getInstance().stop();
-        BuffTimer.getInstance().stop();
-        CoolDownTimer.getInstance().stop();
-        CloneTimer.getInstance().stop();
-        EventTimer.getInstance().stop();
-        EtcTimer.getInstance().stop();
-        PingTimer.getInstance().stop();
+        Timer.WorldTimer.getInstance().stop();
+        Timer.MapTimer.getInstance().stop();
+        Timer.BuffTimer.getInstance().stop();
+        Timer.CoolDownTimer.getInstance().stop();
+        Timer.CloneTimer.getInstance().stop();
+        Timer.EventTimer.getInstance().stop();
+        Timer.EtcTimer.getInstance().stop();
+        Timer.PingTimer.getInstance().stop();
         System.out.println("正在關閉資料庫連接...");
         DatabaseLoader.closeAll();
         System.out.println("伺服端關閉完成...");
         log.info("伺服端關閉完成");
-        running.set(false);
+        this.running.set(false);
     }
 
     public void setShutdown(boolean b) {
-        shutdown.set(b);
+        this.shutdown.set(b);
     }
 
     public boolean isShutdown() {
-        return shutdown.get();
+        return this.shutdown.get();
     }
 
     public boolean isRunning() {
-        return running.get();
+        return this.running.get();
     }
 }
+

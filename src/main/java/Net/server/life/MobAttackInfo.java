@@ -1,18 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
-import java.awt.*;
+import java.awt.Point;
 
 public class MobAttackInfo {
-
-    public int PADamage, MADamage, attackAfter, range = 0;
-    public Point lt = null, rb = null;
-    public boolean magic = false, isElement = false;
+    public int PADamage;
+    public int MADamage;
+    public int attackAfter;
+    public int range = 0;
+    public Point lt = null;
+    public Point rb = null;
+    public boolean magic = false;
+    public boolean isElement = false;
     private boolean isDeadlyAttack;
-    private int mpBurn, mpCon;
-    private int diseaseSkill, diseaseLevel;
+    private int mpBurn;
+    private int mpCon;
+    private int diseaseSkill;
+    private int diseaseLevel;
 
     public boolean isDeadlyAttack() {
-        return isDeadlyAttack;
+        return this.isDeadlyAttack;
     }
 
     public void setDeadlyAttack(boolean isDeadlyAttack) {
@@ -20,7 +29,7 @@ public class MobAttackInfo {
     }
 
     public int getMpBurn() {
-        return mpBurn;
+        return this.mpBurn;
     }
 
     public void setMpBurn(int mpBurn) {
@@ -28,7 +37,7 @@ public class MobAttackInfo {
     }
 
     public int getDiseaseSkill() {
-        return diseaseSkill;
+        return this.diseaseSkill;
     }
 
     public void setDiseaseSkill(int diseaseSkill) {
@@ -36,7 +45,7 @@ public class MobAttackInfo {
     }
 
     public int getDiseaseLevel() {
-        return diseaseLevel;
+        return this.diseaseLevel;
     }
 
     public void setDiseaseLevel(int diseaseLevel) {
@@ -44,7 +53,7 @@ public class MobAttackInfo {
     }
 
     public int getMpCon() {
-        return mpCon;
+        return this.mpCon;
     }
 
     public void setMpCon(int mpCon) {
@@ -52,8 +61,9 @@ public class MobAttackInfo {
     }
 
     public int getRange() {
-        int maxX = Math.max(Math.abs(lt == null ? 0 : lt.x), Math.abs(rb == null ? 0 : rb.x));
-        int maxY = Math.max(Math.abs(lt == null ? 0 : lt.y), Math.abs(rb == null ? 0 : rb.y));
-        return Math.max((maxX * maxX) + (maxY * maxY), range);
+        int maxX = Math.max(Math.abs(this.lt == null ? 0 : this.lt.x), Math.abs(this.rb == null ? 0 : this.rb.x));
+        int maxY = Math.max(Math.abs(this.lt == null ? 0 : this.lt.y), Math.abs(this.rb == null ? 0 : this.rb.y));
+        return Math.max(maxX * maxX + maxY * maxY, this.range);
     }
 }
+

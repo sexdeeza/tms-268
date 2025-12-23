@@ -1,26 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.怪物;
 
-import Client.*;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleJob;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
+import java.lang.reflect.Field;
 import tools.data.MaplePacketReader;
 
-import java.lang.reflect.Field;
-
-import static Config.constants.skills.皮卡啾.*;
-
-public class 皮卡啾 extends AbstractSkillHandler {
-
+public class 皮卡啾
+extends AbstractSkillHandler {
     public 皮卡啾() {
-        jobs = new MapleJob[]{
-                MapleJob.皮卡啾,
-                MapleJob.皮卡啾1轉
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.皮卡啾, MapleJob.皮卡啾1轉};
         for (Field field : Config.constants.skills.皮卡啾.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -29,81 +30,99 @@ public class 皮卡啾 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 皮卡啾攻擊_1:
-            case 皮卡啾攻擊_2:
-            case 皮卡啾攻擊_3:
-            case 皮卡啾攻擊_4:
-            case 皮卡啾攻擊_5:
-            case 皮卡啾攻擊_6:
-            case 皮卡啾攻擊_7:
-                return 皮卡啾攻擊;
-            case 咕嚕咕嚕_1:
-            case 咕嚕咕嚕_2:
-                return 咕嚕咕嚕;
-            case 皮卡啾的品格傷害:
-            case 皮卡啾的品格_迷你啾攻擊:
-                return 皮卡啾的品格;
-            case 電吉他:
-            case 哨子:
-            case 紅喇叭:
-                return 音波攻擊;
-            case 天空豆豆空中:
-            case 天空豆豆地上:
-                return 天空豆豆;
-            case 鬼_臉:
-            case 大口吃肉:
-            case Zzz:
-            case 謎一般的雞尾酒:
-            case 皮卡啾的頭戴式耳機:
-                return 放鬆;
-            case 皮卡啾之力傷害:
-                return 皮卡啾之力;
-            case 博拉多利:
-            case 帕拉美:
-            case 愛美麗:
-                return 成長吧_喝啊;
-            case 超烈焰溜溜球_1:
-            case 超烈焰溜溜球_2:
-                return 超烈焰溜溜球;
-            case 迷你啾出動_1:
-                return 迷你啾出動;
-            case 粉紅天怒傷害:
-                return 粉紅天怒;
-            case 皮卡啾暗影_1:
-            case 皮卡啾暗影_2:
-                return 皮卡啾暗影;
-            case 皮卡啾的勇士_1:
-                return 皮卡啾的勇士;
-            case 皮卡啾的芭蕾舞裙_1:
-                return 皮卡啾的芭蕾舞裙;
-            case 皮卡啾的速克達_1:
-                return 皮卡啾的速克達;
-            case 神祇的黃昏_1:
-            case 神祇的黃昏_2:
-            case 神祇的黃昏_3:
-            case 神祇的黃昏_4:
-            case 神祇的黃昏_5:
-                return 神祇的黃昏;
-            case 皮卡啾的俄羅斯娃娃_1:
-            case 皮卡啾的俄羅斯娃娃_2:
-            case 皮卡啾的俄羅斯娃娃_3:
-            case 皮卡啾的俄羅斯娃娃_4:
-                return 皮卡啾的俄羅斯娃娃;
-            case 靈魂分離_1:
-                return 靈魂分離;
-            case 魔術秀時間_1:
-            case 魔術秀時間_2:
-                return 魔術秀時間;
+            case 131001001: 
+            case 131001002: 
+            case 131001003: 
+            case 131001101: 
+            case 131001102: 
+            case 131001103: 
+            case 131002000: {
+                return 131001000;
+            }
+            case 131001104: 
+            case 131002004: {
+                return 131001004;
+            }
+            case 131002016: 
+            case 131003016: {
+                return 131000016;
+            }
+            case 131001113: 
+            case 131001213: 
+            case 131001313: {
+                return 131001013;
+            }
+            case 131001108: 
+            case 131001208: {
+                return 131001008;
+            }
+            case 131001106: 
+            case 131001206: 
+            case 131001306: 
+            case 131001406: 
+            case 131001506: {
+                return 131001006;
+            }
+            case 131002014: {
+                return 131000014;
+            }
+            case 131001107: 
+            case 131001207: 
+            case 131001307: {
+                return 131001007;
+            }
+            case 131001011: 
+            case 131002010: {
+                return 131001010;
+            }
+            case 131002015: {
+                return 131001015;
+            }
+            case 131002012: {
+                return 131001012;
+            }
+            case 131002017: 
+            case 131003017: {
+                return 131001017;
+            }
+            case 131002018: {
+                return 131001018;
+            }
+            case 131002020: {
+                return 131001020;
+            }
+            case 131002021: {
+                return 131001021;
+            }
+            case 131002022: 
+            case 131003022: 
+            case 131004022: 
+            case 131005022: 
+            case 131006022: {
+                return 131001022;
+            }
+            case 131002023: 
+            case 131003023: 
+            case 131004023: 
+            case 131005023: {
+                return 131001023;
+            }
+            case 131002025: {
+                return 131001025;
+            }
+            case 131002026: 
+            case 131003026: {
+                return 131001026;
+            }
         }
         return -1;
     }
 
-
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 皮卡啾暗影) {
-            chr.getSkillEffect(皮卡啾暗影_1).applyTo(chr);
-            chr.getSkillEffect(皮卡啾暗影_2).applyTo(chr);
+        if (applier.effect.getSourceId() == 131001017) {
+            chr.getSkillEffect(131002017).applyTo(chr);
+            chr.getSkillEffect(131003017).applyTo(chr);
             return 1;
         }
         return -1;
@@ -112,21 +131,22 @@ public class 皮卡啾 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 超烈焰溜溜球:
-            case 超烈焰溜溜球_1: {
-                final SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.PinkbeanYoYoStack);
-                final int value = Math.min(applyto.getBuffedIntValue(SecondaryStat.PinkbeanYoYoStack) + (applier.passive ? 1 : -1), 8);
+            case 131001010: 
+            case 131001011: {
+                SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.PinkbeanYoYoStack);
+                int value = Math.min(applyto.getBuffedIntValue(SecondaryStat.PinkbeanYoYoStack) + (applier.passive ? 1 : -1), 8);
                 if (mbsvh != null && applier.passive && System.currentTimeMillis() < mbsvh.startTime + 1500L) {
                     return 0;
                 }
                 applier.localstatups.put(SecondaryStat.PinkbeanYoYoStack, value);
                 return 1;
             }
-            case 皮卡啾的勇士: {
-                applier.localstatups.put(SecondaryStat.BasicStatUp, applyfrom.getLevel() / applier.effect.getY());
+            case 131001018: {
+                applier.localstatups.put(SecondaryStat.IndieStatR, applyfrom.getLevel() / applier.effect.getY());
                 return 1;
             }
         }
         return -1;
     }
 }
+

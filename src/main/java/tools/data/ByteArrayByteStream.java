@@ -1,122 +1,85 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.data;
 
-import tools.HexTool;
-
 import java.io.IOException;
+import tools.HexTool;
+import tools.data.ByteStream;
 
-/**
- * Provides for an abstraction layer for an array of bytes.
- *
- * @author Frz
- * @version 1.0
- * @since Revision 326
- */
-public final class ByteArrayByteStream implements ByteStream {
-
+public final class ByteArrayByteStream
+implements ByteStream {
     private final byte[] arr;
     private int pos = 0;
-    private long bytesRead = 0;
+    private long bytesRead = 0L;
 
-    /**
-     * Class constructor.
-     *
-     * @param arr Array of bytes to wrap the stream around.
-     */
     public ByteArrayByteStream(byte[] arr) {
         this.arr = arr;
     }
 
-    /**
-     * Gets the current position of the stream.
-     *
-     * @return The current position of the stream.
-     * @see ByteArrayByteStream#getPosition()
-     */
+    @Override
     public long getPosition() {
-        return pos;
+        return this.pos;
     }
 
-    /**
-     * Seeks the pointer the the specified position.
-     *
-     * @param offset The position you wish to seek to.
-     * @see ByteArrayByteStream#seek(long)
-     */
+    @Override
     public void seek(long offset) throws IOException {
-        pos = (int) offset;
+        this.pos = (int)offset;
     }
 
-    /**
-     * Returns the numbers of bytes read from the stream.
-     *
-     * @return The number of bytes read.
-     */
+    @Override
     public long getBytesRead() {
-        return bytesRead;
+        return this.bytesRead;
     }
 
-    /**
-     * Reads a byte from the current position.
-     *
-     * @return The byte as an integer.
-     */
+    @Override
     public int readByte() {
-        this.bytesRead++;
-         return this.arr[this.pos++] & 0xFF;
+        ++this.bytesRead;
+        return this.arr[this.pos++] & 0xFF;
     }
-    /**
-     * Returns the current stream as a hexadecimal string of values. Shows the
-     * entire stream, and the remaining data at the current position.
-     *
-     * @return The current stream as a string.
-     * @see Object#toString()
-     */
+
     @Override
     public String toString() {
-        return toString(false);
+        return this.toString(false);
     }
 
+    @Override
     public String toString(boolean b) {
-        String nows = HexTool.toString(getNowBytes());
+        String nows = HexTool.toString(this.getNowBytes());
         StringBuilder ret = new StringBuilder();
         if (b) {
             ret.append("\r\n所有: ");
-            ret.append(HexTool.toString(getBytes()));
+            ret.append(HexTool.toString(this.getBytes()));
             ret.append("\r\n現在: ");
             ret.append(nows);
-            return ret.toString();
-        } else {
-            ret.append("\r\n封包: ").append(nows);
+            byte[] nowBytes = this.getNowBytes();
+            if (nowBytes.length >= 2) {
+                int len = nowBytes.length;
+                short lastShort = (short)(nowBytes[len - 2] & 0xFF | (nowBytes[len - 1] & 0xFF) << 8);
+                ret.append("\r\n錯誤包頭號碼: ").append(lastShort);
+            }
             return ret.toString();
         }
+        ret.append("\r\n封包: ").append(nows);
+        return ret.toString();
     }
 
-    /**
-     * Returns the number of bytes available from the stream.
-     *
-     * @return Number of bytes available as a long integer.
-     */
+    @Override
     public long available() {
-        return arr.length - pos;
+        return this.arr.length - this.pos;
     }
 
     public byte[] getBytes() {
-        return arr;
+        return this.arr;
     }
 
     public byte[] getNowBytes() {
-        byte[] now = new byte[0];
-        if (arr.length - pos > 0) {
-            now = new byte[arr.length - pos];
-            System.arraycopy(arr, pos, now, 0, arr.length - pos);
+        byte[] now = new byte[]{};
+        if (this.arr.length - this.pos > 0) {
+            now = new byte[this.arr.length - this.pos];
+            System.arraycopy(this.arr, this.pos, now, 0, this.arr.length - this.pos);
         }
         return now;
     }
-
-    private static class PacketReadException extends RuntimeException {
-
-        PacketReadException(String s, Exception e) {
-            super(s, e);
-        }
-    }
 }
+

@@ -1,3 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Packet.GuildPacket
+ *  Server.channel.handler.StatsHandling
+ *  Server.world.WorldAllianceService
+ *  Server.world.WorldGuildService
+ *  Server.world.WorldMessengerService
+ *  Server.world.guild.MapleGuildResultOption
+ *  Server.world.messenger.MapleMessenger
+ *  SwordieX.enums.GuildResponseType
+ */
 package Handler;
 
 import Client.MapleCharacter;
@@ -5,179 +18,136 @@ import Client.MapleClient;
 import Client.MapleQuestStatus;
 import Client.SecondaryStat;
 import Client.skills.SkillMacro;
-import Config.constants.GameConstants;
 import Config.constants.JobConstants;
 import Config.constants.ServerConstants;
 import Config.constants.SkillConstants;
 import Config.constants.enums.ScriptType;
-import Config.constants.skills.劍豪;
-import Config.constants.skills.卡蒂娜;
-import Config.constants.skills.爆拳槍神;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.quest.MapleQuest;
-import Opcode.Headler.OutHeader;
-import Packet.*;
+import Opcode.header.OutHeader;
+import Packet.BuffPacket;
+import Packet.CWvsContext;
+import Packet.DailyGiftPacket;
+import Packet.GuildPacket;
+import Packet.MaplePacketCreator;
 import Server.channel.handler.StatsHandling;
-import Server.world.*;
+import Server.world.PlayerBuffStorage;
+import Server.world.World;
+import Server.world.WorldAllianceService;
+import Server.world.WorldGuildService;
+import Server.world.WorldMessengerService;
 import Server.world.guild.MapleGuild;
 import Server.world.guild.MapleGuildResultOption;
 import Server.world.messenger.MapleMessenger;
 import Server.world.messenger.MapleMessengerCharacter;
+import SwordieX.enums.GuildResponseType;
 import connection.OutPacket;
 import connection.packet.Login;
-import connection.packet.OverseasPacket;
-import SwordieX.enums.GuildResponseType;
-import SwordieX.overseas.extraequip.ExtraEquipResult;
-import tools.*;
-import tools.data.MaplePacketLittleEndianWriter;
-
-import java.awt.*;
-import java.util.*;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
 import java.util.List;
-
-import static Config.constants.skills.惡魔復仇者.血之限界;
-import static Packet.MaplePacketCreator.getWarpToMap;
+import tools.DateUtil;
+import tools.StringUtil;
+import tools.data.MaplePacketLittleEndianWriter;
 
 public class warpToGameHandler {
     private static MapleCharacter chr;
-
-    public warpToGameHandler() {
-    }
 
     public static MapleCharacter getChr() {
         return chr;
     }
 
-
-    public static byte[] is墨玄招式lock(MapleClient c, int mode, int type) {
-        MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-        mplew.writeShort(OutHeader.EXTRA_SYSTEM_RESULT.getValue());
-        mplew.writeInt(-1289454273);
-        mplew.writeShort(36);
-        mplew.write(0);
-        mplew.writeInt(mode);
-        mplew.writeInt(type);
-        mplew.writeInt(1);
-        mplew.write(1);
-        mplew.writeInt(132902);
-        mplew.write(0);
-        mplew.write(32);
-        return mplew.getPacket();
-    }
-
     public static void Start(MapleClient c) {
+        MapleMessenger mapleMessenger;
+        int mvpLevel;
+        MapleStatEffect effect;
+        MapleQuestStatus marr;
+        MapleQuestStatus marr1;
         c.getPlayer().initDamageSkinList();
         c.write(Login.sendServerValues());
         c.write(Login.sendServerEnvironment());
         c.announce(c.getEncryptOpcodesData(ServerConstants.OpcodeEncryptionKey));
-        c.write(LP_SetBackgroundEffect());
-        c.announce(setNameTagHide());
-        c.write(unk_268_1432());
-        c.write(unk_268_1447());
-        c.announce(linkSkillNotice(c));
-        c.write(loginChecking(c));
-        c.write(Enter_Field_Unk_Attach("0_18512449_20250309160605956_"));
-        c.announce(MaplePacketCreator.getWarpToMap(c.getPlayer(), c.getPlayer().getMap(), (Point)null, 0, true, false));
-        c.write(CHAT_SERVER_RESULT());
+        c.write(warpToGameHandler.LP_SetBackgroundEffect());
+        c.announce(warpToGameHandler.setNameTagHide());
+        c.write(warpToGameHandler.unk_268_1432());
+        c.write(warpToGameHandler.unk_268_1447());
+        c.announce(warpToGameHandler.linkSkillNotice(c));
+        c.write(warpToGameHandler.loginChecking(c));
+        c.write(warpToGameHandler.Enter_Field_Unk_Attach("0_18512449_20250309160605956_"));
+        c.announce(MaplePacketCreator.getWarpToMap(c.getPlayer(), c.getPlayer().getMap(), null, 0, true, false));
+        c.write(warpToGameHandler.CHAT_SERVER_RESULT());
         c.announce(MaplePacketCreator.changeHour(6, Calendar.getInstance().get(11)));
-        c.write(LOGIN_SUCC());
-        c.write(LOGIN_SUCC_ATTACH());
-        c.write(LP_SetTamingMobInfo(c));
+        c.write(warpToGameHandler.LOGIN_SUCC());
+        c.write(warpToGameHandler.LOGIN_SUCC_ATTACH());
+        c.write(warpToGameHandler.LP_SetTamingMobInfo(c));
         c.announce(MaplePacketCreator.getKeymap(c.getPlayer()));
-        c.write(LP_LoadSkillAction(false));
+        c.write(warpToGameHandler.LP_LoadSkillAction(false));
         c.getPlayer().updatePetAuto();
-        c.write(LP_SKILL_MACRO());
-        c.write(LP_SetClaimSvrAvailableTime());
+        c.write(warpToGameHandler.LP_SKILL_MACRO());
+        c.write(warpToGameHandler.LP_SetClaimSvrAvailableTime());
         c.announce(MaplePacketCreator.reportResponse());
         c.announce(MaplePacketCreator.enableReport());
-        c.write(Competition());
-        c.write(LP_ToadsHammerRequestResult());
-        c.write(LP_UNK_ENTER_FIELD_458());
-        c.write(LP_UNK_ENTER_FIELD_600());
-        c.write(CHANGE_MAP_UNK());
+        c.write(warpToGameHandler.Competition());
+        c.write(warpToGameHandler.LP_ToadsHammerRequestResult());
+        c.write(warpToGameHandler.LP_UNK_ENTER_FIELD_458());
+        c.write(warpToGameHandler.LP_UNK_ENTER_FIELD_600());
+        c.write(warpToGameHandler.CHANGE_MAP_UNK());
         if (c.getPlayer().hasEquipped(1202193)) {
-            c.write(EquipRuneSetting());
+            c.write(warpToGameHandler.EquipRuneSetting());
         }
-
         c.getPlayer().getMap().userEnterField(c.getPlayer());
         c.getPlayer().initOnlineTime();
         c.getPlayer().giveCoolDowns(PlayerBuffStorage.getCooldownsFromStorage(c.getPlayer().getId()));
         c.getPlayer().silentGiveBuffs(PlayerBuffStorage.getBuffsFromStorage(c.getPlayer().getId()));
         c.getPlayer().initAllInfo();
         c.getPlayer().setOnline(true);
-        c.announce(MaplePacketCreator.onTownPortal(999999999, 999999999, 0, (Point)null));
-        c.write(LP_UserCancelChair(c));
+        c.announce(MaplePacketCreator.onTownPortal(999999999, 999999999, 0, null));
+        c.write(warpToGameHandler.LP_UserCancelChair(c));
         c.getPlayer().send(MaplePacketCreator.temporaryStats_Reset());
-        c.write(LP_UserSitResult());
-        c.write(LP_SpecialChairSitResult());
-        c.write(LP_USER_WARP_TO_MAP(c));
-        c.write(setDeathCoountMontser());
-        c.write(NirvanaPotentialResult());
+        c.write(warpToGameHandler.LP_UserSitResult());
+        c.write(warpToGameHandler.LP_SpecialChairSitResult());
+        c.write(warpToGameHandler.LP_USER_WARP_TO_MAP(c));
+        c.write(warpToGameHandler.setDeathCoountMontser());
+        c.write(warpToGameHandler.NirvanaPotentialResult());
         c.announce(CWvsContext.sendHexaEnforcementInfo());
         DailyGiftPacket.addDailyGiftInfo(c);
         if (JobConstants.is惡魔復仇者(c.getPlayer().getJob())) {
             c.getPlayer().getSkillEffect(30010242).applyTo(c.getPlayer());
         }
-
         if (JobConstants.is墨玄(c.getPlayer().getJob())) {
-            c.announce(XuanWarpToMap());
+            c.announce(warpToGameHandler.XuanWarpToMap());
             c.getPlayer().setKeyValue("175101007", "5");
         }
-
-        MapleQuestStatus marr;
-        if (JobConstants.is天使破壞者(c.getPlayer().getJob())) {
-            marr = c.getPlayer().getQuestNAdd(MapleQuest.getInstance(29015));
-            if (marr != null && marr.getStatus() == 0) {
-                marr.setStatus((byte)1);
-            }
+        if (JobConstants.is天使破壞者(c.getPlayer().getJob()) && (marr1 = c.getPlayer().getQuestNAdd(MapleQuest.getInstance(29015))) != null && marr1.getStatus() == 0) {
+            marr1.setStatus((byte)1);
         }
-
-        if (JobConstants.is神之子(c.getPlayer().getJob())) {
-            marr = c.getPlayer().getQuestNAdd(MapleQuest.getInstance(40905));
-            if (marr != null && marr.getStatus() == 0) {
-                marr.setStatus((byte)2);
-            }
+        if (JobConstants.is神之子(c.getPlayer().getJob()) && (marr = c.getPlayer().getQuestNAdd(MapleQuest.getInstance(40905))) != null && marr.getStatus() == 0) {
+            marr.setStatus((byte)2);
         }
-
-        MapleStatEffect effect;
-        if (JobConstants.is爆拳槍神(c.getPlayer().getJob())) {
-            effect = c.getPlayer().getSkillEffect(37000010);
-            if (effect != null) {
-                c.getPlayer().handleAmmoClip(8);
-                effect.applyTo(c.getPlayer());
-            }
+        if (JobConstants.is爆拳槍神(c.getPlayer().getJob()) && (effect = c.getPlayer().getSkillEffect(37000010)) != null) {
+            c.getPlayer().handleAmmoClip(8);
+            effect.applyTo(c.getPlayer());
         }
-
-        if (JobConstants.is卡蒂娜(c.getPlayer().getJob())) {
-            effect = c.getPlayer().getSkillEffect(400041074);
-            if (effect != null) {
-                effect.applyTo(c.getPlayer());
-            }
+        if (JobConstants.is卡蒂娜(c.getPlayer().getJob()) && (effect = c.getPlayer().getSkillEffect(400041074)) != null) {
+            effect.applyTo(c.getPlayer());
         }
-
         if (c.getPlayer().getGuild() != null) {
-            c.announce(GuildPacket.sendGuildResult(MapleGuildResultOption.setGuildUnk(c.getPlayer())));
-            c.announce(GuildPacket.sendGuildResult(new MapleGuildResultOption(GuildResponseType.Res_SetSignInReward)));
-            c.announce(GuildPacket.sendGuildResult(MapleGuildResultOption.loadGuild(c.getPlayer())));
-            c.announce(GuildPacket.sendGuildResult(new MapleGuildResultOption(GuildResponseType.Res_Authkey_Update)));
+            c.announce(GuildPacket.sendGuildResult((MapleGuildResultOption)MapleGuildResultOption.setGuildUnk((MapleCharacter)c.getPlayer())));
+            c.announce(GuildPacket.sendGuildResult((MapleGuildResultOption)new MapleGuildResultOption(GuildResponseType.Res_SetSignInReward)));
+            c.announce(GuildPacket.sendGuildResult((MapleGuildResultOption)MapleGuildResultOption.loadGuild((MapleCharacter)c.getPlayer())));
+            c.announce(GuildPacket.sendGuildResult((MapleGuildResultOption)new MapleGuildResultOption(GuildResponseType.Res_Authkey_Update)));
         } else {
-            c.write(startLoadGuild(c));
+            c.write(warpToGameHandler.startLoadGuild(c));
         }
-
         if (c.getPlayer().getGuild() != null) {
+            List<byte[]>  packetList;
             WorldGuildService.getInstance().setGuildMemberOnline(c.getPlayer().getMGC(), true, c.getChannel());
             MapleGuild gs = WorldGuildService.getInstance().getGuild(c.getPlayer().getGuildId());
-            if (gs != null) {
-                List<byte[]> packetList = WorldAllianceService.getInstance().getAllianceInfo(gs.getAllianceId(), true);
-                if (packetList != null) {
-                    Iterator var3 = packetList.iterator();
-
-                    while(var3.hasNext()) {
-                        byte[] pack = (byte[])var3.next();
-                        if (pack != null) {
-                            c.announce(pack);
-                        }
-                    }
+            if (gs != null && (packetList = WorldAllianceService.getInstance().getAllianceInfo(gs.getAllianceId(), true)) != null) {
+                for (byte[] byArray : packetList) {
+                    if (byArray == null) continue;
+                    c.announce(byArray);
                 }
             }
         } else {
@@ -186,115 +156,86 @@ public class warpToGameHandler {
             c.getPlayer().setAllianceRank((byte)5);
             c.getPlayer().saveGuildStatus();
         }
-
         if (c.getPlayer().getJob() == 6001 && c.getPlayer().getLevel() < 10) {
-            while(c.getPlayer().getLevel() < 10) {
+            while (c.getPlayer().getLevel() < 10) {
                 c.getPlayer().gainExp(5000L, true, false, true);
             }
         }
-
         if (JobConstants.is狂豹獵人(c.getPlayer().getJob())) {
             c.announce(MaplePacketCreator.updateJaguar(c.getPlayer()));
             StringBuilder stringBuilder = new StringBuilder();
-
-            for(int i = 1; i <= 9; ++i) {
+            for (int i = 1; i <= 9; ++i) {
                 stringBuilder.append(i).append("=1");
-                if (i != 9) {
-                    stringBuilder.append(";");
-                }
+                if (i == 9) continue;
+                stringBuilder.append(";");
             }
-
             c.announce(MaplePacketCreator.updateInfoQuest(23008, stringBuilder.toString()));
         }
-
         if (JobConstants.is劍豪(c.getPlayer().getJob())) {
             effect = c.getPlayer().getSkillEffect(40011291);
             if (effect != null) {
                 effect.applyTo(c.getPlayer());
             }
-
             c.announce(MaplePacketCreator.updateHayatoPoint(0));
         }
-
         c.getPlayer().fixOnlineTime();
         c.getPlayer().updateWorldShareInfo(6, "enter", DateUtil.getFormatDate(new Date(), "yyyyMM"));
         c.getPlayer().getStat().recalcLocalStats(c.getPlayer());
         String keyValue = c.getPlayer().getKeyValue("MapTransferItemNextTime");
-        String newKeyValue = "";
-        int today;
+        Object newKeyValue = "";
         if (keyValue != null) {
-            String[] split = keyValue.split(",");
-            String[] var19 = split;
-            today = split.length;
-
-            for(int var6 = 0; var6 < today; ++var6) {
-                String nextTime = var19[var6];
-                if (nextTime != null && nextTime.contains("=")) {
-                    String[] split_2 = nextTime.split("=");
-                    if (split_2.length >= 2) {
-                        long nt = Long.parseLong(split_2[1]);
-                        if (System.currentTimeMillis() < nt) {
-                            newKeyValue = newKeyValue + nt + ",";
-                        }
-                    }
-                }
+            String[] split;
+            for (String nextTime : split = keyValue.split(",")) {
+                String[] split_2;
+                if (nextTime == null || !nextTime.contains("=") || (split_2 = nextTime.split("=")).length < 2) continue;
+                long nt = Long.parseLong(split_2[1]);
+                if (System.currentTimeMillis() >= nt) continue;
+                newKeyValue = (String)newKeyValue + nt + ",";
             }
-
-            if (newKeyValue.isEmpty()) {
-                c.getPlayer().setKeyValue("MapTransferItemNextTime", (String)null);
+            if (((String)newKeyValue).isEmpty()) {
+                c.getPlayer().setKeyValue("MapTransferItemNextTime", null);
             } else {
-                c.getPlayer().setKeyValue("MapTransferItemNextTime", newKeyValue.substring(0, newKeyValue.length() - 1));
+                c.getPlayer().setKeyValue("MapTransferItemNextTime", ((String)newKeyValue).substring(0, ((String)newKeyValue).length() - 1));
             }
         }
-
-        int mvpLevel = c.getPlayer().getMvpLevel();
-        if (mvpLevel > 0) {
+        if ((mvpLevel = c.getPlayer().getMvpLevel()) > 0) {
             mvpLevel = mvpLevel < 5 ? 4 : mvpLevel;
-            String gp = c.getPlayer().getWorldShareInfo(6, "gp");
-            today = Integer.parseInt(DateUtil.getCurrentDate("dd"));
-            String var10000 = DateUtil.getCurrentDate("yyyyMM");
-            String now = var10000 + (today > 20 ? "03" : (today > 10 ? "02" : "01")) + StringUtil.getLeftPaddedStr(String.valueOf(mvpLevel), '0', 2);
-            if (!now.equals(gp)) {
+            String string = c.getPlayer().getWorldShareInfo(6, "gp");
+            int today = Integer.parseInt(DateUtil.getCurrentDate("dd"));
+            String now = DateUtil.getCurrentDate("yyyyMM") + (today > 20 ? "03" : (today > 10 ? "02" : "01")) + StringUtil.getLeftPaddedStr(String.valueOf(mvpLevel), '0', 2);
+            if (!now.equals(string)) {
                 c.announce(MaplePacketCreator.mvpPacketTips());
             }
         }
-
         if (c.getPlayer().getQuestStatus(7707) == 1) {
             MapleQuest.getInstance(7707).reset(c.getPlayer());
         }
-
-        MapleMessenger messenger = c.getPlayer().getMessenger();
-        if (messenger != null) {
-            WorldMessengerService.getInstance().silentJoinMessenger(messenger.getId(), new MapleMessengerCharacter(c.getPlayer()));
-            WorldMessengerService.getInstance().updateMessenger(messenger.getId(), c.getPlayer().getName(), c.getChannel());
+        if ((mapleMessenger = c.getPlayer().getMessenger()) != null) {
+            WorldMessengerService.getInstance().silentJoinMessenger(mapleMessenger.getId(), new MapleMessengerCharacter(c.getPlayer()));
+            WorldMessengerService.getInstance().updateMessenger(mapleMessenger.getId(), c.getPlayer().getName(), c.getChannel());
         }
-
         c.announce(MaplePacketCreator.getMacros(c.getPlayer().getSkillMacros()));
         c.announce(MaplePacketCreator.showCharCash(c.getPlayer()));
         if (!c.getPlayer().getTempStatsToRemove().isEmpty()) {
             c.announce(BuffPacket.temporaryStatReset(c.getPlayer().getTempStatsToRemove(), c.getPlayer()));
             c.getPlayer().getTempStatsToRemove().clear();
         }
-
         c.getPlayer().expirationTask(true);
         if (c.getPlayer().checkSoulWeapon()) {
             c.announce(BuffPacket.giveBuff(c.getPlayer(), c.getPlayer().getSkillEffect(c.getPlayer().getSoulSkillID()), Collections.singletonMap(SecondaryStat.SoulMP, c.getPlayer().getSoulSkillID())));
         }
-
         if (JobConstants.is夜光(c.getPlayer().getJob())) {
             c.announce(BuffPacket.updateLuminousGauge(5000, 3));
         }
-
         World.clearChannelChangeDataByAccountId(c.getPlayer().getAccountID());
         c.getPlayer().getCheatTracker().getLastlogonTime();
         c.getPlayer().updateReward();
-        c.getPlayer().updateWorldShareInfo(500606, (String)null);
+        c.getPlayer().updateWorldShareInfo(500606, null);
         MapleQuest.getInstance(500606).reset(c.getPlayer());
         World.TemporaryStat.LoadData(c.getPlayer());
         if (SkillConstants.getHyperAP(c.getPlayer()) < 0) {
-            StatsHandling.ResetHyperAP(c, c.getPlayer(), true, -1, 0);
+            StatsHandling.ResetHyperAP((MapleClient)c, (MapleCharacter)c.getPlayer(), (boolean)true, (int)-1, (int)0);
         }
-
         c.getPlayer().getScriptManager().startScript(0, "enterFieldQuest", ScriptType.Npc);
     }
 
@@ -1019,7 +960,7 @@ public class warpToGameHandler {
         outPacket.encodeInt(1072956);
         outPacket.encodeInt(1082596);
         outPacket.encodeInt(1082597);
-        outPacket.encodeInt(1162009);
+        outPacket.encodeInt(0x11BB19);
         outPacket.encodeInt(1242035);
         outPacket.encodeInt(1242131);
         outPacket.encodeInt(2048701);
@@ -1060,7 +1001,7 @@ public class warpToGameHandler {
         outPacket.encodeInt(1004237);
         outPacket.encodeInt(1004238);
         outPacket.encodeInt(1052807);
-        outPacket.encodeInt(1052808);
+        outPacket.encodeInt(0x101088);
         outPacket.encodeInt(1072975);
         outPacket.encodeInt(1072976);
         outPacket.encodeInt(1082616);
@@ -1072,7 +1013,7 @@ public class warpToGameHandler {
         outPacket.encodeInt(5);
         outPacket.encodeInt(1050253);
         outPacket.encodeInt(1072776);
-        outPacket.encodeInt(1122150);
+        outPacket.encodeInt(0x111F66);
         outPacket.encodeInt(1122254);
         outPacket.encodeInt(2711000);
         outPacket.encodeInt(19);
@@ -1104,7 +1045,7 @@ public class warpToGameHandler {
         outPacket.encodeInt(1072956);
         outPacket.encodeInt(1082596);
         outPacket.encodeInt(1082597);
-        outPacket.encodeInt(1162009);
+        outPacket.encodeInt(0x11BB19);
         outPacket.encodeInt(1242035);
         outPacket.encodeInt(1242131);
         outPacket.encodeInt(2048701);
@@ -1288,7 +1229,7 @@ public class warpToGameHandler {
         OutPacket outPacket = new OutPacket(OutHeader.LP_GuildResult);
         outPacket.encodeInt(128);
         outPacket.encodeInt(0);
-        c.write(startLoadGuildN(c));
+        c.write(warpToGameHandler.startLoadGuildN(c));
         return outPacket;
     }
 
@@ -1359,10 +1300,9 @@ public class warpToGameHandler {
 
     public static OutPacket getShowQuestCompletion(int quest_cid) {
         OutPacket say = new OutPacket(OutHeader.LP_QuestClear.getValue());
-        if (getChr() != null) {
+        if (warpToGameHandler.getChr() != null) {
             say.encodeInt(quest_cid);
         }
-
         return say;
     }
 
@@ -1420,12 +1360,12 @@ public class warpToGameHandler {
         outPacket.encodeInt(12);
         outPacket.encodeInt(851968);
         outPacket.encodeInt(0);
-        outPacket.encodeInt(251658254);
-        outPacket.encodeInt(1048576);
+        outPacket.encodeInt(0xF00000E);
+        outPacket.encodeInt(0x100000);
         outPacket.encodeInt(0);
         outPacket.encodeInt(0);
-        outPacket.encodeInt(302055441);
-        outPacket.encodeInt(1245184);
+        outPacket.encodeInt(0x12010011);
+        outPacket.encodeInt(0x130000);
         outPacket.encodeInt(5121);
         outPacket.encodeInt(0);
         outPacket.encodeShort(0);
@@ -1434,30 +1374,24 @@ public class warpToGameHandler {
     }
 
     public static byte[] getMacros(SkillMacro[] macros) {
+        int i;
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_SKILL_MACRO.getValue());
         int count = 0;
-
-        int i;
-        for(i = 0; i < 5; ++i) {
-            if (macros[i] != null) {
-                ++count;
-            }
+        for (i = 0; i < 5; ++i) {
+            if (macros[i] == null) continue;
+            ++count;
         }
-
         mplew.write(count);
-
-        for(i = 0; i < 5; ++i) {
+        for (i = 0; i < 5; ++i) {
             SkillMacro macro = macros[i];
-            if (macro != null) {
-                mplew.writeMapleAsciiString(macro.getName());
-                mplew.write(macro.getShout());
-                mplew.writeInt(macro.getSkill1());
-                mplew.writeInt(macro.getSkill2());
-                mplew.writeInt(macro.getSkill3());
-            }
+            if (macro == null) continue;
+            mplew.writeMapleAsciiString(macro.getName());
+            mplew.write(macro.getShout());
+            mplew.writeInt(macro.getSkill1());
+            mplew.writeInt(macro.getSkill2());
+            mplew.writeInt(macro.getSkill3());
         }
-
         return mplew.getPacket();
     }
 }

@@ -1,12 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
-/**
- * 枚舉了楓之谷地圖上所有對象的類型
- *
- * @author dongjak
- */
 public enum MapleMapObjectType {
-
     NPC,
     MONSTER,
     ITEM,
@@ -28,5 +25,9 @@ public enum MapleMapObjectType {
     RANDOM_PORTAL,
     WEB,
     A_SECOND_ATOM,
-    SWORD, INCINERATE, MIST
+    SWORD,
+    INCINERATE,
+    MIST;
+
 }
+

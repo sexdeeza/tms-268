@@ -1,13 +1,15 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.script;
 
 import Config.constants.enums.ScriptType;
-
-import javax.script.Bindings;
-import javax.script.Invocable;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import javax.script.Bindings;
+import javax.script.Invocable;
 
 public class ScriptInfo {
     private ScriptType scriptType;
@@ -16,7 +18,7 @@ public class ScriptInfo {
     private String scriptName;
     private Invocable invocable;
     private final Lock lock = new ReentrantLock();
-    private final Queue<Object> responses = new LinkedList<>();
+    private final Queue<Object> responses = new LinkedList<Object>();
     private int objectID;
     private String fileDir;
     private boolean isActive;
@@ -37,7 +39,7 @@ public class ScriptInfo {
     }
 
     public ScriptType getScriptType() {
-        return scriptType;
+        return this.scriptType;
     }
 
     public void setScriptType(ScriptType scriptType) {
@@ -45,7 +47,7 @@ public class ScriptInfo {
     }
 
     public Bindings getBindings() {
-        return bindings;
+        return this.bindings;
     }
 
     public void setBindings(Bindings bindings) {
@@ -53,7 +55,7 @@ public class ScriptInfo {
     }
 
     public int getParentID() {
-        return parentID;
+        return this.parentID;
     }
 
     public void setParentID(int parentID) {
@@ -61,7 +63,7 @@ public class ScriptInfo {
     }
 
     public String getScriptName() {
-        return scriptName;
+        return this.scriptName;
     }
 
     public void setScriptName(String scriptName) {
@@ -69,7 +71,7 @@ public class ScriptInfo {
     }
 
     public Invocable getInvocable() {
-        return invocable;
+        return this.invocable;
     }
 
     public void setInvocable(Invocable invocable) {
@@ -77,7 +79,7 @@ public class ScriptInfo {
     }
 
     public boolean isActive() {
-        return isActive;
+        return this.isActive;
     }
 
     public void setActive(boolean active) {
@@ -85,54 +87,63 @@ public class ScriptInfo {
     }
 
     public void reset() {
-        setScriptType(null);
-        setBindings(null);
-        setParentID(0);
-        setScriptName("");
-        setInvocable(null);
-        addResponse(null);
-        setObjectID(0);
-        setActive(false);
+        this.setScriptType(null);
+        this.setBindings(null);
+        this.setParentID(0);
+        this.setScriptName("");
+        this.setInvocable(null);
+        this.addResponse(null);
+        this.setObjectID(0);
+        this.setActive(false);
     }
 
     public int getObjectID() {
-        return objectID;
+        return this.objectID;
     }
 
     public void setObjectID(int objectID) {
         this.objectID = objectID;
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public void addResponse(Object response) {
         if (response == null) {
-            responses.clear();
+            this.responses.clear();
         }
         this.responses.add(response);
+        Lock lock = this.lock;
         synchronized (lock) {
-            lock.notifyAll();
+            this.lock.notifyAll();
         }
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     public Object awaitResponse() {
-        if (responses.size() > 0) {
-            return responses.poll();
+        if (this.responses.size() > 0) {
+            return this.responses.poll();
         }
+        Lock lock = this.lock;
         synchronized (lock) {
             try {
-                lock.wait();
-            } catch (InterruptedException e) {
-                // intended
+                this.lock.wait();
+            }
+            catch (InterruptedException interruptedException) {
+                // empty catch block
             }
         }
-        return responses.poll();
+        return this.responses.poll();
     }
-
 
     public void setFileDir(String fileDir) {
         this.fileDir = fileDir;
     }
 
     public String getFileDir() {
-        return fileDir;
+        return this.fileDir;
     }
 }
+

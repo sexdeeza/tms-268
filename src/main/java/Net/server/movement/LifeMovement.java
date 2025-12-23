@@ -1,9 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.movement;
 
-public interface LifeMovement extends LifeMovementFragment {
+import Net.server.movement.LifeMovementFragment;
 
-    int getMoveAction();
+public interface LifeMovement
+extends LifeMovementFragment {
+    public int getMoveAction();
 
-    int getElapse();
-
+    public int getElapse();
 }
+

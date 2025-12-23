@@ -1,31 +1,21 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 開拓者 {
-
     public static final int 探險家的好奇心_開拓者 = 260;
     public static final int 探險家的好奇心_開拓者_傳授 = 80002769;
-
-    /*
-     * 新手技能
-     */
     public static final int 回歸帕爾坦 = 1297;
     public static final int 古代的詛咒 = 1298;
-
-    /*
-     * 1轉技能
-     */
     public static final int 詛咒弱化Ⅰ = 3010001;
-    public static final int 基本釋放 = 3321003; /* CHANGE SKILL ID v257 */
+    public static final int 基本釋放 = 3011004;
     public static final int 雙重跳躍 = 3011005;
     public static final int 精通箭術 = 3010003;
-    public static final int 霸王箭 = 3010002;
+    public static final int 霸王箭 = 0x2DEDD2;
     public static final int 雙重跳躍_1 = 3011006;
     public static final int 雙重跳躍_2 = 3011007;
     public static final int 雙重跳躍_3 = 3011008;
-
-    /*
-     * 2轉技能
-     */
     public static final int 遺跡填充Ⅰ = 3300000;
     public static final int 詛咒弱化Ⅱ = 3300001;
     public static final int 基本釋放強化 = 3300002;
@@ -37,10 +27,6 @@ public class 開拓者 {
     public static final int 古代之弓精通 = 3300006;
     public static final int 鍛鍊身體 = 3300007;
     public static final int 分裂魔矢_1 = 3301009;
-
-    /*
-     * 3轉技能
-     */
     public static final int 詛咒弱化Ⅲ = 3310000;
     public static final int 基本爆破強化 = 3310001;
     public static final int 基本轉移 = 3311002;
@@ -54,10 +40,6 @@ public class 開拓者 {
     public static final int 箭術的精華 = 3310008;
     public static final int 三重衝擊_1 = 3311011;
     public static final int 基本爆破強化_1 = 3311013;
-
-    /*
-     * 4轉技能
-     */
     public static final int 遺跡填充Ⅱ = 3320000;
     public static final int 詛咒轉移 = 3320001;
     public static final int 進階基本之力 = 3320002;
@@ -82,10 +64,6 @@ public class 開拓者 {
     public static final int 古代弓箭手 = 3320009;
     public static final int 古代之弓專家 = 3320010;
     public static final int 幻影踏步 = 3320011;
-
-    /*
-     * 超級技能
-     */
     public static final int 會心之眼_時間持續 = 3320025;
     public static final int 會心之眼_無視防禦 = 3320026;
     public static final int 會心之眼_爆擊 = 3320027;
@@ -95,7 +73,6 @@ public class 開拓者 {
     public static final int 古代之力_頭目殺手 = 3320031;
     public static final int 古代之力_無視防禦 = 3320032;
     public static final int 古代之力_賦魔增強 = 3320033;
-
     public static final int 古代神矢 = 3321035;
     public static final int 古代神矢_釋放 = 3321036;
     public static final int 古代神矢_釋放_1 = 3321037;
@@ -104,9 +81,6 @@ public class 開拓者 {
     public static final int 古代神矢_轉移 = 3321040;
     public static final int 傳說冒險 = 3321041;
     public static final int 遺跡進化 = 3321034;
-    /*
-     * 5轉技能
-     */
     public static final int 究極炸裂 = 400031034;
     public static final int 究極炸裂_1 = 400031035;
     public static final int 渡鴉風暴 = 400031036;
@@ -123,8 +97,6 @@ public class 開拓者 {
     public static final int 遺跡解放_爆破 = 400031049;
     public static final int 遺跡解放_爆破_1 = 400031050;
     public static final int 遺跡解放_轉移 = 400031051;
-
-    /* HEXA主插槽 */
     public static final int HEXA_起源技能 = 80003365;
     public static final int HEXA_忘卻遺跡 = 3341500;
     public static final int HEXA_忘卻遺跡_II_延伸 = 3341501;
@@ -135,11 +107,9 @@ public class 開拓者 {
     public static final int HEXA_基本爆破_VI_延伸 = 3341001;
     public static final int HEXA_附加爆破_VI = 3341002;
     public static final int HEXA_附加爆破_VI_延伸 = 3341003;
-
-
-    /* HEXA附帶強化效果插槽 */
     public static final int HEXA_強化究極炸裂 = 500004032;
     public static final int HEXA_強化渡鴨風暴_演變風暴 = 500004033;
     public static final int HEXA_強化黑曜石屏障 = 500004034;
     public static final int HEXA_強化遺跡解放 = 500004035;
 }
+

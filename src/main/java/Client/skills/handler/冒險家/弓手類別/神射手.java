@@ -1,49 +1,40 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.冒險家.弓手類別;
 
-import Client.*;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleJob;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.status.MonsterStatus;
-import Config.constants.skills.冒險家_技能群組.type_劍士.聖騎士;
-import Config.constants.skills.冒險家_技能群組.type_劍士.英雄;
-import Config.constants.skills.冒險家_技能群組.type_劍士.黑騎士;
-import Config.constants.skills.冒險家_技能群組.type_法師.主教;
-import Config.constants.skills.冒險家_技能群組.type_法師.冰雷;
-import Config.constants.skills.冒險家_技能群組.type_法師.火毒;
-import Config.constants.skills.冒險家_技能群組.箭神;
-import Config.constants.skills.冒險家_技能群組.*;
-import Config.constants.skills.重砲指揮官;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
 import Net.server.life.MobSkill;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.EffectPacket;
+import java.lang.reflect.Field;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import tools.Pair;
 import tools.Randomizer;
 import tools.data.MaplePacketLittleEndianWriter;
 import tools.data.MaplePacketReader;
 
-import java.lang.reflect.Field;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-
-import static Config.constants.skills.神射手.*;
-
-public class 神射手 extends AbstractSkillHandler {
-
+public class 神射手
+extends AbstractSkillHandler {
     public 神射手() {
-        jobs = new MapleJob[]{
-                MapleJob.弩弓手,
-                MapleJob.狙擊手,
-                MapleJob.神射手
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.弩弓手, MapleJob.狙擊手, MapleJob.神射手};
         for (Field field : Config.constants.skills.神射手.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -52,33 +43,43 @@ public class 神射手 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case HEXA_裂空狙擊_延伸:
-                return HEXA_裂空狙擊;
-            case HEXA_覺醒必殺狙擊_VII:
-            case HEXA_覺醒必殺狙擊_VI:
-                return HEXA_必殺狙擊_VI;
-            case 回歸之箭_1:
-                return 回歸之箭;
-            case 光速神弩_1:
-            case 光速神弩II_1:
-                return 光速神弩II;
-            case 覺醒神弩:
-                return 覺醒之箭;
-            case 覺醒神弩II:
-            case 覺醒神弩II_1:
-            case 全神貫注:
-            case 強化必殺狙擊:
-            case 強化必殺狙擊_1:
-                return 進階覺醒之箭;
-            case 真必殺狙擊_1:
-                return 真必殺狙擊;
-            case 分裂之矢_1:
-                return 分裂之矢;
-            case 能量弩矢_1:
-            case 能量弩矢_2:
-                return 能量弩矢;
-            case 極速射擊:
-                return 連射十字弓砲彈;
+            case 3241501: {
+                return 3241500;
+            }
+            case 3241001: 
+            case 3241002: {
+                return 3241000;
+            }
+            case 3211020: {
+                return 3211019;
+            }
+            case 3221019: 
+            case 3221027: {
+                return 3220020;
+            }
+            case 3211017: {
+                return 3210016;
+            }
+            case 3221022: 
+            case 3221023: 
+            case 3221024: 
+            case 3221025: 
+            case 3221026: {
+                return 3220021;
+            }
+            case 400031010: {
+                return 400031006;
+            }
+            case 400031016: {
+                return 400031015;
+            }
+            case 400031026: 
+            case 400031027: {
+                return 400031025;
+            }
+            case 400031056: {
+                return 400031055;
+            }
         }
         return -1;
     }
@@ -86,65 +87,72 @@ public class 神射手 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 覺醒之箭:
+            case 3210016: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.EnhancePiercing, 0);
                 return 1;
-            case 召喚銀隼:
+            }
+            case 3211005: {
                 effect.setDebuffTime(effect.getX() * 1000);
                 monsterStatus.put(MonsterStatus.Freeze, 1);
-
                 statups.put(SecondaryStat.IndieBuffIcon, 1);
                 return 1;
-            case 回歸之箭:
+            }
+            case 3211019: {
                 statups.put(SecondaryStat.IndieBuffIcon, 1);
                 return 1;
-            case 反向傷害:
+            }
+            case 3210013: {
                 statups.put(SecondaryStat.PowerTransferGauge, 0);
                 return 1;
-            case 幻像箭影:
+            }
+            case 3221014: {
                 effect.setDebuffTime(effect.getSubTime() * 1000);
                 monsterStatus.put(MonsterStatus.Stun, 1);
-
                 statups.put(SecondaryStat.IndieBuffIcon, 1);
                 return 1;
-            case 會心之眼:
+            }
+            case 3221002: {
                 effect.setPartyBuff(true);
                 statups.put(SecondaryStat.SharpEyes, (effect.getX() << 8) + effect.getY());
                 return 1;
-            case 楓葉祝福:
+            }
+            case 3221053: {
                 effect.setPartyBuff(true);
-                statups.put(SecondaryStat.BasicStatUp, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
                 return 1;
-            case 傳說冒險:
-                effect.setPartyBuff(true);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
-                return 1;
-            case 全神貫注:
+            }
+            case 3221022: {
                 statups.put(SecondaryStat.IndieIgnoreMobpdpR, effect.getX());
                 statups.put(SecondaryStat.IndiePMdR, effect.getZ());
                 return 1;
-            case 專注弱點:
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
-                statups.put(SecondaryStat.IndieIgnoreMobpdpR, effect.getInfo().get(MapleStatInfo.indieIgnoreMobpdpR));
+            }
+            case 3221054: {
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
+                statups.put(SecondaryStat.IndieIgnoreMobpdpR, effect.getInfo().get((Object)MapleStatInfo.indieIgnoreMobpdpR));
                 statups.put(SecondaryStat.IgnoreTargetDEF, 0);
                 statups.put(SecondaryStat.BullsEye, (effect.getX() << 8) + effect.getY());
                 return 1;
-            case 真必殺狙擊:
+            }
+            case 400031006: {
                 statups.put(SecondaryStat.CursorSniping, effect.getX());
                 return 1;
-            case 分裂之矢:
+            }
+            case 400031015: {
                 statups.put(SecondaryStat.SplitArrow, 1);
                 return 1;
-            case 連射十字弓砲彈:
+            }
+            case 400031055: {
                 statups.put(SecondaryStat.RepeatinCartrige, effect.getX());
                 return 1;
+            }
         }
         return -1;
     }
 
+    @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 幻像箭影) {
+        if (applier.effect.getSourceId() == 3221014) {
             applier.pos = slea.readPos();
             return 1;
         }
@@ -154,16 +162,14 @@ public class 神射手 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 覺醒之箭: {
+            case 3210016: {
                 applier.localstatups.put(SecondaryStat.EnhancePiercing, Math.min(applyto.getBuffedIntValue(SecondaryStat.EnhancePiercing) + applier.effect.getX(), applier.effect.getY()));
                 return 1;
             }
-            case 止痛藥: {
-                List<SecondaryStatValueHolder> mbsvhs = new LinkedList<>();
+            case 0x30FF03: {
+                LinkedList<SecondaryStatValueHolder> mbsvhs = new LinkedList();
                 for (Map.Entry<SecondaryStat, List<SecondaryStatValueHolder>> entry : applyto.getAllEffects().entrySet()) {
-                    if (!entry.getKey().isNormalDebuff() && !entry.getKey().isCriticalDebuff()) {
-                        continue;
-                    }
+                    if (!entry.getKey().isNormalDebuff() && !entry.getKey().isCriticalDebuff()) continue;
                     entry.getValue().stream().filter(mbsvh -> mbsvh.effect instanceof MobSkill).forEach(mbsvhs::add);
                 }
                 if (mbsvhs.size() > 0) {
@@ -171,57 +177,57 @@ public class 神射手 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 會心之眼: {
-                MapleStatEffect effect;
+            case 3221002: {
                 applier.buffz = 0;
-                if ((effect = applyfrom.getSkillEffect(會心之眼_無視防禦)) != null) {
+                MapleStatEffect effect = applyfrom.getSkillEffect(3220044);
+                if (effect != null) {
                     applier.buffz = effect.getIndieIgnoreMobpdpR();
                 }
-                if ((effect = applyfrom.getSkillEffect(會心之眼_爆擊提升)) != null) {
+                if ((effect = applyfrom.getSkillEffect(3220045)) != null) {
                     applier.localstatups.put(SecondaryStat.SharpEyes, applier.localstatups.get(SecondaryStat.SharpEyes) + (effect.getX() << 8));
                 }
                 return 1;
             }
-            case 反向傷害: {
+            case 3210013: {
                 if (applyto.getBuffedValue(SecondaryStat.PowerTransferGauge) == null) {
-                    applyto.send(EffectPacket.showBlessOfDarkness(-1, 反向傷害));
-                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showBlessOfDarkness(applyto.getId(), 反向傷害), false);
+                    applyto.send(EffectPacket.showBlessOfDarkness(-1, 3210013));
+                    applyto.getMap().broadcastMessage(applyto, EffectPacket.showBlessOfDarkness(applyto.getId(), 3210013), false);
                 }
                 applier.localstatups.put(SecondaryStat.PowerTransferGauge, applyto.getStat().getCurrentMaxHP() * applier.effect.getZ() / 100);
                 return 1;
             }
-            case 傳說冒險: {
+            case 3221053: {
                 if (applyfrom.getJob() / 1000 != applyto.getJob() / 1000) {
                     return 0;
                 }
-                applyto.dispelEffect(英雄.傳說冒險);
-                applyto.dispelEffect(聖騎士.傳說冒險);
-                applyto.dispelEffect(黑騎士.傳說冒險);
-                applyto.dispelEffect(火毒.傳說冒險);
-                applyto.dispelEffect(冰雷.傳說冒險);
-                applyto.dispelEffect(主教.傳說冒險);
-                applyto.dispelEffect(箭神.傳說冒險);
-                applyto.dispelEffect(Config.constants.skills.神射手.傳說冒險);
-                applyto.dispelEffect(Config.constants.skills.開拓者.傳說冒險);
-                applyto.dispelEffect(暗影神偷.傳說冒險);
-                applyto.dispelEffect(夜使者.傳說冒險);
-                applyto.dispelEffect(影武者.傳說冒險);
-                applyto.dispelEffect(拳霸.傳說冒險);
-                applyto.dispelEffect(槍神.傳說冒險);
-                applyto.dispelEffect(重砲指揮官.傳說冒險);
+                applyto.dispelEffect(0x111B1D);
+                applyto.dispelEffect(1221053);
+                applyto.dispelEffect(1321053);
+                applyto.dispelEffect(2121053);
+                applyto.dispelEffect(2221053);
+                applyto.dispelEffect(2321053);
+                applyto.dispelEffect(3121053);
+                applyto.dispelEffect(3221053);
+                applyto.dispelEffect(3321041);
+                applyto.dispelEffect(4221053);
+                applyto.dispelEffect(4121053);
+                applyto.dispelEffect(4341053);
+                applyto.dispelEffect(5121053);
+                applyto.dispelEffect(5221053);
+                applyto.dispelEffect(5321053);
                 return 1;
             }
-            case 真必殺狙擊: {
+            case 400031006: {
+                int value;
                 if (!applier.primary && !applier.att) {
                     applier.localstatups.clear();
                     applier.localstatups.put(SecondaryStat.IndieNotDamaged, 1);
                     return 1;
                 }
-                final SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.CursorSniping);
-                int value;
-                if (mbsvh != null) {
-                    value = mbsvh.value - 1;
-                    applier.duration = mbsvh.getLeftTime();
+                SecondaryStatValueHolder mbsvh2 = applyto.getBuffStatValueHolder(SecondaryStat.CursorSniping);
+                if (mbsvh2 != null) {
+                    value = mbsvh2.value - 1;
+                    applier.duration = mbsvh2.getLeftTime();
                 } else {
                     value = applier.localstatups.get(SecondaryStat.CursorSniping);
                 }
@@ -232,18 +238,17 @@ public class 神射手 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 連射十字弓砲彈: {
-                final SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.RepeatinCartrige);
+            case 400031055: {
                 int value;
-                if (mbsvh != null) {
-                    value = mbsvh.z - 1;
-                    mbsvh.z = value;
-                    applier.duration = mbsvh.getLeftTime();
+                SecondaryStatValueHolder mbsvh3 = applyto.getBuffStatValueHolder(SecondaryStat.RepeatinCartrige);
+                if (mbsvh3 != null) {
+                    mbsvh3.z = value = mbsvh3.z - 1;
+                    applier.duration = mbsvh3.getLeftTime();
                 } else {
                     value = applier.localstatups.get(SecondaryStat.RepeatinCartrige) * applier.effect.getV();
                 }
                 applier.buffz = value;
-                if ((double) value % applier.effect.getV() != 0.0) {
+                if ((double)value % (double)applier.effect.getV() != 0.0) {
                     return 0;
                 }
                 applier.localstatups.put(SecondaryStat.RepeatinCartrige, value / applier.effect.getV());
@@ -253,8 +258,8 @@ public class 神射手 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 極速射擊: {
-                applyfrom.getSkillEffect(連射十字弓砲彈).applyBuffEffect(applyfrom, applyto, 0, applier.primary, applier.att, applier.passive, applier.pos);
+            case 400031056: {
+                applyfrom.getSkillEffect(400031055).applyBuffEffect(applyfrom, applyto, 0, applier.primary, applier.att, applier.passive, applier.pos);
                 return 1;
             }
         }
@@ -264,10 +269,10 @@ public class 神射手 extends AbstractSkillHandler {
     @Override
     public int onApplyAttackEffect(MapleCharacter applyfrom, MapleMonster applyto, SkillClassApplier applier) {
         MapleStatEffect effect;
-        if (applier.totalDamage > 0L && (effect = applyfrom.getSkillEffect(反向傷害)) != null) {
+        if (applier.totalDamage > 0L && (effect = applyfrom.getSkillEffect(3210013)) != null) {
             effect.unprimaryPassiveApplyTo(applyfrom);
         }
-        if ((effect = applyfrom.getSkillEffect(致命箭)) != null && Randomizer.isSuccess(effect.getX())) {
+        if ((effect = applyfrom.getSkillEffect(3210001)) != null && Randomizer.isSuccess(effect.getX())) {
             MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
             mplew.writeShort(OutHeader.LP_MobSpecialEffectBySkill.getValue());
             mplew.writeInt(applyto.getObjectId());
@@ -277,26 +282,25 @@ public class 神射手 extends AbstractSkillHandler {
             applyfrom.getMap().broadcastMessage(applyfrom, mplew.getPacket(), true);
             applyfrom.addHPMP(effect.getZ(), effect.getZ());
         }
-        if ((effect = applyfrom.getSkillEffect(強化必殺狙擊)) != null && (applier.effect.getSourceId() == 必殺狙擊 || applier.effect.getSourceId() == 強化必殺狙擊)) {
+        if ((effect = applyfrom.getSkillEffect(3221025)) != null && (applier.effect.getSourceId() == 3221007 || applier.effect.getSourceId() == 3221025)) {
             Pair<Long, Integer> debuffInfo = (Pair<Long, Integer>) applyfrom.getTempValues().getOrDefault("必殺狙擊Debuff", new Pair(0L, 0));
-            if (applier.effect.getSourceId() == 強化必殺狙擊) {
+            if (applier.effect.getSourceId() == 3221025) {
                 if (applyto.isAlive()) {
-                    debuffInfo.left = System.currentTimeMillis() + effect.getDuration();
+                    debuffInfo.left = System.currentTimeMillis() + (long)effect.getDuration();
                     debuffInfo.right = applyto.getObjectId();
                     applyfrom.getTempValues().put("必殺狙擊Debuff", debuffInfo);
-                    sendSnipeStatSet(applyfrom);
+                    神射手.sendSnipeStatSet(applyfrom);
                 }
             } else {
                 MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter(OutHeader.SnipeExtraAttack);
-                mplew.writeInt(強化必殺狙擊_1);
+                mplew.writeInt(3221026);
                 mplew.writeInt(0);
                 mplew.writeInt(1);
                 mplew.writeInt(debuffInfo.getRight());
                 mplew.writeInt(761);
                 applyfrom.send(mplew.getPacket());
-
                 debuffInfo.left = 0L;
-                sendSnipeStatSet(applyfrom);
+                神射手.sendSnipeStatSet(applyfrom);
             }
         }
         return 1;
@@ -305,35 +309,30 @@ public class 神射手 extends AbstractSkillHandler {
     @Override
     public int onAfterAttack(MapleCharacter player, SkillClassApplier applier) {
         MapleStatEffect effect;
-        if (applier.ai.skillId != 光速神弩 && applier.ai.skillId != 覺醒神弩II_1 && applier.ai.skillId != 光速神弩II_1 && applier.ai.skillId != 必殺狙擊 && applier.ai.mobAttackInfo.size() > 0 && (effect = player.getSkillEffect(全神貫注)) != null && effect.getSkill().getSkillList().contains(applier.ai.skillId) && !player.isSkillCooling(全神貫注)) {
-            player.registerSkillCooldown(全神貫注, 500, true);
+        if (applier.ai.skillId != 3201011 && applier.ai.skillId != 3221024 && applier.ai.skillId != 3221027 && applier.ai.skillId != 3221007 && applier.ai.mobAttackInfo.size() > 0 && (effect = player.getSkillEffect(3221022)) != null && effect.getSkill().getSkillList().contains(applier.ai.skillId) && !player.isSkillCooling(3221022)) {
+            player.registerSkillCooldown(3221022, 500, true);
             effect.applyBuffEffect(player, player, effect.getBuffDuration(player), false, false, true, null);
         }
         switch (applier.ai.skillId) {
-            case 覺醒神弩:
-            case 覺醒神弩II_1:
-            case 強化必殺狙擊:
+            case 3211017: 
+            case 3221024: 
+            case 3221025: {
                 player.dispelEffect(SecondaryStat.EnhancePiercing);
-                break;
-        }
-        if (applier.ai.mobAttackInfo.size() > 0 && (effect = player.getSkillEffect(覺醒之箭)) != null) {
-            if (applier.ai.skillId == 光速神弩 || applier.ai.skillId == 光速神弩II_1 || (applier.ai.skillId == 必殺狙擊 && player.getSkillEffect(進階覺醒之箭) != null)) {
-                effect.applyBuffEffect(player, player, effect.getBuffDuration(player), false, false, true, null);
             }
         }
-        if (applier.effect != null && applier.effect.getSourceId() == 真必殺狙擊_1 && (effect = player.getEffectForBuffStat(SecondaryStat.CursorSniping)) != null) {
+        if (applier.ai.mobAttackInfo.size() > 0 && (effect = player.getSkillEffect(3210016)) != null && (applier.ai.skillId == 3201011 || applier.ai.skillId == 3221027 || applier.ai.skillId == 3221007 && player.getSkillEffect(3220021) != null)) {
+            effect.applyBuffEffect(player, player, effect.getBuffDuration(player), false, false, true, null);
+        }
+        if (applier.effect != null && applier.effect.getSourceId() == 400031010 && (effect = player.getEffectForBuffStat(SecondaryStat.CursorSniping)) != null) {
             effect.applyBuffEffect(player, player, effect.getBuffDuration(player), false, true, true, null);
         }
         return 1;
     }
 
+    @Override
     public int onAfterCancelEffect(MapleCharacter player, SkillClassApplier applier) {
-        if (!applier.overwrite) {
-            if (applier.effect.getSourceId() == 真必殺狙擊) {
-                if (applier.localstatups.containsKey(SecondaryStat.CursorSniping)) {
-                    applier.effect.applyBuffEffect(player, player, 2000, false, false, true, null);
-                }
-            }
+        if (!applier.overwrite && applier.effect.getSourceId() == 400031006 && applier.localstatups.containsKey(SecondaryStat.CursorSniping)) {
+            applier.effect.applyBuffEffect(player, player, 2000, false, false, true, null);
         }
         return -1;
     }
@@ -344,16 +343,16 @@ public class 神射手 extends AbstractSkillHandler {
             return;
         }
         long now = System.currentTimeMillis();
-        Pair<Long, Integer> debuffInfo = (Pair<Long, Integer>) obj;
+        Pair debuffInfo = (Pair)obj;
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter(OutHeader.SnipeStatSet);
-        mplew.writeInt(強化必殺狙擊);
-        if (now < debuffInfo.getLeft()) {
+        mplew.writeInt(3221025);
+        if (now < (Long)debuffInfo.getLeft()) {
             mplew.write(1);
             mplew.writeInt(1);
-            mplew.writeInt(debuffInfo.getRight());
+            mplew.writeInt((Integer)debuffInfo.getRight());
             mplew.writeInt(1);
             mplew.writeInt(0);
-            mplew.writeInt(Math.max(0, debuffInfo.getLeft() - now));
+            mplew.writeInt(Math.max(0L, (Long)debuffInfo.getLeft() - now));
             mplew.writeInt(783);
         } else {
             mplew.write(0);
@@ -362,3 +361,4 @@ public class 神射手 extends AbstractSkillHandler {
         chr.send(mplew.getPacket());
     }
 }
+

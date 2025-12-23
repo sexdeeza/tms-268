@@ -1,9 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server;
 
-
 public class StructFamiliar {
-
-    private int id, skillID, effectAfter, mobID, monsterCardID, FCategory, range;
+    private int id;
+    private int skillID;
+    private int effectAfter;
+    private int mobID;
+    private int monsterCardID;
+    private int FCategory;
+    private int range;
     private byte grade;
     private String FAttribute;
 
@@ -91,3 +98,4 @@ public class StructFamiliar {
         this.range = range;
     }
 }
+

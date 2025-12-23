@@ -1,12 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
 import Client.MapleClient;
+import Net.server.maps.MapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.MaplePacketCreator;
+import java.awt.Point;
 
-import java.awt.*;
-
-public class MapleRandomPortal extends MapleMapObject {
-
+public class MapleRandomPortal
+extends MapleMapObject {
     private Type appearType;
     private int mapid;
     private int owerid;
@@ -14,7 +18,7 @@ public class MapleRandomPortal extends MapleMapObject {
     private long duration;
 
     MapleRandomPortal(Type appearType, int mapid, int owerid, int duration, Point position) {
-        setPosition(position);
+        this.setPosition(position);
         this.appearType = appearType;
         this.mapid = mapid;
         this.owerid = owerid;
@@ -23,7 +27,7 @@ public class MapleRandomPortal extends MapleMapObject {
     }
 
     public Type getAppearType() {
-        return appearType;
+        return this.appearType;
     }
 
     public void setAppearType(Type appearType) {
@@ -31,7 +35,7 @@ public class MapleRandomPortal extends MapleMapObject {
     }
 
     public int getMapid() {
-        return mapid;
+        return this.mapid;
     }
 
     public void setMapid(int mapid) {
@@ -39,7 +43,7 @@ public class MapleRandomPortal extends MapleMapObject {
     }
 
     public int getOwerid() {
-        return owerid;
+        return this.owerid;
     }
 
     public void setOwerid(int owerid) {
@@ -47,7 +51,7 @@ public class MapleRandomPortal extends MapleMapObject {
     }
 
     public long getStartTime() {
-        return startTime;
+        return this.startTime;
     }
 
     public void setStartTime(long startTime) {
@@ -55,7 +59,7 @@ public class MapleRandomPortal extends MapleMapObject {
     }
 
     public long getDuration() {
-        return duration;
+        return this.duration;
     }
 
     public void setDuration(long duration) {
@@ -82,21 +86,21 @@ public class MapleRandomPortal extends MapleMapObject {
         client.announce(MaplePacketCreator.getRandomPortalRemoved(this));
     }
 
-    public enum Type {
+    public static enum Type {
         None("undefined"),
         Event("random_portal_event"),
         PolloFritto("random_portal_pollo_fritto"),
-        Inferno("random_portal_inferno"),
-        ;
+        Inferno("random_portal_inferno");
 
         private final String script;
 
-        Type(String script) {
+        private Type(String script) {
             this.script = script;
         }
 
         public String getScript() {
-            return script;
+            return this.script;
         }
     }
 }
+

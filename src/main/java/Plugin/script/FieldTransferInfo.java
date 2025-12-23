@@ -1,28 +1,28 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.script;
 
 import Client.MapleCharacter;
 import Net.server.maps.MapleMap;
 
 public class FieldTransferInfo {
-    private int fieldId, portal;
-    private boolean init;
+    private int fieldId;
+    private int portal;
+    private boolean init = true;
     private boolean field;
 
-    public FieldTransferInfo() {
-        init = true;
-    }
-
     public int getFieldId() {
-        return fieldId;
+        return this.fieldId;
     }
 
     public void setFieldId(int fieldId) {
-        init = false;
+        this.init = false;
         this.fieldId = fieldId;
     }
 
     public int getPortal() {
-        return portal;
+        return this.portal;
     }
 
     public void setPortal(int portal) {
@@ -30,7 +30,7 @@ public class FieldTransferInfo {
     }
 
     public boolean isInit() {
-        return init;
+        return this.init;
     }
 
     public void setInit(boolean init) {
@@ -38,7 +38,7 @@ public class FieldTransferInfo {
     }
 
     public boolean isField() {
-        return field;
+        return this.field;
     }
 
     public void setField(boolean field) {
@@ -46,16 +46,15 @@ public class FieldTransferInfo {
     }
 
     public void warp(MapleCharacter chr) {
-        setInit(true);
-        chr.changeMap(getFieldId(), getPortal());
+        this.setInit(true);
+        chr.changeMap(this.getFieldId(), this.getPortal());
     }
 
     public void warp(MapleMap field) {
-        setInit(true);
+        this.setInit(true);
         for (MapleCharacter chr : field.getAllCharactersThreadsafe()) {
-            chr.changeMap(getFieldId(), getPortal());
+            chr.changeMap(this.getFieldId(), this.getPortal());
         }
     }
-
-
 }
+

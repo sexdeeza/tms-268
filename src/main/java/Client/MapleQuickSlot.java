@@ -1,11 +1,7 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client;
-
-import tools.Pair;
-import tools.data.MaplePacketLittleEndianWriter;
 
 import java.io.Serializable;
 import java.sql.Connection;
@@ -14,76 +10,74 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import tools.Pair;
+import tools.data.MaplePacketLittleEndianWriter;
 
-/**
- * @author PlayDK
- */
-public class MapleQuickSlot implements Serializable {
-
+public class MapleQuickSlot
+implements Serializable {
     private static final long serialVersionUID = 9179541993413738569L;
     private final List<Pair<Integer, Integer>> quickslot;
     private boolean changed = false;
 
     public MapleQuickSlot() {
-        quickslot = new ArrayList<>();
+        this.quickslot = new ArrayList<Pair<Integer, Integer>>();
     }
 
     public MapleQuickSlot(List<Pair<Integer, Integer>> quickslots) {
-        quickslot = quickslots;
+        this.quickslot = quickslots;
     }
 
     public List<Pair<Integer, Integer>> Layout() {
-        changed = true;
-        return quickslot;
+        this.changed = true;
+        return this.quickslot;
     }
 
     public void unchanged() {
-        changed = false;
+        this.changed = false;
     }
 
     public void resetQuickSlot() {
-        changed = true;
-        quickslot.clear();
+        this.changed = true;
+        this.quickslot.clear();
     }
 
     public void addQuickSlot(int index, int key) {
-        changed = true;
-        quickslot.add(new Pair<>(index, key));
+        this.changed = true;
+        this.quickslot.add(new Pair<Integer, Integer>(index, key));
     }
 
     public int getKeyByIndex(int index) {
-        for (Pair<Integer, Integer> p : quickslot) {
-            if (p.getLeft() == index) {
-                return p.getRight();
-            }
+        for (Pair<Integer, Integer> p : this.quickslot) {
+            if (p.getLeft() != index) continue;
+            return p.getRight();
         }
         return -1;
     }
 
     public void writeData(MaplePacketLittleEndianWriter mplew) {
-        mplew.write(quickslot.isEmpty() ? 0 : 1);
-        if (quickslot.isEmpty()) {
+        mplew.write(this.quickslot.isEmpty() ? 0 : 1);
+        if (this.quickslot.isEmpty()) {
             return;
         }
-        quickslot.sort(Comparator.comparing(Pair::getLeft));
-        for (Pair<Integer, Integer> qs : quickslot) {
+        this.quickslot.sort(Comparator.comparing(Pair::getLeft));
+        for (Pair<Integer, Integer> qs : this.quickslot) {
             mplew.writeInt(qs.getRight());
         }
     }
 
     public void saveQuickSlots(Connection con, int charid) throws SQLException {
-        if (!changed) {
+        if (!this.changed) {
             return;
         }
-        try (PreparedStatement ps = con.prepareStatement("DELETE FROM quickslot WHERE characterid = ?")) {
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM quickslot WHERE characterid = ?");){
             ps.setInt(1, charid);
             ps.execute();
-            if (quickslot.isEmpty()) {
+            if (this.quickslot.isEmpty()) {
                 return;
             }
             boolean first = true;
             StringBuilder query = new StringBuilder();
-            for (Pair<Integer, Integer> q : quickslot) {
+            for (Pair<Integer, Integer> q : this.quickslot) {
                 if (first) {
                     first = false;
                     query.append("INSERT INTO quickslot VALUES (");
@@ -92,12 +86,13 @@ public class MapleQuickSlot implements Serializable {
                 }
                 query.append("DEFAULT,");
                 query.append(charid).append(",");
-                query.append(q.getLeft().intValue()).append(",");
-                query.append(q.getRight().intValue()).append(")");
+                query.append(q.getLeft()).append(",");
+                query.append(q.getRight()).append(")");
             }
-            try (PreparedStatement pse = con.prepareStatement(query.toString())) {
+            try (PreparedStatement pse = con.prepareStatement(query.toString());){
                 pse.execute();
             }
         }
     }
 }
+

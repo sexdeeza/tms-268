@@ -1,9 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
 import Net.server.maps.AnimatedMapleMapObject;
 
-public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
-
+public abstract class AbstractLoadedMapleLife
+extends AnimatedMapleMapObject {
     private final int id;
     private int f;
     private boolean hide = false;
@@ -27,7 +30,7 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
     }
 
     public int getF() {
-        return f;
+        return this.f;
     }
 
     public void setF(int f) {
@@ -35,7 +38,7 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
     }
 
     public boolean isHidden() {
-        return hide;
+        return this.hide;
     }
 
     public void setHide(boolean hide) {
@@ -43,7 +46,7 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
     }
 
     public int getCy() {
-        return cy;
+        return this.cy;
     }
 
     public void setCy(int cy) {
@@ -51,7 +54,7 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
     }
 
     public int getRx0() {
-        return rx0;
+        return this.rx0;
     }
 
     public void setRx0(int rx0) {
@@ -59,7 +62,7 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
     }
 
     public int getRx1() {
-        return rx1;
+        return this.rx1;
     }
 
     public void setRx1(int rx1) {
@@ -67,7 +70,7 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public int originFh() {
@@ -82,5 +85,5 @@ public abstract class AbstractLoadedMapleLife extends AnimatedMapleMapObject {
         this.fh = fh;
         this.originFh = fh;
     }
-
 }
+

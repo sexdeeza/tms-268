@@ -1,23 +1,19 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
-/**
- * create by Ethan on 20170811
- *
- * @author Ethan
- */
 public class MapleUnionEntry {
-    private int type;
+    private int type = 1;
     private final int characterId;
     private final int level;
     private final int job;
     private int rotate;
-    private int boardIndex;
+    private int boardIndex = -1;
     private int local;
     private final String name;
 
     public MapleUnionEntry(int chrid, String name, int level, int job) {
-        this.type = 1;
-        this.boardIndex = -1;
         this.characterId = chrid;
         this.level = level;
         this.job = job;
@@ -28,7 +24,7 @@ public class MapleUnionEntry {
         return this.local;
     }
 
-    public void setLocal(final int lv) {
+    public void setLocal(int lv) {
         this.local = lv;
     }
 
@@ -36,7 +32,7 @@ public class MapleUnionEntry {
         return this.rotate;
     }
 
-    public void setRotate(final int lt) {
+    public void setRotate(int lt) {
         this.rotate = lt;
     }
 
@@ -48,7 +44,7 @@ public class MapleUnionEntry {
         return this.boardIndex;
     }
 
-    public void setBoardIndex(final int lu) {
+    public void setBoardIndex(int lu) {
         this.boardIndex = lu;
     }
 
@@ -68,7 +64,8 @@ public class MapleUnionEntry {
         return this.type;
     }
 
-    public void setType(final int type) {
+    public void setType(int type) {
         this.type = type;
     }
 }
+

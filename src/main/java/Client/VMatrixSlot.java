@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 public class VMatrixSlot {
@@ -9,12 +12,12 @@ public class VMatrixSlot {
     public VMatrixSlot() {
     }
 
-    public VMatrixSlot(final int slot) {
+    public VMatrixSlot(int slot) {
         this.slot = slot;
     }
 
     public int getSlot() {
-        return slot;
+        return this.slot;
     }
 
     public void setSlot(int slot) {
@@ -22,7 +25,7 @@ public class VMatrixSlot {
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public void setIndex(int index) {
@@ -30,7 +33,7 @@ public class VMatrixSlot {
     }
 
     public int getExtend() {
-        return extend;
+        return this.extend;
     }
 
     public void setExtend(int extend) {
@@ -38,10 +41,11 @@ public class VMatrixSlot {
     }
 
     public int getUnlock() {
-        return unlock;
+        return this.unlock;
     }
 
     public void setUnlock(int unlock) {
         this.unlock = unlock;
     }
 }
+

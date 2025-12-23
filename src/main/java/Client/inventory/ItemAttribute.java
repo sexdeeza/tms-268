@@ -1,37 +1,40 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
 public enum ItemAttribute {
-
-    Seal(0x01), //鎖定
-    NonSlip(0x02), //鞋子防滑
-    ColdProof(0x04), //披風防寒
-    TradeBlock(0x08),//不可交換
-    TradeOnce(0x10),//可以交換1次
-    GetCharm(0x20),//裝備時獲得魅力
-    AndroidActivated(0x40),
-    Crafted(0x80),
-    NonCurse(0x100), //防爆卷軸
-    LuckyChance(0x200), //幸運日卷軸
-    CutUsed(0x400),//宿命剪刀
-    Exclusive(0x800),//固有
-    AccountSharable(0x1000),//轉存吊牌
-    ProtectRUC(0x2000), //保護升級次數
-    ProtectScroll(0x4000), //卷軸防護
-    RegressScroll(0x8000), // 恢復卡
-    Hyalinize(0x20000000),//變透明
-    // 楓方塊可剪刀一次狀態
+    Seal(1),
+    NonSlip(2),
+    ColdProof(4),
+    TradeBlock(8),
+    TradeOnce(16),
+    GetCharm(32),
+    AndroidActivated(64),
+    Crafted(128),
+    NonCurse(256),
+    LuckyChance(512),
+    CutUsed(1024),
+    Exclusive(2048),
+    AccountSharable(4096),
+    ProtectRUC(8192),
+    ProtectScroll(16384),
+    RegressScroll(32768),
+    Hyalinize(0x20000000),
     AnimaCube(0x40000000);
+
     private final int i;
 
-    ItemAttribute(int i) {
+    private ItemAttribute(int i) {
         this.i = i;
     }
 
     public int getValue() {
-        return i;
+        return this.i;
     }
 
     public boolean check(int flag) {
-        return (flag & i) == i;
+        return (flag & this.i) == this.i;
     }
 }
+

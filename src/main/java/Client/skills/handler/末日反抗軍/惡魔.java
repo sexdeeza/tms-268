@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.末日反抗軍;
 
 import Client.MapleCharacter;
@@ -11,23 +14,18 @@ import Client.skills.handler.SkillClassApplier;
 import Client.status.MonsterStatus;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static Config.constants.skills.惡魔.*;
-
-public class 惡魔 extends AbstractSkillHandler {
-
+public class 惡魔
+extends AbstractSkillHandler {
     public 惡魔() {
-        jobs = new MapleJob[]{
-                MapleJob.惡魔
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.惡魔};
         for (Field field : Config.constants.skills.惡魔.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -35,23 +33,18 @@ public class 惡魔 extends AbstractSkillHandler {
 
     @Override
     public int baseSkills(MapleCharacter chr, SkillClassApplier applier) {
-        Skill skil;
-        int[] ss = {惡魔跳躍, 魔族之血, 英雄共鳴};
-        for (int i : ss) {
-            if (chr.getLevel() < 200 && i == 英雄共鳴) {
-                continue;
-            }
-            skil = SkillFactory.getSkill(i);
-            if (skil != null && chr.getSkillLevel(skil) <= 0) {
-                applier.skillMap.put(i, new SkillEntry(1, skil.getMaxMasterLevel(), -1));
-            }
+        int[] ss;
+        for (int i : ss = new int[]{30010110, 30010185, 30011005}) {
+            Skill skil;
+            if (chr.getLevel() < 200 && i == 30011005 || (skil = SkillFactory.getSkill(i)) == null || chr.getSkillLevel(skil) > 0) continue;
+            applier.skillMap.put(i, new SkillEntry(1, skil.getMaxMasterLevel(), -1L));
         }
         return -1;
     }
 
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
-        if (effect.getSourceId() == 英雄共鳴) {
+        if (effect.getSourceId() == 30011005) {
             effect.setRangeBuff(true);
             effect.getInfo().put(MapleStatInfo.time, effect.getDuration() * 1000);
             statups.put(SecondaryStat.MaxLevelBuff, effect.getX());
@@ -63,13 +56,16 @@ public class 惡魔 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 惡魔跳躍_1:
-            case 惡魔跳躍_2:
-            case 惡魔跳躍_3:
-                return 惡魔跳躍;
-            case 召喚喵怪仙人_1:
-                return 召喚喵怪仙人;
+            case 30010183: 
+            case 30010184: 
+            case 30010186: {
+                return 30010110;
+            }
+            case 400001016: {
+                return 400001013;
+            }
         }
         return -1;
     }
 }
+

@@ -1,143 +1,135 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Plugin.provider.wz.WzHeader
+ */
 package Plugin.provider.wz.util;
 
 import Plugin.provider.wz.WzHeader;
 import tools.data.ByteStream;
 import tools.data.MaplePacketReader;
 
-public class WzLittleEndianAccessor extends MaplePacketReader {
-
+public class WzLittleEndianAccessor
+extends MaplePacketReader {
     public int hash;
     public WzHeader header;
-
-    public enum WzMapleVersion {
-        GMS, EMS, BMS, CLASSIC, GENERATE,
-    }
-
     private static final byte[] encKey = null;
-
-    static {
-        byte[] iv;
-        // WZ_MSEAIV
-        // WZ_GMSIV
-        iv = null;
-    }
 
     public WzLittleEndianAccessor(ByteStream bs) {
         super(bs);
     }
 
+    public WzLittleEndianAccessor(byte[] data) {
+        super(data);
+    }
+
     public String readStringAtOffset(long offset) {
-        return readStringAtOffset(offset, false);
+        return this.readStringAtOffset(offset, false);
     }
 
     public String readStringAtOffset(long offset, boolean readByte) {
-        long currentOffset = getPosition();
-        seek(offset);
+        long currentOffset = this.getPosition();
+        this.seek(offset);
         if (readByte) {
-            readByte();
+            this.readByte();
         }
-        String returnString = readString();
-        seek(currentOffset);
+        String returnString = this.readString();
+        this.seek(currentOffset);
         return returnString;
     }
 
     private String readString() {
-        byte smallLength = readByte();
-
-        if (smallLength == 0x00) {
+        int smallLength = this.readByte();
+        if (smallLength == 0) {
             return "";
         }
-
-        int length;
         StringBuilder retString = new StringBuilder();
-        if (smallLength > 0) { // Unicode
-            int mask = 0xAAAA;
-            if (smallLength == Byte.MAX_VALUE) {
-                length = readInt();
-            } else {
-                length = smallLength;
-            }
+        if (smallLength > 0) {
+            int mask = 43690;
+            int length = smallLength == 127 ? this.readInt() : smallLength;
             if (length <= 0) {
                 return "";
             }
-
-            for (int i = 0; i < length; i++) {
-                short encryptedChar = readShort();
-                encryptedChar ^= (short) mask;
-                encryptedChar ^= (short) (((encKey == null ? 0 : encKey[i * 2 + 1]) << 8) + (encKey == null ? 0 : encKey[i * 2]));
-                retString.append((char) encryptedChar);
-                mask++;
+            for (int i = 0; i < length; ++i) {
+                short encryptedChar = this.readShort();
+                encryptedChar = (short)(encryptedChar ^ (short)mask);
+                encryptedChar = (short)(encryptedChar ^ (short)(((encKey == null ? 0 : encKey[i * 2 + 1]) << 8) + (encKey == null ? 0 : encKey[i * 2])));
+                retString.append((char)encryptedChar);
+                ++mask;
             }
-        } else { // ASCII
-            byte mask = (byte) 0xAA;
-            if (smallLength == Byte.MIN_VALUE) {
-                length = readInt();
-            } else {
-                length = -smallLength;
-            }
+        } else {
+            int mask = -86;
+            int length = smallLength == -128 ? this.readInt() : -smallLength;
             if (length < 0) {
                 return "";
             }
-
-            for (int i = 0; i < length; i++) {
-                byte encryptedChar = readByte();
-                encryptedChar ^= mask;
-                encryptedChar ^= (byte) (encKey == null ? 0 : encKey[i]);
-                retString.append((char) encryptedChar);
-                mask++;
+            for (int i = 0; i < length; ++i) {
+                byte encryptedChar = this.readByte();
+                encryptedChar = (byte)(encryptedChar ^ mask);
+                encryptedChar = (byte)(encryptedChar ^ (encKey == null ? (byte)0 : encKey[i]));
+                retString.append((char)encryptedChar);
+                mask = (byte)(mask + 1);
             }
         }
         return retString.toString();
     }
 
     public int readCompressedInt() {
-        byte sb = readByte();
-        if (sb == Byte.MIN_VALUE) {
-            return readInt();
+        byte sb = this.readByte();
+        if (sb == -128) {
+            return this.readInt();
         }
         return sb;
     }
 
     public long readLongValue() {
-        byte b = readByte();
-        if (b == Byte.MIN_VALUE) {
-            return readLong();
+        byte b = this.readByte();
+        if (b == -128) {
+            return this.readLong();
         }
         return b;
     }
 
     public float readFloatValue() {
-        byte b = readByte();
-        if (b == Byte.MIN_VALUE) {
-            return readFloat();
+        byte b = this.readByte();
+        if (b == -128) {
+            return this.readFloat();
         }
         return 0.0f;
     }
 
     public long readOffset() {
-        long offset = getPosition();
-        offset = ~(offset - header.FStart);
-        offset *= hash;
-        offset -= 0x581C3F6D;
-        int distance = (int) offset & 0x1F;
-        offset = (offset << distance) | (offset >> (32 - distance));
-        long encryptedOffset = readUInt();
+        long offset = this.getPosition();
+        offset = offset - (long)this.header.FStart ^ 0xFFFFFFFFFFFFFFFFL;
+        offset *= (long)this.hash;
+        int distance = (int)(offset -= 1478246253L) & 0x1F;
+        offset = offset << distance | offset >> 32 - distance;
+        long encryptedOffset = this.readUInt();
         offset ^= encryptedOffset;
-        offset += header.FStart * 2L;
-        return offset;
+        return offset += (long)this.header.FStart * 2L;
     }
 
     public String readStringBlock(long offset) {
-        byte b = readByte();
+        byte b = this.readByte();
         switch (b) {
-            case 0x00, 0x03, 0x04, 0x73 -> {
-                return readString();
+            case 0: 
+            case 3: 
+            case 4: 
+            case 115: {
+                return this.readString();
             }
-            case 0x01, 0x02, 0x1B -> {
-                return readStringAtOffset(readInt() + offset);
+            case 1: 
+            case 2: 
+            case 27: {
+                return this.readStringAtOffset((long)this.readInt() + offset);
             }
-            default ->
-                    throw new RuntimeException("Unknown extension image identifier: " + b + " at offset " + (getPosition() - offset));
         }
+        throw new RuntimeException("Unknown extension image identifier: " + b + " at offset " + (this.getPosition() - offset));
+    }
+
+    static {
+        Object var0 = null;
     }
 }
+

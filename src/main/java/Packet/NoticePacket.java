@@ -1,6 +1,6 @@
 package Packet;
 
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.data.MaplePacketLittleEndianWriter;
 
 public class NoticePacket {

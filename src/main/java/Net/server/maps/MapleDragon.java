@@ -1,22 +1,27 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
+import Net.server.maps.AnimatedMapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.SummonPacket;
 
-public class MapleDragon extends AnimatedMapleMapObject {
-
-    private int owner, jobid;
+public class MapleDragon
+extends AnimatedMapleMapObject {
+    private int owner;
+    private int jobid;
 
     public MapleDragon(MapleCharacter owner) {
-        super();
         this.owner = owner.getId();
         this.jobid = owner.getJob();
-        if (jobid < 2200 || jobid > 2218) {
+        if (this.jobid < 2200 || this.jobid > 2218) {
             throw new RuntimeException("試圖生成1個寶貝龍的信息，但角色不是龍神職業.");
         }
-        setPosition(owner.getPosition());
-        setStance(4);
+        this.setPosition(owner.getPosition());
+        this.setStance(4);
     }
 
     public void setJobid(int jobid) {
@@ -55,3 +60,4 @@ public class MapleDragon extends AnimatedMapleMapObject {
         return MapleMapObjectType.SUMMON;
     }
 }
+

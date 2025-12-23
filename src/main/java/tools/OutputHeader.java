@@ -1,7 +1,7 @@
 package tools;
 
-import Opcode.Headler.InHeader;
-import Opcode.Headler.OutHeader;
+import Opcode.header.InHeader;
+import Opcode.header.OutHeader;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;

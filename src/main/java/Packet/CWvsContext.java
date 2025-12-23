@@ -1,24 +1,31 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  lombok.Generated
+ */
 package Packet;
 
-import Client.*;
-import Client.hexa.ErdaConsumeOption;
-import Config.constants.HexaConstants;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleExpStat;
+import Client.MapleQuestStatus;
+import Client.MapleTraitType;
+import Client.MessageOption;
+import Client.SecondaryStat;
 import Net.server.life.MobSkill;
-import Opcode.Headler.OutHeader;
-import lombok.Getter;
-import tools.Pair;
-import tools.data.MaplePacketLittleEndianWriter;
-
+import Opcode.header.OutHeader;
+import Packet.PacketHelper;
 import java.util.List;
 import java.util.Map;
+import lombok.Generated;
+import tools.Pair;
+import tools.Randomizer;
+import tools.data.MaplePacketLittleEndianWriter;
 
-import static Opcode.Opcode.MessageOpcode.*;
-
-public class CWvsContext extends MapleClient{
-
-    @Getter
+public class CWvsContext
+extends MapleClient {
     private static MapleClient c;
-
 
     public static byte[] onFieldSetVariable(String key, String value) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
@@ -28,29 +35,26 @@ public class CWvsContext extends MapleClient{
         return mplew.getPacket();
     }
 
-
     public static byte[] giveDisease(Map<SecondaryStat, Pair<Integer, Integer>> statups, MobSkill skill, MapleCharacter chr) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_ForcedStatSet.getValue());
         List<Pair<SecondaryStat, Pair<Integer, Integer>>> newstatups = PacketHelper.sortBuffStats(statups);
         PacketHelper.writeBuffMask(mplew, newstatups);
         for (Pair<SecondaryStat, Pair<Integer, Integer>> pair : newstatups) {
-            if (pair.getLeft().canStack() || pair.getLeft().isSpecialBuff()) {
-                continue;
-            }
+            if (pair.getLeft().canStack() || pair.getLeft().isSpecialBuff()) continue;
             if (SecondaryStat.isEncode4Byte(statups)) {
                 if (pair.left == SecondaryStat.ReturnTeleport) {
                     mplew.writeShort(chr.getPosition().y);
                     mplew.writeShort(chr.getPosition().x);
                 } else {
-                    mplew.writeInt(pair.getLeft().getX() != 0 ? pair.getLeft().getX() : pair.getRight().left.intValue());
+                    mplew.writeInt(pair.getLeft().getX() != 0 ? pair.getLeft().getX() : ((Integer)pair.getRight().left).intValue());
                 }
             } else {
-                mplew.writeShort(pair.getRight().left);
+                mplew.writeShort((Integer)pair.getRight().left);
             }
             mplew.writeShort(skill.getSkillId());
             mplew.writeShort(skill.getSkillId() == 237 ? 0 : skill.getSkillLevel());
-            mplew.writeInt(skill.getSkillId() == 237 ? 0 : pair.right.right);
+            mplew.writeInt(skill.getSkillId() == 237 ? 0 : (Integer)((Pair)pair.right).right);
         }
         mplew.writeShort(0);
         mplew.write(0);
@@ -71,15 +75,13 @@ public class CWvsContext extends MapleClient{
         }
         mplew.writeInt(0);
         for (Pair<SecondaryStat, Pair<Integer, Integer>> pair : newstatups) {
-            if (pair.left.canStack() || !pair.left.isSpecialBuff()) {
-                continue;
-            }
-            mplew.writeInt(pair.right.left);
+            if (((SecondaryStat)pair.left).canStack() || !((SecondaryStat)pair.left).isSpecialBuff()) continue;
+            mplew.writeInt((Integer)((Pair)pair.right).left);
             mplew.writeShort(skill.getSkillId());
             mplew.writeShort(skill.getSkillId() == 237 ? 0 : skill.getSkillLevel());
             mplew.write(0);
             mplew.writeInt(0);
-            mplew.writeShort(pair.right.right);
+            mplew.writeShort((Integer)((Pair)pair.right).right);
         }
         if (statups.containsKey(SecondaryStat.VampDeath)) {
             mplew.writeInt(0);
@@ -100,65 +102,72 @@ public class CWvsContext extends MapleClient{
         mplew.writeZeroBytes(100);
         return mplew.getPacket();
     }
+
     public static byte[] sendMessage(int type, MessageOption option) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_Message.getValue());
         mplew.write(type);
-        switch (type) {
-            case MS_DropPickUpMessage: {
-                //sub_144977CE0(v3, v2);
-                mplew.writeInt(0); // delay
+        block0 : switch (type) {
+            case 0: {
+                mplew.writeInt(0);
                 mplew.write(0);
                 mplew.write(option.getMode());
                 switch (option.getMode() + 5) {
-                    case 5: // item
+                    case 5: {
                         mplew.writeInt(option.getObjectId());
                         mplew.writeInt(option.getAmount());
                         mplew.write(0);
                         break;
-                    case 6: // mesos
-                        mplew.write(0); // portion was lost after falling to the ground
+                    }
+                    case 6: {
+                        mplew.write(0);
                         mplew.writeInt(option.getLongGain());
-                        mplew.writeShort(0); // smallChangeExtra
-                    case 7:
+                        mplew.writeShort(0);
+                    }
+                    case 7: {
                         mplew.writeInt(0);
-                        mplew.writeLong(0);
+                        mplew.writeLong(0L);
                         break;
-                    case 11:
+                    }
+                    case 11: {
                         mplew.writeInt(0);
                         break;
-                    case 13:
+                    }
+                    case 13: {
                         mplew.writeInt(0);
                         mplew.writeShort(0);
-                        break;
+                    }
                 }
                 break;
             }
-            case MS_QuestRecordMessage: {
-                //sub_1449790E0(v3, v2);
+            case 1: {
                 MapleQuestStatus quest = option.getQuestStatus();
                 mplew.writeInt(quest.getQuest().getId());
                 mplew.write(quest.getStatus());
                 switch (quest.getStatus()) {
-                    case 0: //新任務？
+                    case 0: {
                         mplew.write(1);
-                        break;
-                    case 1: //更新任務
+                        break block0;
+                    }
+                    case 1: {
                         mplew.writeMapleAsciiString(quest.getCustomData() != null ? quest.getCustomData() : "");
-                        break;
-                    case 2: //完成任務
+                        break block0;
+                    }
+                    case 2: {
                         mplew.writeLong(PacketHelper.getTime(quest.getCompletionTime()));
-                        break;
-                    default:
-                        System.out.println("未知LP_Message(" + type + ")值:" + quest.getStatus());
+                        break block0;
+                    }
                 }
+                System.out.println("未知LP_Message(" + type + ")值:" + quest.getStatus());
                 break;
             }
-            case MS_CashItemExpireMessage:
-                //sub_14497E550(v3, v2);
+            case 2: {
                 mplew.writeInt(option.getObjectId());
                 break;
-            case MS_IncEXPMessage: {
+            }
+            case 3: {
+                boolean nexon_encry;
+                Pair expStat;
                 mplew.write(option.getColor());
                 mplew.writeInt(option.getLongGain());
                 mplew.writeInt(0);
@@ -168,413 +177,403 @@ public class CWvsContext extends MapleClient{
                     mplew.writeLong(option.getExpLost());
                 }
                 Map<MapleExpStat, Object> expStats = option.getExpGainData();
-                long expMask = 0;
+                long expMask = 0L;
                 for (MapleExpStat statupdate : expStats.keySet()) {
                     expMask |= statupdate.getFlag();
                 }
                 mplew.writeLong(expMask);
-                if (expStats.getOrDefault(MapleExpStat.活動獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.活動獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.活動獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.活動獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.活動組隊經驗值, null) != null) {
-                    mplew.write((byte) expStats.get(MapleExpStat.活動組隊經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.活動組隊經驗值, null) != null) {
+                    mplew.write((Byte)expStats.get((Object)MapleExpStat.活動組隊經驗值));
                 }
                 int nQuestBonusRate = 0;
                 if (option.getOnQuest()) {
                     mplew.write(nQuestBonusRate);
                 }
                 if (nQuestBonusRate > 0) {
-                    mplew.write(0); // nQuestBonusRemainCount
+                    mplew.write(0);
                 }
-                if (expStats.getOrDefault(MapleExpStat.結婚紅利經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.結婚紅利經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.結婚紅利經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.結婚紅利經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.組隊額外經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.組隊額外經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.組隊額外經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.組隊額外經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.道具裝備紅利經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.道具裝備紅利經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.道具裝備紅利經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.道具裝備紅利經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.高級服務贈送經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.高級服務贈送經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.高級服務贈送經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.高級服務贈送經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.彩虹週獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.彩虹週獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.彩虹週獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.彩虹週獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.爆發獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.爆發獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.爆發獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.爆發獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.秘藥額外經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.秘藥額外經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.秘藥額外經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.秘藥額外經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.極限屬性經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.極限屬性經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.極限屬性經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.極限屬性經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.加持獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.加持獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.加持獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.加持獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.休息獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.休息獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.休息獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.休息獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.道具獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.道具獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.道具獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.道具獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.依道具趴增加經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.依道具趴增加經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.依道具趴增加經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.依道具趴增加經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.超值包獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.超值包獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.超值包獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.超值包獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.依道具的組隊任務趴增加經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.依道具的組隊任務趴增加經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.依道具的組隊任務趴增加經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.依道具的組隊任務趴增加經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.累積狩獵數紅利經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.累積狩獵數紅利經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.累積狩獵數紅利經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.累積狩獵數紅利經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.家族經驗值獎勵, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.家族經驗值獎勵));
+                if (expStats.getOrDefault((Object)MapleExpStat.家族經驗值獎勵, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.家族經驗值獎勵));
                 }
-                if (expStats.getOrDefault(MapleExpStat.冷凍勇士經驗值獎勵, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.冷凍勇士經驗值獎勵));
+                if (expStats.getOrDefault((Object)MapleExpStat.冷凍勇士經驗值獎勵, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.冷凍勇士經驗值獎勵));
                 }
-                if (expStats.getOrDefault(MapleExpStat.燃燒場地獎勵經驗, null) != null) {
-                    Pair<Long, Integer> expStat = (Pair<Long, Integer>) expStats.get(MapleExpStat.燃燒場地獎勵經驗);
-                    mplew.writeLong(expStat.getLeft());
-                    mplew.writeInt(expStat.getRight());
+                if (expStats.getOrDefault((Object)MapleExpStat.燃燒場地獎勵經驗, null) != null) {
+                    expStat = (Pair)expStats.get((Object)MapleExpStat.燃燒場地獎勵經驗);
+                    mplew.writeLong((Long)expStat.getLeft());
+                    mplew.writeInt((Integer)expStat.getRight());
                 }
-                if (expStats.getOrDefault(MapleExpStat.HP風險經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.HP風險經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.HP風險經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.HP風險經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.場地紅利經驗, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.場地紅利經驗));
+                if (expStats.getOrDefault((Object)MapleExpStat.場地紅利經驗, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.場地紅利經驗));
                 }
-                if (expStats.getOrDefault(MapleExpStat.累計打獵數量獎勵經驗, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.累計打獵數量獎勵經驗));
+                if (expStats.getOrDefault((Object)MapleExpStat.累計打獵數量獎勵經驗, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.累計打獵數量獎勵經驗));
                 }
-                if (expStats.getOrDefault(MapleExpStat.活動獎勵經驗值2, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.活動獎勵經驗值2));
+                if (expStats.getOrDefault((Object)MapleExpStat.活動獎勵經驗值2, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.活動獎勵經驗值2));
                 }
-                if (expStats.getOrDefault(MapleExpStat.網咖摯友獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.網咖摯友獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.網咖摯友獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.網咖摯友獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.場地紅利經驗2, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.場地紅利經驗2));
+                if (expStats.getOrDefault((Object)MapleExpStat.場地紅利經驗2, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.場地紅利經驗2));
                 }
-                if (expStats.getOrDefault(MapleExpStat.超級小豬幸運_攻擊額外經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.超級小豬幸運_攻擊額外經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.超級小豬幸運_攻擊額外經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.超級小豬幸運_攻擊額外經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.伺服器計量條活動獎勵經驗值, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.伺服器計量條活動獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.伺服器計量條活動獎勵經驗值, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.伺服器計量條活動獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.未知2, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.未知2));
+                if (expStats.getOrDefault((Object)MapleExpStat.未知2, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.未知2));
                 }
-                if (expStats.getOrDefault(MapleExpStat.組隊經驗值增加x趴, null) != null) {
-                    Pair<Long, Integer> expStat = (Pair<Long, Integer>) expStats.get(MapleExpStat.道具名經驗值);
-                    mplew.writeLong(expStat.getLeft());
+                if (expStats.getOrDefault((Object)MapleExpStat.組隊經驗值增加x趴, null) != null) {
+                    expStat = (Pair)expStats.get((Object)MapleExpStat.道具名經驗值);
+                    mplew.writeLong((Long)expStat.getLeft());
                 }
-                if (expStats.getOrDefault(MapleExpStat.蛋糕vs派餅_EXP紅利, null) != null) {
-                    mplew.writeLong((long) expStats.get(MapleExpStat.蛋糕vs派餅_EXP紅利));
+                if (expStats.getOrDefault((Object)MapleExpStat.蛋糕vs派餅_EXP紅利, null) != null) {
+                    mplew.writeLong((Long)expStats.get((Object)MapleExpStat.蛋糕vs派餅_EXP紅利));
                 }
-                if (expStats.getOrDefault(MapleExpStat.道具名經驗值, null) != null) {
-                    Pair<Long, Integer> expStat = (Pair<Long, Integer>) expStats.get(MapleExpStat.道具名經驗值);
-                    mplew.writeLong(expStat.getLeft());
-                    mplew.writeInt(expStat.getRight());
+                if (expStats.getOrDefault((Object)MapleExpStat.道具名經驗值, null) != null) {
+                    expStat = (Pair)expStats.get((Object)MapleExpStat.道具名經驗值);
+                    mplew.writeLong((Long)expStat.getLeft());
+                    mplew.writeInt((Integer)expStat.getRight());
                 }
-                if (expStats.getOrDefault(MapleExpStat.組隊經驗值增加x趴, null) != null) {
-                    Pair<Long, Integer> expStat = (Pair<Long, Integer>) expStats.get(MapleExpStat.道具名經驗值);
-                    mplew.writeInt(expStat.getRight());
+                if (expStats.getOrDefault((Object)MapleExpStat.組隊經驗值增加x趴, null) != null) {
+                    expStat = (Pair)expStats.get((Object)MapleExpStat.道具名經驗值);
+                    mplew.writeInt((Integer)expStat.getRight());
                 }
-                if (expStats.getOrDefault(MapleExpStat.寵物訓練紅利經驗值, null) != null) {
-                    mplew.writeInt((int) expStats.get(MapleExpStat.寵物訓練紅利經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.寵物訓練紅利經驗值, null) != null) {
+                    mplew.writeInt((Integer)expStats.get((Object)MapleExpStat.寵物訓練紅利經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.組合道具獎勵經驗值, null) != null) {
-                    mplew.writeInt((int) expStats.get(MapleExpStat.組合道具獎勵經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.組合道具獎勵經驗值, null) != null) {
+                    mplew.writeInt((Integer)expStats.get((Object)MapleExpStat.組合道具獎勵經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.組合道具獎勵組隊經驗值, null) != null) {
-                    mplew.writeInt((int) expStats.get(MapleExpStat.組合道具獎勵組隊經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.組合道具獎勵組隊經驗值, null) != null) {
+                    mplew.writeInt((Integer)expStats.get((Object)MapleExpStat.組合道具獎勵組隊經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.伺服器加持經驗值, null) != null) {
-                    mplew.writeInt((int) expStats.get(MapleExpStat.伺服器加持經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.伺服器加持經驗值, null) != null) {
+                    mplew.writeInt((Integer)expStats.get((Object)MapleExpStat.伺服器加持經驗值));
                 }
-                if (expStats.getOrDefault(MapleExpStat.累積狩獵數紅利經驗值2, null) != null) {
-                    mplew.writeInt((int) expStats.get(MapleExpStat.累積狩獵數紅利經驗值2));
+                if (expStats.getOrDefault((Object)MapleExpStat.累積狩獵數紅利經驗值2, null) != null) {
+                    mplew.writeInt((Integer)expStats.get((Object)MapleExpStat.累積狩獵數紅利經驗值2));
                 }
-                if (expStats.getOrDefault(MapleExpStat.艾爾達斯還原追加經驗值, null) != null) {
-                    mplew.writeInt((int) expStats.get(MapleExpStat.艾爾達斯還原追加經驗值));
+                if (expStats.getOrDefault((Object)MapleExpStat.艾爾達斯還原追加經驗值, null) != null) {
+                    mplew.writeInt((Integer)expStats.get((Object)MapleExpStat.艾爾達斯還原追加經驗值));
                 }
-
                 int 遠征隊Bonus經驗值 = 0;
                 int 遠征隊關係效果Bonus經驗值 = 0;
-
                 int expedExpMask = 0;
                 if (遠征隊Bonus經驗值 > 0) {
-                    expedExpMask |= 0x1;
+                    expedExpMask |= 1;
                 }
                 if (遠征隊關係效果Bonus經驗值 > 0) {
-                    expedExpMask |= 0x2;
+                    expedExpMask |= 2;
                 }
                 mplew.writeInt(expedExpMask);
-
-                if ((expedExpMask & 0x1) != 0) {
+                if ((expedExpMask & 1) != 0) {
                     mplew.writeInt(遠征隊Bonus經驗值);
                 }
-                if ((expedExpMask & 0x2) != 0) {
+                if ((expedExpMask & 2) != 0) {
                     mplew.writeInt(遠征隊關係效果Bonus經驗值);
                 }
-                boolean nexon_encry = true;
-                if(nexon_encry) {
-                    mplew.writeInt(0);
-                    mplew.writeInt(0);
-                    mplew.writeInt(8);
-                }
+                if (!(nexon_encry = true)) break;
+                mplew.writeInt(0);
+                mplew.writeInt(0);
+                mplew.writeInt(8);
                 break;
             }
-            case MS_IncSPMessage: // OK
-                //sub_1449838A0(v3, v2);
+            case 4: {
                 mplew.writeShort(option.getJob());
                 mplew.write(option.getAmount());
                 break;
-            case MS_IncPOPMessage:
-                //sub_144983A00(v3, v2);
+            }
+            case 5: {
                 mplew.writeInt(option.getAmount());
                 break;
-            case MS_IncMoneyMessage: // OK
-                //sub_144983B90(v3, v2);
+            }
+            case 6: {
                 mplew.writeLong(option.getLongGain());
                 mplew.writeInt(option.getMode());
-                if (option.getMode() == 24) {
-                    mplew.writeMapleAsciiString(option.getText());
-                }
+                if (option.getMode() != 24) break;
+                mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_IncGPMessage:
-                //sub_144984670(v3, v2);
-                mplew.writeInt(option.getAmount());
-                break;
-            case MS_IncCommitmentMessage:
-                //sub_144984800(v3, v2);
-                mplew.writeInt(option.getAmount());
-                mplew.writeInt(option.getAmount());
+            }
+            case 7: {
                 mplew.writeInt(option.getAmount());
                 break;
-            case MS_GiveBuffMessage:
+            }
+            case 8: {
+                mplew.writeInt(option.getAmount());
+                mplew.writeInt(option.getAmount());
+                mplew.writeInt(option.getAmount());
+                break;
+            }
+            case 9: {
                 mplew.writeInt(option.getObjectId());
                 break;
-            case MS_GeneralItemExpireMessage: {
-                //sub_14497E8A0(v3, v2);
+            }
+            case 10: {
                 mplew.write(option.getIntegerData().length);
                 for (int itemID : option.getIntegerData()) {
                     mplew.writeInt(itemID);
                 }
                 break;
             }
-            case MS_SystemMessage:
+            case 11: {
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_UnkRecordMessage:
-            case MS_QuestRecordExMessage: //sub_14497D520(v3, v2);
-            case MS_WorldShareRecordMessage: //sub_14497D9C0(v3, v2);
+            }
+            case 12: 
+            case 13: 
+            case 14: {
                 mplew.writeInt(option.getObjectId());
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_ItemProtectExpireMessage: {
-                //sub_14497EAA0(v3, v2);
+            }
+            case 15: {
                 boolean type2 = false;
                 mplew.writeBool(type2);
-                /*if (type2) {
-                    while (true) {
-                        int unk = 0;
-                        mplew.writeInt(0);
-                         result = sub_14050B7D0(unk);
-                         if (!result) {
-                              break;
-                         }
-                    }
-                }*/
                 break;
             }
-            case MS_ItemExpireReplaceMessage:
+            case 16: {
                 int v9 = 0;
                 mplew.write(v9);
-                if ( v9 > 0)
-                {
-                    do
-                    {
-                        mplew.writeMapleAsciiString("");
-                        --v9;
-                    }
-                    while ( v9 < 0 );
-                }
+                if (v9 <= 0) break;
+                do {
+                    mplew.writeMapleAsciiString("");
+                } while (--v9 < 0);
                 break;
-            case MS_ItemAbilityTimeLimitedExpireMessage: {
-                //sub_14497ED80(v3, v2);
+            }
+            case 17: {
                 mplew.write(option.getIntegerData().length);
                 for (int value : option.getIntegerData()) {
                     mplew.writeInt(value);
                 }
                 break;
             }
-            case MS_SkillExpireMessage: {
-                //sub_14497EF80(v3, v2);
+            case 18: {
                 mplew.write(option.getIntegerData().length);
                 for (int skillID : option.getIntegerData()) {
                     mplew.writeInt(skillID);
                 }
                 break;
             }
-            case MS_IncNonCombatStatEXPMessage:
-                //sub_144981D80(v3, v2);
+            case 19: {
+                MapleTraitType[] traitTypes;
                 int[] data = option.getIntegerData();
-                if (data == null) data = new int[0];
-                long mask = 0;
-                MapleTraitType[] traitTypes = MapleTraitType.values();
-                for (MapleTraitType traitType : traitTypes) {
-                    if (data.length >= traitType.ordinal() + 1 && data[traitType.ordinal()] > 0)
-                        mask |= traitType.getStat().getValue();
+                if (data == null) {
+                    data = new int[]{};
+                }
+                long mask = 0L;
+                for (MapleTraitType traitType : traitTypes = MapleTraitType.values()) {
+                    if (data.length < traitType.ordinal() + 1 || data[traitType.ordinal()] <= 0) continue;
+                    mask |= traitType.getStat().getValue();
                 }
                 mplew.writeLong(mask);
-                for (int i = 0; i < traitTypes.length; i++) {
-                    if (data.length >= i + 1 && data[i] > 0)
-                        mplew.writeInt(data[i]);
+                for (int i = 0; i < traitTypes.length; ++i) {
+                    if (data.length < i + 1 || data[i] <= 0) continue;
+                    mplew.writeInt(data[i]);
                 }
                 break;
-            case MS_Unk0x15:
-                //sub_144982A50(v3, v2);
+            }
+            case 20: {
                 mplew.writeInt(0);
                 mplew.writeInt(0);
                 mplew.writeInt(0);
                 break;
-            case MS_LimitNonCombatStatEXPMessage:
-                //sub_144983410(v3, v2);
+            }
+            case 21: {
                 mplew.writeLong(option.getMask());
                 break;
-            case MS_AndroidMachineHeartAlertMessage:
+            }
+            case 23: {
                 break;
-            case MS_IncFatigueByRestMessage:
+            }
+            case 24: {
                 break;
-            case MS_IncPvPPointMessage:
-                //sub_144984270(v3, v2);
+            }
+            case 25: {
                 mplew.writeInt(option.getAmount());
                 mplew.writeInt(0);
                 break;
-            case MS_PvPItemUseMessage:
-                mplew.writeMapleAsciiString(option.getText()); //name got Shield.
-                mplew.writeMapleAsciiString(option.getText2()); //Shield applied to name.
+            }
+            case 26: {
+                mplew.writeMapleAsciiString(option.getText());
+                mplew.writeMapleAsciiString(option.getText2());
                 break;
-            case MS_WeddingPortalError:
+            }
+            case 27: {
                 mplew.write(0);
                 break;
-            case MS_PvPHardCoreExpMessage:
-                //sub_1449B0620(v3, v2);
+            }
+            case 28: {
                 mplew.writeInt(0);
                 mplew.writeInt(0);
                 break;
-            case MS_NoticeAutoLineChanged:
+            }
+            case 29: {
                 mplew.writeMapleAsciiString(option.getText());
-            case MS_EntryRecordMessage: {
-                //sub_1449AED30(v3, v2);
+            }
+            case 30: {
                 int type2 = 0;
                 mplew.write(type2);
                 switch (type2) {
-                    case 0:
+                    case 0: {
                         mplew.writeShort(0);
                         mplew.writeInt(0);
                         mplew.writeInt(0);
-                        break;
-                    case 1:
+                        break block0;
+                    }
+                    case 1: {
                         mplew.writeInt(0);
-                        break;
-                    case 6:
+                        break block0;
+                    }
+                    case 6: {
                         mplew.writeInt(0);
                         mplew.writeInt(0);
                         mplew.writeInt(0);
-                        break;
-                    default:
-                        break;
+                        break block0;
+                    }
                 }
                 break;
             }
-            case MS_NxRecordMessage:
+            case 31: {
                 mplew.writeInt(option.getObjectId());
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_Unk32:
+            }
+            case 32: {
                 mplew.writeInt(0);
                 break;
-            case MS_IncWPMessage:
+            }
+            case 33: {
                 mplew.writeInt(option.getAmount());
                 break;
-            case MS_MaxWPMessage:
-                break;
-            case MS_StylishKillMessage: { // OK
-                mplew.writeBool(option.getMode() > 0 );
-                if (option.getMode() > 0) {
-                    mplew.writeInt(option.getLongExp());
-                    mplew.writeInt(option.getObjectId());
-                    mplew.writeInt(0);
-                    mplew.writeInt(option.getCombo());
-                } else {
-                    mplew.writeLong(option.getLongExp());
-                    mplew.writeInt(0);
-                    mplew.writeInt(option.getCombo());
-                    mplew.writeInt(option.getColor());
-                }
+            }
+            case 34: {
+                mplew.writeInt(option.getAmount());
                 break;
             }
-            case MS_BarrierEffectIgnoreMessage:
-                //sub_144984FD0();
+            case 35: {
+                mplew.writeBool(option.getMode() > 0);
+                if (option.getMode() > 0) {
+                    int color = Randomizer.rand(1, 6);
+                    mplew.writeInt(option.getCombo());
+                    mplew.writeInt(option.getObjectId());
+                    mplew.writeInt(color);
+                    mplew.writeInt(option.getAmount());
+                    break;
+                }
+                mplew.writeLong(option.getLongExp());
+                mplew.writeInt(0);
+                mplew.writeInt(option.getCombo());
+                mplew.writeInt(option.getColor());
                 break;
-            case MS_ExpiredCashItemResultMessage:
+            }
+            case 36: {
                 break;
-            case MS_CollectionRecordMessage: // OK
+            }
+            case 37: {
+                break;
+            }
+            case 38: {
                 mplew.writeInt(option.getObjectId());
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_RandomChanceMessage:
+            }
+            case 39: {
                 break;
-            case MS_Unk41:
-                //sub_144A4B520(v3, v2);
+            }
+            case 41: {
                 mplew.writeInt(option.getObjectId());
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_AchievementInit:
-                //sub_144A4B700(v3, v2);
+            }
+            case 42: {
                 mplew.writeInt(0);
                 break;
-            case MS_AchievementMessage:
-                //sub_144A131F0(v3, v2);
-                // sub_1403CAF90
-                // 待解
-                //Sound/AchievementEff.img/GradeUp
+            }
+            case 43: {
                 break;
-            case MS_Unk44: {
-                //sub_144A13470(v3, v2);
+            }
+            case 44: {
                 int type2 = 0;
                 mplew.writeInt(type2);
-                for (int i = 0; i < type2; i++) {
+                for (int i = 0; i < type2; ++i) {
                     mplew.writeInt(0);
                 }
                 break;
             }
-            case MS_Unk45:
-                //sub_144A13B40(v3, v2);
-                // sub_1403CBAB0 待解
+            case 45: {
                 break;
-            case MS_Unk46:
-                //sub_144A13BA0(v3, v2);
+            }
+            case 46: {
                 mplew.writeInt(0);
                 mplew.writeInt(0);
                 mplew.writeInt(0);
-                mplew.writeLong(0);
+                mplew.writeLong(0L);
                 break;
-            case MS_Unk48:
+            }
+            case 48: {
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            case MS_Unk50:
+            }
+            case 50: {
                 mplew.writeMapleAsciiString(option.getText());
                 break;
-            default:
-                break;
+            }
         }
         return mplew.getPacket();
     }
@@ -1004,13 +1003,13 @@ public class CWvsContext extends MapleClient{
         mplew.writeInt(50);
         mplew.writeInt(10);
         mplew.writeInt(0);
-        mplew.writeInt(1717986918);
+        mplew.writeInt(0x66666666);
         mplew.writeInt(1071015526);
         mplew.writeInt(1);
-        mplew.writeInt(1717986918);
+        mplew.writeInt(0x66666666);
         mplew.writeInt(1071015526);
         mplew.writeInt(2);
-        mplew.writeInt(1717986918);
+        mplew.writeInt(0x66666666);
         mplew.writeInt(1071015526);
         mplew.writeInt(3);
         mplew.writeInt(-1717986918);
@@ -1025,8 +1024,8 @@ public class CWvsContext extends MapleClient{
         mplew.writeInt(-1717986918);
         mplew.writeInt(1070176665);
         mplew.writeInt(7);
-        mplew.writeInt(858993459);
-        mplew.writeInt(1069757235);
+        mplew.writeInt(0x33333333);
+        mplew.writeInt(0x3FC33333);
         mplew.writeInt(8);
         mplew.writeInt(-1717986918);
         mplew.writeInt(1069128089);
@@ -1242,13 +1241,13 @@ public class CWvsContext extends MapleClient{
         mplew.writeInt(50);
         mplew.writeInt(10);
         mplew.writeInt(0);
-        mplew.writeInt(1717986918);
+        mplew.writeInt(0x66666666);
         mplew.writeInt(1071015526);
         mplew.writeInt(1);
-        mplew.writeInt(1717986918);
+        mplew.writeInt(0x66666666);
         mplew.writeInt(1071015526);
         mplew.writeInt(2);
-        mplew.writeInt(1717986918);
+        mplew.writeInt(0x66666666);
         mplew.writeInt(1071015526);
         mplew.writeInt(3);
         mplew.writeInt(-1717986918);
@@ -1263,8 +1262,8 @@ public class CWvsContext extends MapleClient{
         mplew.writeInt(-1717986918);
         mplew.writeInt(1070176665);
         mplew.writeInt(7);
-        mplew.writeInt(858993459);
-        mplew.writeInt(1069757235);
+        mplew.writeInt(0x33333333);
+        mplew.writeInt(0x3FC33333);
         mplew.writeInt(8);
         mplew.writeInt(-1717986918);
         mplew.writeInt(1069128089);
@@ -1435,14 +1434,10 @@ public class CWvsContext extends MapleClient{
         return mplew.getPacket();
     }
 
-
-
     public static byte[] sendHexaStatsInfo(MapleCharacter chr) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_HEXA_STATS_INFO.getValue());
         PacketHelper.encodeSixStats(mplew, chr);
-
         return mplew.getPacket();
     }
 
@@ -1458,43 +1453,47 @@ public class CWvsContext extends MapleClient{
         mplew.writeShort(OutHeader.LP_HEXA_ACTION_RESULT.getValue());
         mplew.writeInt(type);
         switch (type) {
-            case 0: // 開啟核心
+            case 0: {
                 mplew.writeInt(0);
-                mplew.writeInt(40000000);
-                // 40000000 雅努斯
+                mplew.writeInt(value);
                 break;
-            case 1: // 技能核心強化
+            }
+            case 1: {
                 mplew.writeInt(value);
                 mplew.writeInt(value2);
                 mplew.writeInt(value3);
                 break;
-            case 2: // 開啟核心
+            }
+            case 2: {
                 mplew.writeInt(value);
                 mplew.writeInt(value2);
                 break;
-            case 4:
+            }
+            case 4: {
                 mplew.writeInt(value);
                 break;
-            case 3: // 強化結果
+            }
+            case 3: {
                 mplew.writeInt(value);
                 break;
-            case 5: // 切換分頁
+            }
+            case 5: {
                 mplew.writeInt(value);
                 break;
-            case 6: // 初始化
+            }
+            case 6: {
                 mplew.writeInt(value);
                 break;
-            case 7: // 變更核心能力值
+            }
+            case 7: {
                 mplew.writeInt(value);
                 break;
-            case 8:
+            }
+            case 8: {
                 mplew.writeInt(value);
                 break;
-            default:
-                break;
+            }
         }
-
-
         return mplew.getPacket();
     }
 
@@ -1506,4 +1505,10 @@ public class CWvsContext extends MapleClient{
         mplew.writeMapleAsciiString(key);
         return mplew.getPacket();
     }
+
+    @Generated
+    public static MapleClient getC() {
+        return c;
+    }
 }
+

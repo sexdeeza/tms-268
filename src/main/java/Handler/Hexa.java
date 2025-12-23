@@ -1,7 +1,7 @@
 package Handler;
 
 import Client.MapleClient;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import connection.OutPacket;
 public class Hexa {
     public static OutPacket loadHexaDataStat(MapleClient c) {

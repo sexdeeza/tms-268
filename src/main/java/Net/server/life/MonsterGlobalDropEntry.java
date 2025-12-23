@@ -1,14 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
 import java.util.LinkedHashSet;
 import java.util.Set;
 
 public class MonsterGlobalDropEntry {
-
     public byte dropType;
-    public int id, itemId, chance, Minimum, Maximum, continent, questid, minMobLevel, maxMobLevel, period;
+    public int id;
+    public int itemId;
+    public int chance;
+    public int Minimum;
+    public int Maximum;
+    public int continent;
+    public int questid;
+    public int minMobLevel;
+    public int maxMobLevel;
+    public int period;
     public boolean onlySelf;
-    public Set<Integer> channels = new LinkedHashSet<>();
+    public Set<Integer> channels = new LinkedHashSet<Integer>();
     public String addFrom;
 
     public MonsterGlobalDropEntry(int id, int itemId, int chance, int continent, byte dropType, int Minimum, int Maximum, int questid, int minMobLevel, int maxMobLevel, boolean onlySelf, int period, String addFrom) {
@@ -27,18 +38,19 @@ public class MonsterGlobalDropEntry {
         this.addFrom = addFrom;
     }
 
-    @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-
-        MonsterGlobalDropEntry that = (MonsterGlobalDropEntry) o;
-
-        return itemId == that.itemId;
+        if (this == o) {
+            return true;
+        }
+        if (o == null || this.getClass() != o.getClass()) {
+            return false;
+        }
+        MonsterGlobalDropEntry that = (MonsterGlobalDropEntry)o;
+        return this.itemId == that.itemId;
     }
 
-    @Override
     public int hashCode() {
-        return itemId;
+        return this.itemId;
     }
 }
+

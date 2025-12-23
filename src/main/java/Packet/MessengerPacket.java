@@ -5,7 +5,7 @@
 package Packet;
 
 import Client.MapleCharacter;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Server.world.WorldAllianceService;
 import Server.world.WorldGuildService;
 import Server.world.guild.MapleGuild;

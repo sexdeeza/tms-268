@@ -1,6 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.force;
 
-import java.awt.*;
+import java.awt.Point;
 
 public class MapleForceInfo {
     private int key;
@@ -19,7 +22,7 @@ public class MapleForceInfo {
         return this.effectIdx;
     }
 
-    public final void setEffectIdx(final int effectIdx) {
+    public final void setEffectIdx(int effectIdx) {
         this.effectIdx = effectIdx;
     }
 
@@ -27,7 +30,7 @@ public class MapleForceInfo {
         return this.maxHitCount;
     }
 
-    public final void setMaxHitCount(final int maxHitCount) {
+    public final void setMaxHitCount(int maxHitCount) {
         this.maxHitCount = maxHitCount;
     }
 
@@ -35,7 +38,7 @@ public class MapleForceInfo {
         return this.time;
     }
 
-    public final void setTime(final long time) {
+    public final void setTime(long time) {
         this.time = time;
     }
 
@@ -43,7 +46,7 @@ public class MapleForceInfo {
         return this.position;
     }
 
-    public final void setPosition(final Point position) {
+    public final void setPosition(Point position) {
         this.position = position;
     }
 
@@ -51,7 +54,7 @@ public class MapleForceInfo {
         return this.startDelay;
     }
 
-    public final void setStartDelay(final int startDelay) {
+    public final void setStartDelay(int startDelay) {
         this.startDelay = startDelay;
     }
 
@@ -59,7 +62,7 @@ public class MapleForceInfo {
         return this.angle;
     }
 
-    public final void setAngle(final int angle) {
+    public final void setAngle(int angle) {
         this.angle = angle;
     }
 
@@ -67,7 +70,7 @@ public class MapleForceInfo {
         return this.secondImpact;
     }
 
-    public final void setSecondImpact(final int secondImpact) {
+    public final void setSecondImpact(int secondImpact) {
         this.secondImpact = secondImpact;
     }
 
@@ -75,7 +78,7 @@ public class MapleForceInfo {
         return this.firstImpact;
     }
 
-    public final void setFirstImpact(final int firstImpact) {
+    public final void setFirstImpact(int firstImpact) {
         this.firstImpact = firstImpact;
     }
 
@@ -83,7 +86,7 @@ public class MapleForceInfo {
         return this.inc;
     }
 
-    public final void setInc(final int inc) {
+    public final void setInc(int inc) {
         this.inc = inc;
     }
 
@@ -91,7 +94,8 @@ public class MapleForceInfo {
         return this.key;
     }
 
-    public final void setKey(final int key) {
+    public final void setKey(int key) {
         this.key = key;
     }
 }
+

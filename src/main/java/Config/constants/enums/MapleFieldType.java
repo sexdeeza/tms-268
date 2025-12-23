@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.enums;
 
 public enum MapleFieldType {
@@ -122,15 +125,16 @@ public enum MapleFieldType {
 
     private final int value;
 
-    MapleFieldType(final int value) {
+    private MapleFieldType(int value) {
         this.value = value;
     }
 
-    public static MapleFieldType getByType(final int n) {
-        for (MapleFieldType value : values()) {
-            if (value.value == n) return value;
+    public static MapleFieldType getByType(int n) {
+        for (MapleFieldType value : MapleFieldType.values()) {
+            if (value.value != n) continue;
+            return value;
         }
-        return MapleFieldType.FIELDTYPE_UNKNOW;
+        return FIELDTYPE_UNKNOW;
     }
-
 }
+

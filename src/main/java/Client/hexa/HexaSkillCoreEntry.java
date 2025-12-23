@@ -1,8 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  lombok.Generated
+ */
 package Client.hexa;
 
-import lombok.Getter;
+import lombok.Generated;
 
-@Getter
 public class HexaSkillCoreEntry {
     private final int id;
     private final int skillId;
@@ -15,4 +20,25 @@ public class HexaSkillCoreEntry {
         this.type = type;
         this.maxLevel = maxLevel;
     }
+
+    @Generated
+    public int getId() {
+        return this.id;
+    }
+
+    @Generated
+    public int getSkillId() {
+        return this.skillId;
+    }
+
+    @Generated
+    public int getType() {
+        return this.type;
+    }
+
+    @Generated
+    public int getMaxLevel() {
+        return this.maxLevel;
+    }
 }
+

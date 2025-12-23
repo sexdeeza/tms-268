@@ -1,15 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills;
 
-/**
- * 內在能力技能設置
- *
- * @author PlayDK
- */
 public class InnerSkillEntry {
-
     private final int skillId;
     private final int skillLevel;
-    private final byte position, rank;
+    private final byte position;
+    private final byte rank;
     private final boolean temp;
 
     public InnerSkillEntry(int skillId, int skillevel, byte position, byte rank, boolean temp) {
@@ -21,22 +19,23 @@ public class InnerSkillEntry {
     }
 
     public int getSkillId() {
-        return skillId;
+        return this.skillId;
     }
 
     public int getSkillLevel() {
-        return skillLevel;
+        return this.skillLevel;
     }
 
     public byte getPosition() {
-        return position;
+        return this.position;
     }
 
     public byte getRank() {
-        return rank;
+        return this.rank;
     }
 
     public boolean isTemp() {
-        return temp;
+        return this.temp;
     }
 }
+

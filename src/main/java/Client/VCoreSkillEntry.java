@@ -1,8 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 public class VCoreSkillEntry {
-    private int level, exp, slot;
-    private final int vcoreid, skill1, skill2, skill3;
+    private int level;
+    private int exp;
+    private int slot;
+    private final int vcoreid;
+    private final int skill1;
+    private final int skill2;
+    private final int skill3;
     private long dateExpire;
     private int index;
 
@@ -19,7 +27,7 @@ public class VCoreSkillEntry {
     }
 
     public int getType() {
-        return vcoreid / 10000000 - 1;
+        return this.vcoreid / 10000000 - 1;
     }
 
     public void gainExp(int gain) {
@@ -27,28 +35,30 @@ public class VCoreSkillEntry {
     }
 
     public void levelUP() {
-        this.level++;
+        ++this.level;
     }
 
     public int getSkill(int slot) {
         switch (slot) {
-            case 1:
-                return skill1;
-            case 2:
-                return skill2;
-            case 3:
-                return skill3;
-            default:
-                return 0;
+            case 1: {
+                return this.skill1;
+            }
+            case 2: {
+                return this.skill2;
+            }
+            case 3: {
+                return this.skill3;
+            }
         }
+        return 0;
     }
 
     public int getVcoreid() {
-        return vcoreid;
+        return this.vcoreid;
     }
 
     public int getLevel() {
-        return level;
+        return this.level;
     }
 
     public void setLevel(int level) {
@@ -56,7 +66,7 @@ public class VCoreSkillEntry {
     }
 
     public int getExp() {
-        return exp;
+        return this.exp;
     }
 
     public void setExp(int exp) {
@@ -64,19 +74,19 @@ public class VCoreSkillEntry {
     }
 
     public int getSkill1() {
-        return skill1;
+        return this.skill1;
     }
 
     public int getSkill2() {
-        return skill2;
+        return this.skill2;
     }
 
     public int getSkill3() {
-        return skill3;
+        return this.skill3;
     }
 
     public int getSlot() {
-        return slot;
+        return this.slot;
     }
 
     public void setSlot(int slot) {
@@ -84,7 +94,7 @@ public class VCoreSkillEntry {
     }
 
     public long getDateExpire() {
-        return dateExpire;
+        return this.dateExpire;
     }
 
     public void setDateExpire(long dateExpire) {
@@ -92,10 +102,11 @@ public class VCoreSkillEntry {
     }
 
     public int getIndex() {
-        return index;
+        return this.index;
     }
 
     public void setIndex(int index) {
         this.index = index;
     }
 }
+

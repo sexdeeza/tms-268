@@ -1,34 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client.inventory;
 
+import Client.inventory.Item;
 import Config.constants.ItemConstants;
 
-/**
- * @author PlayDK
- */
 public class ModifyInventory {
-
     private final int mode;
     private Item item;
     private short oldPos;
     private short indicator;
     private boolean switchSrcDst = false;
 
-    /*
-     * 0 = 獲得道具
-     * 1 = 更新道具數量
-     * 2 = 移動道具
-     * 3 = 刪除道具
-     * 4 = 刷新裝備經驗
-     * 5 = 移動道具小背包到背包
-     * 6 = 小背包更新道具
-     * 7 = 小背包刪除道具
-     * 8 = 移動位置小背包裡面的道具
-     * 9 = 小背包獲得道具
-     */
     public ModifyInventory(int mode, Item item) {
         this.mode = mode;
         this.item = item.copy();
@@ -49,50 +33,55 @@ public class ModifyInventory {
     }
 
     public int getMode() {
-        if ((getInventoryType() == 2 || getInventoryType() == 3 || getInventoryType() == 4) && item.getPosition() > 10000) { //其他欄目的道具
-            switch (mode) {
-                case 0:
+        if ((this.getInventoryType() == 2 || this.getInventoryType() == 3 || this.getInventoryType() == 4) && this.item.getPosition() > 10000) {
+            switch (this.mode) {
+                case 0: {
                     return 9;
-                case 1:
+                }
+                case 1: {
                     return 6;
-                case 2:
+                }
+                case 2: {
                     return 5;
-                case 3:
+                }
+                case 3: {
                     return 7;
+                }
             }
         }
-        return mode;
+        return this.mode;
     }
 
     public int getInventoryType() {
-        return ItemConstants.getInventoryType(item.getItemId()).getType();
+        return ItemConstants.getInventoryType(this.item.getItemId()).getType();
     }
 
     public short getPosition() {
-        return item.getPosition();
+        return this.item.getPosition();
     }
 
     public short getOldPosition() {
-        return oldPos;
+        return this.oldPos;
     }
 
     public short getIndicator() {
-        return indicator;
+        return this.indicator;
     }
 
     public boolean switchSrcDst() {
-        return switchSrcDst;
+        return this.switchSrcDst;
     }
 
     public short getQuantity() {
-        return item.getQuantity();
+        return this.item.getQuantity();
     }
 
     public Item getItem() {
-        return item;
+        return this.item;
     }
 
     public void clear() {
         this.item = null;
     }
 }
+

@@ -1,6 +1,5 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Server.channel.handler;
 
@@ -14,44 +13,38 @@ import Client.skills.Skill;
 import Client.skills.SkillFactory;
 import Client.stat.PlayerStats;
 import Config.constants.JobConstants;
-import Config.constants.skills.*;
-import Config.constants.skills.冒險家_技能群組.type_劍士.聖騎士;
-import Config.constants.skills.冒險家_技能群組.type_劍士.英雄;
-import Config.constants.skills.冒險家_技能群組.影武者;
-import Config.constants.skills.冒險家_技能群組.暗影神偷;
-import Config.constants.skills.冒險家_技能群組.箭神;
-import Config.constants.skills.皇家騎士團_技能群組.烈焰巫師;
-import Config.constants.skills.皇家騎士團_技能群組.破風使者;
 import Net.server.buffs.MapleStatEffect;
-import Net.server.life.*;
+import Net.server.life.MapleLifeFactory;
+import Net.server.life.MapleMonster;
+import Net.server.life.MapleMonsterStats;
+import Net.server.life.MobAttackInfo;
+import Net.server.life.MobSkill;
+import Net.server.life.MobSkillFactory;
 import Opcode.Opcode.EffectOpcode;
 import Packet.BuffPacket;
 import Packet.EffectPacket;
 import Packet.ForcePacket;
 import Packet.MaplePacketCreator;
+import java.awt.Point;
+import java.util.Collections;
+import java.util.LinkedHashMap;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.Pair;
 import tools.Randomizer;
 import tools.data.MaplePacketReader;
 
-import java.awt.*;
-import java.util.Collections;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-
-/**
- * @author admin
- */
 public class TakeDamageHandler {
-
     private static final Logger log = LoggerFactory.getLogger(TakeDamageHandler.class);
 
     public static void TakeDamage(MaplePacketReader slea, MapleClient c, MapleCharacter chr) {
+        MobSkill mobSkill;
+        Pair<Integer, Integer> bodyDisease;
         if (chr == null || chr.getMap() == null) {
             return;
-        } else if (chr.isHidden() || chr.isGm() && chr.isInvincible()) {
+        }
+        if (chr.isHidden() || chr.isGm() && chr.isInvincible()) {
             c.announce(EffectPacket.showSpecialEffect(EffectOpcode.UserEffect_Resist));
             chr.getMap().broadcastMessage(chr, EffectPacket.showForeignEffect(chr.getId(), EffectOpcode.UserEffect_Resist), false);
             c.sendEnableActions();
@@ -63,15 +56,15 @@ public class TakeDamageHandler {
         MapleMonsterStats monsterStats = null;
         int diseaseSkill = 0;
         int diseaseLevel = 0;
-        slea.readInt();//V.163 new
+        slea.readInt();
         chr.updateTick(slea.readInt());
-        info.setType(slea.readByte()); //-4 為煙霧造成, -3 和 -2 為地圖造成的傷害.
-        slea.readByte(); // Element - 0x00 = elementless, 0x01 = ice, 0x02 = fire, 0x03 = lightning
+        info.setType(slea.readByte());
         slea.readByte();
-        info.setDamage(slea.readInt());//受傷數值
+        slea.readByte();
+        info.setDamage(slea.readInt());
         info.setCritical(slea.readByte() > 0);
         info.setUnkb(slea.readByte() > 0);
-        if (info.getType() >= -1) { //V.160
+        if (info.getType() >= -1) {
             info.setObjectID(slea.readInt());
             slea.readInt();
             slea.readInt();
@@ -85,12 +78,12 @@ public class TakeDamageHandler {
             info.setTemplateID(slea.readInt());
             slea.readByte();
             slea.readByte();
-            slea.readInt(); // TemplateID
-            slea.readInt(); // oid
+            slea.readInt();
+            slea.readInt();
             attacker = chr.getMap().getMobObject(info.getObjectID());
             info.setDirection(slea.readByte());
             monsterStats = MapleLifeFactory.getMonsterStats(info.getTemplateID());
-            if (attacker != null && ((info.getTemplateID() != 0 && attacker.getId() != info.getTemplateID()) || attacker.isFake() || attacker.getStats().isEscort())) {
+            if (attacker != null && (info.getTemplateID() != 0 && attacker.getId() != info.getTemplateID() || attacker.isFake() || attacker.getStats().isEscort())) {
                 return;
             }
             info.setSkillID(slea.readInt());
@@ -111,75 +104,71 @@ public class TakeDamageHandler {
         diseaseLevel = slea.readInt();
         diseaseSkill = slea.readByte();
         if (info.isRefPhysical() && info.getRefDamage() > 0 && chr.getSkillEffect(info.getSkillID()) != null) {
+            MapleStatEffect skillEffect;
             if (attacker != null) {
                 attacker.damage(chr, info.getSkillID(), info.getRefDamage(), false);
             }
-            final MapleStatEffect skillEffect = chr.getSkillEffect(info.getSkillID());
-            if (skillEffect != null) {
-                skillEffect.applyMonsterEffect(chr, attacker, skillEffect.getMobDebuffDuration(chr) > 0 ? skillEffect.getMobDebuffDuration(chr) : (skillEffect.getSubTime() * 1000));
+            if ((skillEffect = chr.getSkillEffect(info.getSkillID())) != null) {
+                skillEffect.applyMonsterEffect(chr, attacker, skillEffect.getMobDebuffDuration(chr) > 0 ? skillEffect.getMobDebuffDuration(chr) : skillEffect.getSubTime() * 1000);
             }
         }
         if (attacker != null && info.getDamage() > 0) {
             long refDamage = 0L;
             for (Pair<Integer, Integer> pair : stats.getDamageReflect().values()) {
-                if (Randomizer.isSuccess(pair.right)) {
-                    refDamage += pair.left * 100.0 * info.getDamage() / 100.0;
-                }
+                if (!Randomizer.isSuccess((Integer)pair.right)) continue;
+                refDamage = (long)((double)refDamage + (double)((Integer)pair.left).intValue() * 100.0 * (double)info.getDamage() / 100.0);
             }
             if (refDamage > 0L) {
                 attacker.damage(chr, -1, refDamage, false);
             }
         }
         if (info.getType() != -1) {
-            final MobAttackInfo mobAttackInfo;
+            MobAttackInfo mobAttackInfo;
             if (monsterStats != null && (mobAttackInfo = monsterStats.getMobAttack(info.getType())) != null) {
                 diseaseSkill = mobAttackInfo.getDiseaseSkill();
                 diseaseLevel = mobAttackInfo.getDiseaseLevel();
             }
-        } else {
-            Pair<Integer, Integer> bodyDisease;
-            if (monsterStats != null && (bodyDisease = monsterStats.getBodyDisease()) != null) {
-                diseaseSkill = bodyDisease.getLeft();
-                diseaseLevel = bodyDisease.getRight();
-            }
+        } else if (monsterStats != null && (bodyDisease = monsterStats.getBodyDisease()) != null) {
+            diseaseSkill = bodyDisease.getLeft();
+            diseaseLevel = bodyDisease.getRight();
         }
-        if (diseaseSkill > 0 && diseaseLevel > 0) {
-            final MobSkill mobSkill;
-            if ((mobSkill = MobSkillFactory.getMobSkill(diseaseSkill, diseaseLevel)) != null && (info.getDamage() == -1 || info.getDamage() > 0)) {
-                mobSkill.unprimaryPassiveApplyTo(chr);
-            }
+        if (diseaseSkill > 0 && diseaseLevel > 0 && (mobSkill = MobSkillFactory.getMobSkill(diseaseSkill, diseaseLevel)) != null && (info.getDamage() == -1 || info.getDamage() > 0)) {
+            mobSkill.unprimaryPassiveApplyTo(chr);
         }
         if (info.getDamage() > 0) {
+            int value;
+            int min;
+            SecondaryStatValueHolder mbsvh;
+            int magicShield;
+            MapleStatEffect eff;
             int hploss = info.getDamage();
             int mpcost = 0;
-            SecondaryStatValueHolder mbsvh;
             if (chr.getBuffedIntValue(SecondaryStat.MagicGuard) > 0) {
-                final int magicShield = hploss * chr.getBuffedIntValue(SecondaryStat.MagicGuard) / 100;
+                int magicShield2 = hploss * chr.getBuffedIntValue(SecondaryStat.MagicGuard) / 100;
+                if (chr.getStat().getMp() >= magicShield2) {
+                    hploss -= magicShield2;
+                    mpcost -= magicShield2;
+                }
+            }
+            if ((eff = chr.getSkillEffect(12000024)) != null) {
+                magicShield = hploss * eff.getX() / 100;
                 if (chr.getStat().getMp() >= magicShield) {
                     hploss -= magicShield;
                     mpcost -= magicShield;
                 }
             }
-            MapleStatEffect eff;
-            if ((eff = chr.getSkillEffect(烈焰巫師.火的反動力)) != null) {
-                final int magicShield = hploss * eff.getX() / 100;
-                if (chr.getStat().getMp() >= magicShield) {
-                    hploss -= magicShield;
-                    mpcost -= magicShield;
-                }
-            }
-            if ((eff = chr.getSkillEffect(夜光.魔法防禦)) != null) {
-                final int magicShield = hploss * eff.getX() / 100;
+            if ((eff = chr.getSkillEffect(27000003)) != null) {
+                magicShield = hploss * eff.getX() / 100;
                 if (chr.getStat().getMp() >= magicShield) {
                     hploss -= magicShield;
                     mpcost -= magicShield;
                 }
             }
             if (chr.getStat().damAbsorbShieldR > 0.0) {
-                hploss -= (int) Math.floor(hploss * chr.getStat().damAbsorbShieldR / 100.0);
+                hploss -= (int)Math.floor((double)hploss * chr.getStat().damAbsorbShieldR / 100.0);
             }
-            if ((mbsvh = chr.getBuffStatValueHolder(SecondaryStat.PowerTransferGauge, 神射手.反向傷害)) != null) {
-                final int lost = Math.min(hploss * mbsvh.effect.getX() / 100, mbsvh.value);
+            if ((mbsvh = chr.getBuffStatValueHolder(SecondaryStat.PowerTransferGauge, 3210013)) != null) {
+                int lost = Math.min(hploss * mbsvh.effect.getX() / 100, mbsvh.value);
                 hploss -= lost;
                 if (lost >= mbsvh.value) {
                     chr.dispelEffect(SecondaryStat.PowerTransferGauge);
@@ -193,40 +182,40 @@ public class TakeDamageHandler {
                 eff.unprimaryPassiveApplyTo(chr);
             }
             if ((eff = chr.getEffectForBuffStat(SecondaryStat.BloodyExplosion)) != null) {
-                final MapleStatEffect effect = chr.getSkillEffect(暗影神偷.貪婪);
-                final int mesoShield = (int) (hploss * (effect != null ? effect.getV() + 50 : 50) / 100.0);
+                MapleStatEffect effect = chr.getSkillEffect(4210012);
+                int mesoShield = (int)((double)(hploss * (effect != null ? effect.getV() + 50 : 50)) / 100.0);
                 int mesoChange = mesoShield * eff.getX() / 100;
                 if (effect != null) {
                     mesoChange -= mesoChange * effect.getW() / 100;
                 }
                 mesoChange = Math.max(1, mesoChange);
-                if (chr.getMeso() >= mesoChange) {
+                if (chr.getMeso() >= (long)mesoChange) {
                     chr.gainMeso(-mesoChange, false);
                     hploss -= mesoShield;
                 }
             }
             if ((eff = chr.getEffectForBuffStat(SecondaryStat.RWBarrier)) != null) {
-                final int buffedIntValue2 = chr.getBuffedIntValue(SecondaryStat.RWBarrier);
-                final int min = Math.min(hploss, buffedIntValue2);
-                final int n11 = buffedIntValue2 - min;
+                int buffedIntValue2 = chr.getBuffedIntValue(SecondaryStat.RWBarrier);
+                min = Math.min(hploss, buffedIntValue2);
+                int n11 = buffedIntValue2 - min;
                 hploss -= min;
-                chr.setBuffStatValue(SecondaryStat.RWBarrier, 爆拳槍神.續航防盾, n11);
+                chr.setBuffStatValue(SecondaryStat.RWBarrier, 37000006, n11);
                 eff.applyTo(chr);
             }
             if ((eff = chr.getEffectForBuffStat(SecondaryStat.PowerTransferGauge)) != null) {
-                final int value = chr.getBuffedIntValue(SecondaryStat.PowerTransferGauge);
+                int value2 = chr.getBuffedIntValue(SecondaryStat.PowerTransferGauge);
                 if (JobConstants.is天使破壞者(chr.getJob())) {
-                    final int min = Math.min(hploss * eff.getX() / 100, value);
-                    chr.setBuffStatValue(SecondaryStat.PowerTransferGauge, 天使破壞者.靈魂傳動, Math.min(Math.max(0, value - min), 99999));
+                    min = Math.min(hploss * eff.getX() / 100, value2);
+                    chr.setBuffStatValue(SecondaryStat.PowerTransferGauge, 65101002, Math.min(Math.max(0, value2 - min), 99999));
                     hploss -= min;
                     eff.unprimaryPassiveApplyTo(chr);
                 }
             }
             if ((eff = chr.getEffectForBuffStat(SecondaryStat.ImmuneBarrier)) != null) {
-                final int value = chr.getBuffedIntValue(SecondaryStat.ImmuneBarrier);
+                int value3 = chr.getBuffedIntValue(SecondaryStat.ImmuneBarrier);
                 if (JobConstants.is神之子(chr.getJob())) {
-                    final int min = Math.min(hploss * eff.getX() / 100, value);
-                    chr.setBuffStatValue(SecondaryStat.ImmuneBarrier, 神之子.免疫護罩, Math.min(Math.max(0, value - min), 99999));
+                    min = Math.min(hploss * eff.getX() / 100, value3);
+                    chr.setBuffStatValue(SecondaryStat.ImmuneBarrier, 101120109, Math.min(Math.max(0, value3 - min), 99999));
                     hploss -= min;
                     eff.unprimaryPassiveApplyTo(chr);
                 }
@@ -253,30 +242,28 @@ public class TakeDamageHandler {
             if ((eff = chr.getEffectForBuffStat(SecondaryStat.LefWarriorNobility)) != null) {
                 hploss -= hploss * (100 - eff.getX()) / 100;
             }
-            final int value = chr.getBuffedIntValue(SecondaryStat.LefBuffMastery);
-            if (value > 0 && (eff = chr.getSkillEffect(伊利恩.聖靈護盾)) != null) {
+            if ((value = chr.getBuffedIntValue(SecondaryStat.LefBuffMastery)) > 0 && (eff = chr.getSkillEffect(152100011)) != null) {
                 hploss -= hploss * eff.getX() / 100;
-                final Skill skill = SkillFactory.getSkill(伊利恩.祝福標誌_1);
+                Skill skill = SkillFactory.getSkill(152000009);
                 if (skill != null) {
                     eff.unprimaryPassiveApplyTo(chr);
-                    final MapleStatEffect effect;
-                    if ((effect = skill.getEffect(value - 1)) != null) {
+                    MapleStatEffect effect = skill.getEffect(value - 1);
+                    if (effect != null) {
                         effect.unprimaryPassiveApplyTo(chr);
                     } else {
-                        chr.dispelEffect(伊利恩.祝福標誌_1);
+                        chr.dispelEffect(152000009);
                     }
                 }
             }
-            mbsvh = chr.getBuffStatValueHolder(SecondaryStat.ComboCounter);
-            if (mbsvh != null && mbsvh.effect != null) {
-                MapleStatEffect effect = chr.getSkillEffect(英雄.鬥氣綜合);
-                MapleStatEffect effectEnchant = chr.getSkillEffect(英雄.進階鬥氣);
+            if ((mbsvh = chr.getBuffStatValueHolder(SecondaryStat.ComboCounter)) != null && mbsvh.effect != null) {
+                MapleStatEffect effect = chr.getSkillEffect(1110013);
+                MapleStatEffect effectEnchant = chr.getSkillEffect(1120003);
                 if (effect != null) {
                     int subProp = effect.getSubProp();
                     if (mbsvh.value < effect.getX() + 1 && Randomizer.nextInt(100) < subProp) {
-                        mbsvh.value += 1;
+                        ++mbsvh.value;
                         if (effectEnchant != null && effectEnchant.makeChanceResult(chr) && mbsvh.value < effect.getX() + 1) {
-                            mbsvh.value += 1;
+                            ++mbsvh.value;
                         }
                         chr.send(BuffPacket.giveBuff(chr, mbsvh.effect, Collections.singletonMap(SecondaryStat.ComboCounter, mbsvh.effect.getSourceId())));
                     }
@@ -287,7 +274,7 @@ public class TakeDamageHandler {
                     hploss = chr.getStat().getHp();
                 }
                 hploss = hploss * (100 - mbsvh.effect.getQ()) / 100;
-                mbsvh.z--;
+                --mbsvh.z;
                 chr.send(BuffPacket.giveBuff(chr, mbsvh.effect, Collections.singletonMap(SecondaryStat.ShadowShield, mbsvh.effect.getSourceId())));
             }
             int hplossend = hploss;
@@ -301,10 +288,9 @@ public class TakeDamageHandler {
                     m.value = 0;
                 }
                 chr.send(BuffPacket.giveBuff(chr, m.effect, Collections.singletonMap(SecondaryStat.IndieBarrier, m.effect.getSourceId())));
-                if (hplossend <= 0) {
-                    hplossend = 0;
-                    break;
-                }
+                if (hplossend > 0) continue;
+                hplossend = 0;
+                break;
             }
             chr.addHPMP(-hplossend, mpcost, false);
             info.setDamage(hploss);
@@ -314,9 +300,8 @@ public class TakeDamageHandler {
             chr.dropDebugMessage(1, "[玩家受傷] 受傷類型: " + info.getTypeName() + " 受傷數值: " + info.getDamage());
         }
         chr.getSpecialStat().setHurtHP(info.getDamage());
-        applyDamageTaken(chr, attacker, info);
+        TakeDamageHandler.applyDamageTaken(chr, attacker, info);
         chr.getMap().broadcastMessage(chr, MaplePacketCreator.damagePlayer(info), false);
-
         MapleAndroid android = chr.getAndroid();
         if (android != null) {
             android.showEmotion(chr, "alert");
@@ -330,8 +315,8 @@ public class TakeDamageHandler {
         if (mbsvh != null && mbsvh.effect != null) {
             if (mbsvh.value > 0) {
                 guard = true;
-                mbsvh.value -= 1;
-                Map<SecondaryStat, Integer> statups = new LinkedHashMap<>();
+                --mbsvh.value;
+                LinkedHashMap<SecondaryStat, Integer> statups = new LinkedHashMap<SecondaryStat, Integer>();
                 for (SecondaryStat stat : mbsvh.effect.getStatups().keySet()) {
                     statups.put(stat, mbsvh.effect.getSourceId());
                 }
@@ -342,174 +327,153 @@ public class TakeDamageHandler {
             }
         }
         switch (player.getJob()) {
-            case 121:
+            case 121: 
             case 122: {
-                MapleMonster monster;
                 MapleStatEffect effect;
-                if (info.getRefOid() > 0 && (monster = player.getMap().getMobObject(info.getRefOid())) != null && (effect = player.getSkillEffect(聖騎士.盾牌技能)) != null) {
+                MapleMonster monster;
+                if (info.getRefOid() > 0 && (monster = player.getMap().getMobObject(info.getRefOid())) != null && (effect = player.getSkillEffect(1210001)) != null) {
                     effect.applyMonsterEffect(player, monster, effect.getMobDebuffDuration(player));
                 }
-                if (!guard && info.getDamage() <= 0) {
-                    mbsvh = player.getBuffStatValueHolder(SecondaryStat.BlessingArmor);
-                    if (mbsvh != null && mbsvh.effect != null) {
-                        if (mbsvh.value > 0) {
-                            mbsvh.value -= 1;
-                            Map<SecondaryStat, Integer> statups = new LinkedHashMap<>();
-                            for (SecondaryStat stat : mbsvh.effect.getStatups().keySet()) {
-                                statups.put(stat, mbsvh.effect.getSourceId());
-                            }
-                            player.send(BuffPacket.giveBuff(player, mbsvh.effect, statups));
+                if (!guard && info.getDamage() <= 0 && (mbsvh = player.getBuffStatValueHolder(SecondaryStat.BlessingArmor)) != null && mbsvh.effect != null) {
+                    if (mbsvh.value > 0) {
+                        --mbsvh.value;
+                        LinkedHashMap<SecondaryStat, Integer> statups = new LinkedHashMap<SecondaryStat, Integer>();
+                        for (SecondaryStat stat : mbsvh.effect.getStatups().keySet()) {
+                            statups.put(stat, mbsvh.effect.getSourceId());
                         }
-                        if (mbsvh.value <= 0) {
-                            player.cancelEffect(mbsvh.effect, true, -1L, Collections.singletonMap(SecondaryStat.BlessingArmor, 0));
-                        }
+                        player.send(BuffPacket.giveBuff(player, mbsvh.effect, statups));
+                    }
+                    if (mbsvh.value <= 0) {
+                        player.cancelEffect(mbsvh.effect, true, -1L, Collections.singletonMap(SecondaryStat.BlessingArmor, 0));
                     }
                 }
-                if (!player.isSkillCooling(聖騎士.祝福護甲) && (effect = player.getSkillEffect(聖騎士.祝福護甲)) != null && effect.makeChanceResult(player)) {
-                    effect.unprimaryPassiveApplyTo(player);
-                    int cooldown = effect.getCooldown(player);
-                    if (cooldown > 0) {
-                        player.registerSkillCooldown(effect.getSourceId(), cooldown, true);
-                    }
-                }
+                if (player.isSkillCooling(1210016) || (effect = player.getSkillEffect(1210016)) == null || !effect.makeChanceResult(player)) break;
+                effect.unprimaryPassiveApplyTo(player);
+                int cooldown = effect.getCooldown(player);
+                if (cooldown <= 0) break;
+                player.registerSkillCooldown(effect.getSourceId(), cooldown, true);
                 break;
             }
-            case 311:
+            case 311: 
             case 312: {
-                if (info.getDamage() <= 0 && player.getSkillEffect(箭神.躲避) != null) {
-                    player.getClient().announce(MaplePacketCreator.sendCritAttack());
-                }
+                if (info.getDamage() > 0 || player.getSkillEffect(3110007) == null) break;
+                player.getClient().announce(MaplePacketCreator.sendCritAttack());
                 break;
             }
-            case 321:
+            case 321: 
             case 322: {
-                if (info.getDamage() <= 0 && player.getSkillEffect(神射手.躲避) != null) {
-                    player.getClient().announce(MaplePacketCreator.sendCritAttack());
-                }
+                if (info.getDamage() > 0 || player.getSkillEffect(3210007) == null) break;
+                player.getClient().announce(MaplePacketCreator.sendCritAttack());
                 break;
             }
-            case 331:
+            case 331: 
             case 332: {
-                if (info.getDamage() <= 0 && player.getSkillEffect(開拓者.躲避) != null) {
-                    player.getClient().announce(MaplePacketCreator.sendCritAttack());
-                }
+                if (info.getDamage() > 0 || player.getSkillEffect(3310005) == null) break;
+                player.getClient().announce(MaplePacketCreator.sendCritAttack());
                 break;
             }
-            case 433:
+            case 433: 
             case 434: {
-                final MapleStatEffect effect;
-                if (info.getDamage() <= 0 && (effect = player.getSkillEffect(影武者.暗影迴避)) != null && player.getCheatTracker().canNextShadowDodge()) {
-                    effect.unprimaryPassiveApplyTo(player);
-                }
+                MapleStatEffect effect;
+                if (info.getDamage() > 0 || (effect = player.getSkillEffect(4330009)) == null || !player.getCheatTracker().canNextShadowDodge()) break;
+                effect.unprimaryPassiveApplyTo(player);
                 break;
             }
-            case 1311:
+            case 1311: 
             case 1312: {
-                final MapleStatEffect effect;
-                if (info.getDamage() <= 0 && (effect = player.getSkillEffect(破風使者.迴避之風)) != null && player.getCheatTracker().canNextShadowDodge()) {
-                    effect.unprimaryPassiveApplyTo(player);
-                }
+                MapleStatEffect effect;
+                if (info.getDamage() > 0 || (effect = player.getSkillEffect(13110026)) == null || !player.getCheatTracker().canNextShadowDodge()) break;
+                effect.unprimaryPassiveApplyTo(player);
                 break;
             }
-            case 3111:
+            case 3111: 
             case 3112: {
-                final MapleStatEffect skillEffect8;
-                if (info.getDefType() > 0 && (skillEffect8 = player.getSkillEffect(惡魔殺手.力量防禦)) != null) {
-                    player.addHPMP(skillEffect8.getY(), 0);
-                    player.addHPMP(0, skillEffect8.getZ(), false);
-                }
+                MapleStatEffect skillEffect8;
+                if (info.getDefType() <= 0 || (skillEffect8 = player.getSkillEffect(31110008)) == null) break;
+                player.addHPMP(skillEffect8.getY(), 0);
+                player.addHPMP(0, skillEffect8.getZ(), false);
                 break;
             }
-            case 3311:
+            case 3311: 
             case 3312: {
-                if (info.getDamage() <= 0 && player.getSkillEffect(狂豹獵人.迴避) != null) {
-                    player.getClient().announce(MaplePacketCreator.sendCritAttack());
-                }
+                if (info.getDamage() > 0 || player.getSkillEffect(33110008) == null) break;
+                player.getClient().announce(MaplePacketCreator.sendCritAttack());
                 break;
             }
-            case 3611:
+            case 3611: 
             case 3612: {
+                MapleStatEffect effect;
                 if (player.getEffectForBuffStat(SecondaryStat.ShadowPartner) != null) {
                     player.getSpecialStat().setShadowHP(player.getSpecialStat().getShadowHP() - info.getDamage());
                     if (player.getSpecialStat().getShadowHP() <= 0) {
                         player.dispelEffect(SecondaryStat.ShadowPartner);
                     }
                 }
-                MapleStatEffect effect;
                 if ((effect = player.getEffectForBuffStat(SecondaryStat.XenonAegisSystem)) != null && effect.makeChanceResult(player) && player.getCheatTracker().canNextAegisSystem()) {
                     player.getMap().broadcastMessage(player, ForcePacket.forceAtomCreate(ff.getMapleForce(player, effect, 0)), true);
                 }
                 if ((effect = player.getEffectForBuffStat(SecondaryStat.StackBuff)) != null) {
                     effect.unprimaryPassiveApplyTo(player);
                 }
-                if (info.getDamage() > 0 && player.getChair() != null && player.getChair().getItemId() == 3010587) {
-                    player.getMap().removeAffectedArea(player.getId(), 傑諾.時空膠囊);
-                }
+                if (info.getDamage() <= 0 || player.getChair() == null || player.getChair().getItemId() != 3010587) break;
+                player.getMap().removeAffectedArea(player.getId(), 36121007);
                 break;
             }
-            case 3700:
-            case 3710:
-            case 3711:
+            case 3700: 
+            case 3710: 
+            case 3711: 
             case 3712: {
-                final MapleStatEffect effect;
-                if ((effect = player.getSkillEffect(爆拳槍神.續航防盾)) != null && player.getBuffedValue(SecondaryStat.RWBarrier) == null) {
-                    effect.applyTo(player);
-                }
+                MapleStatEffect effect = player.getSkillEffect(37000006);
+                if (effect == null || player.getBuffedValue(SecondaryStat.RWBarrier) != null) break;
+                effect.applyTo(player);
                 break;
             }
-            case 4111:
+            case 4111: 
             case 4112: {
-                final MapleStatEffect effect;
-                if (info.getDamage() <= 0 && (effect = player.getSkillEffect(劍豪.柳身)) != null && effect.makeChanceResult(player)) {
-                    effect.unprimaryPassiveApplyTo(player);
-                }
+                MapleStatEffect effect;
+                if (info.getDamage() > 0 || (effect = player.getSkillEffect(41110006)) == null || !effect.makeChanceResult(player)) break;
+                effect.unprimaryPassiveApplyTo(player);
                 break;
             }
-            case 4210:
-            case 4211:
+            case 4210: 
+            case 4211: 
             case 4212: {
-                final MapleStatEffect effect;
-                if (info.getDamage() > 0 && (effect = player.getEffectForBuffStat(SecondaryStat.FireBarrier)) != null) {
-                    effect.unprimaryPassiveApplyTo(player);
-                    return;
-                }
-                break;
+                MapleStatEffect effect;
+                if (info.getDamage() <= 0 || (effect = player.getEffectForBuffStat(SecondaryStat.FireBarrier)) == null) break;
+                effect.unprimaryPassiveApplyTo(player);
+                return;
             }
-            case 5100:
-            case 5110:
-            case 5111:
+            case 5100: 
+            case 5110: 
+            case 5111: 
             case 5112: {
+                MapleStatEffect effect;
                 if (player.getBuffedValue(SecondaryStat.BodyRectGuardPrepare) != null && info.getDamage() <= 0) {
                     player.getClient().announce(EffectPacket.showRoyalGuardAttack());
                 }
-                final MapleStatEffect effect;
-                if ((effect = player.getEffectForBuffStat(SecondaryStat.MichaelStanceLink)) != null) {
-                    effect.unprimaryPassiveApplyTo(player);
-                }
+                if ((effect = player.getEffectForBuffStat(SecondaryStat.MichaelStanceLink)) == null) break;
+                effect.unprimaryPassiveApplyTo(player);
                 break;
             }
-            case 6510:
-            case 6511:
+            case 6510: 
+            case 6511: 
             case 6512: {
                 break;
             }
-            case 10000:
-            case 10100:
-            case 10110:
-            case 10111:
+            case 10000: 
+            case 10100: 
+            case 10110: 
+            case 10111: 
             case 10112: {
-                final MapleStatEffect effect;
-                if (info.getDamage() > 0 && player.isBeta() && (effect = player.getSkillEffect(神之子.免疫護罩)) != null && effect.makeChanceResult(player)) {
-                    effect.unprimaryPassiveApplyTo(player);
-                    break;
-                }
+                MapleStatEffect effect;
+                if (info.getDamage() <= 0 || !player.isBeta() || (effect = player.getSkillEffect(101120109)) == null || !effect.makeChanceResult(player)) break;
+                effect.unprimaryPassiveApplyTo(player);
                 break;
             }
         }
     }
 
     public static class UserHitInfo {
-
         private final int characterID;
         private boolean critical;
         private boolean unkb;
@@ -529,7 +493,7 @@ public class TakeDamageHandler {
         private int templateID;
         private String typeName;
 
-        public UserHitInfo(final int characterID) {
+        public UserHitInfo(int characterID) {
             this.characterID = characterID;
         }
 
@@ -647,39 +611,20 @@ public class TakeDamageHandler {
 
         public void setType(byte type) {
             this.type = type;
-            setTypeName();
+            this.setTypeName();
         }
 
         private void setTypeName() {
-            String typeName;
-            switch (this.type) {
-                case -3:
-                    typeName = "場景傷害";
-                    break;
-                case -1:
-                    typeName = "怪物碰撞";
-                    break;
-                case 0:
-                    typeName = "近戰攻擊";
-                    break;
-                case 1:
-                    typeName = "爆炸攻擊";
-                    break;
-                case 2:
-                    typeName = "爆炸攻擊";
-                    break;
-                case 3:
-                    typeName = "魔法攻擊";
-                    break;
-                case 4:
-                    typeName = "BOSS攻擊";
-                    break;
-                case -2:
-                default:
-                    typeName = "未知傷害";
-                    break;
-            }
-            this.typeName = typeName;
+            this.typeName = switch (this.type) {
+                case -3 -> "場景傷害";
+                case -1 -> "怪物碰撞";
+                case 0 -> "近戰攻擊";
+                case 1 -> "爆炸攻擊";
+                case 2 -> "爆炸攻擊";
+                case 3 -> "魔法攻擊";
+                case 4 -> "BOSS攻擊";
+                default -> "未知傷害";
+            };
         }
 
         public void setObjectID(int objectID) {
@@ -699,7 +644,8 @@ public class TakeDamageHandler {
         }
 
         public String getTypeName() {
-            return typeName;
+            return this.typeName;
         }
     }
 }
+

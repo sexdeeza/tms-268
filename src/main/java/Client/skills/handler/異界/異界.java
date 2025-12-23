@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.異界;
 
 import Client.MapleCharacter;
@@ -5,20 +8,18 @@ import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.異界通用;
+import Config.constants.skills.通用V核心;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 
-import static Config.constants.skills.通用V核心.異界通用.*;
-
-public class 異界 extends AbstractSkillHandler {
-
+public class 異界
+extends AbstractSkillHandler {
     public 異界() {
-        for (Field field : 異界通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.異界通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -32,17 +33,18 @@ public class 異界 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 恢復的祝福:
-            case 防禦的祝福:
-            case 保護的祝福:
-            case 異界的虛空:
-                return 異界女神的祝福;
+            case 400001051: 
+            case 400001053: 
+            case 400001054: 
+            case 400001055: {
+                return 400001050;
+            }
         }
         return -1;
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -77,3 +79,4 @@ public class 異界 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

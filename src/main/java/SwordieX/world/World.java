@@ -1,16 +1,20 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  SwordieX.client.party.Party
+ *  SwordieX.enums.ServerStatus
+ */
 package SwordieX.world;
 
 import SwordieX.client.party.Party;
 import SwordieX.enums.ServerStatus;
 import SwordieX.enums.WorldId;
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class World {
-    //WORLDITEM struct
-
     private final WorldId worldId;
     private final int worldState;
     private final int worldEventEXP_WSE;
@@ -18,12 +22,11 @@ public class World {
     private final int boomUpEventNotice;
     private final String name;
     private String worldEventDescription;
-    private final Map<Integer, Party> parties = new HashMap<>();
+    private final Map<Integer, Party> parties = new HashMap<Integer, Party>();
     private final AtomicInteger partyIDCounter = new AtomicInteger(1);
     private boolean reboot;
 
-    public World(WorldId worldId, String name, int worldState, String worldEventDescription, int worldEventEXP_WSE,
-                 int worldEventDrop_WSE, int boomUpEventNotice, int amountOfChannels, boolean reboot) {
+    public World(WorldId worldId, String name, int worldState, String worldEventDescription, int worldEventEXP_WSE, int worldEventDrop_WSE, int boomUpEventNotice, int amountOfChannels, boolean reboot) {
         this.worldId = worldId;
         this.name = name;
         this.worldState = worldState;
@@ -31,47 +34,39 @@ public class World {
         this.worldEventEXP_WSE = worldEventEXP_WSE;
         this.worldEventDrop_WSE = worldEventDrop_WSE;
         this.boomUpEventNotice = boomUpEventNotice;
-//        List<Channel> channelList = new ArrayList<>();
-//        for (int i = 1; i <= amountOfChannels; i++) {
-//            channelList.add(new Channel(worldId, i));
-//        }
-//        this.channels = channelList;
         this.reboot = reboot;
-//        initAuctionHouse();
     }
 
     public World(WorldId worldId, String name, int amountOfChannels, String worldEventMsg) {
-        this(worldId, name, 0, worldEventMsg, 100, 100,
-                0, amountOfChannels, false);
-//        initGuilds();
+        this(worldId, name, 0, worldEventMsg, 100, 100, 0, amountOfChannels, false);
     }
 
     public WorldId getWorldId() {
-        return worldId;
+        return this.worldId;
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public int getWorldState() {
-        return worldState;
+        return this.worldState;
     }
 
     public int getWorldEventEXP_WSE() {
-        return worldEventEXP_WSE;
+        return this.worldEventEXP_WSE;
     }
 
     public int getWorldEventDrop_WSE() {
-        return worldEventDrop_WSE;
+        return this.worldEventDrop_WSE;
     }
 
     public int getBoomUpEventNotice() {
-        return boomUpEventNotice;
+        return this.boomUpEventNotice;
     }
 
     public String getWorldEventDescription() {
-        return worldEventDescription;
+        return this.worldEventDescription;
     }
 
     public void setWorldEventDescription(String worldEventDescription) {
@@ -83,12 +78,12 @@ public class World {
     }
 
     public Map<Integer, Party> getParties() {
-        return parties;
+        return this.parties;
     }
 
     public void addParty(Party p) {
-        int id = getPartyIdAndIncrement(); // sequential IDs should be fine here
-        getParties().put(id, p);
+        int id = this.getPartyIdAndIncrement();
+        this.getParties().put(id, p);
         p.setId(id);
         if (p.getWorld() == null) {
             p.setWorld(this);
@@ -96,19 +91,19 @@ public class World {
     }
 
     public void removeParty(Party p) {
-        getParties().remove(p.getId());
+        this.getParties().remove(p.getId());
     }
 
     public Party getPartybyId(int partyID) {
-        return getParties().get(partyID);
+        return this.getParties().get(partyID);
     }
 
     public Party getPartybyMemberId(int memberId) {
-        return parties.values().stream().filter(party -> party.getPartyMemberByID(memberId) != null).findFirst().orElse(null);
+        return this.parties.values().stream().filter(party -> party.getPartyMemberByID(memberId) != null).findFirst().orElse(null);
     }
 
     public boolean isReboot() {
-        return reboot;
+        return this.reboot;
     }
 
     public void setReboot(boolean reboot) {
@@ -116,14 +111,16 @@ public class World {
     }
 
     public int getPartyIdAndIncrement() {
-        return partyIDCounter.getAndIncrement();
+        return this.partyIDCounter.getAndIncrement();
     }
 
     public int getPartyIDCounter() {
-        return partyIDCounter.get();
+        return this.partyIDCounter.get();
     }
 
     public void setPartyIDCounter(int partyIDCounter) {
         this.partyIDCounter.set(partyIDCounter);
     }
+
 }
+

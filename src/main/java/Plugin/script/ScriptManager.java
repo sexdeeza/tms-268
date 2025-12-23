@@ -1,9 +1,24 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Plugin.script.binding.ScriptParty
+ *  Plugin.script.binding.ScriptPortal
+ *  Plugin.script.binding.ScriptReactor
+ *  SwordieX.client.character.Char
+ *  lombok.Generated
+ *  tools.AesUtil
+ *  tools.ComputerUniqueIdentificationUtil
+ */
 package Plugin.script;
 
 import Client.MapleCharacter;
 import Client.inventory.Item;
 import Config.configs.ServerConfig;
-import Config.constants.enums.*;
+import Config.constants.enums.NpcMessageType;
+import Config.constants.enums.ScriptParam;
+import Config.constants.enums.ScriptType;
+import Config.constants.enums.UserChatMessageType;
 import Net.server.MapleItemInformationProvider;
 import Net.server.MaplePortal;
 import Net.server.ScriptedItem;
@@ -13,27 +28,25 @@ import Net.server.maps.MapleReactor;
 import Net.server.maps.MapleReactorFactory;
 import Net.server.quest.MapleQuest;
 import Packet.UIPacket;
-import Plugin.script.binding.*;
+import Plugin.script.FieldTransferInfo;
+import Plugin.script.NpcScriptInfo;
+import Plugin.script.ScriptInfo;
+import Plugin.script.ScriptMemory;
+import Plugin.script.binding.ScriptField;
+import Plugin.script.binding.ScriptHelper;
+import Plugin.script.binding.ScriptNpc;
+import Plugin.script.binding.ScriptParty;
+import Plugin.script.binding.ScriptPlayer;
+import Plugin.script.binding.ScriptPortal;
+import Plugin.script.binding.ScriptReactor;
 import SwordieX.client.character.Char;
-import connection.packet.ScriptMan;
 import com.oracle.truffle.js.scriptengine.GraalJSScriptEngine;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-import nativeimage.Reflection;
-import org.graalvm.polyglot.Context;
-import org.graalvm.polyglot.Engine;
-import org.graalvm.polyglot.HostAccess;
-import org.graalvm.polyglot.io.IOAccess;
-import tools.AesUtil;
-import tools.ComputerUniqueIdentificationUtil;
-import tools.StringUtil;
-
-import javax.script.*;
+import connection.packet.ScriptMan;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -41,9 +54,25 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-@Slf4j
-@Reflection(publicConstructors = true, publicMethods = true, publicFields = true, scanPackage = "Plugin.script")
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.Invocable;
+import javax.script.ScriptEngine;
+import lombok.Generated;
+import org.graalvm.polyglot.Context;
+import org.graalvm.polyglot.Engine;
+import org.graalvm.polyglot.HostAccess;
+import org.graalvm.polyglot.io.IOAccess;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.AesUtil;
+import tools.ComputerUniqueIdentificationUtil;
+import tools.StringUtil;
+
 public class ScriptManager {
+    @Generated
+    private static final Logger log = LoggerFactory.getLogger(ScriptManager.class);
     private static final String SCRIPT_PATH_PREFIX = ServerConfig.WORLD_SCRIPTSPATH + File.separator;
     private static final String ENCRYPTED_SCRIPT = ".jse";
     private static final String CUSTOM_SCRIPT = ".jsc";
@@ -52,145 +81,152 @@ public class ScriptManager {
     private static final Lock fileReadLock = new ReentrantLock();
     private static final ExecutorService executorService = Executors.newSingleThreadExecutor();
     private final boolean isField;
-    @Setter
     private NpcScriptInfo npcScriptInfo;
-    private final Map<ScriptType, ScriptInfo> scripts = new HashMap<>();
+    private final Map<ScriptType, ScriptInfo> scripts = new HashMap<ScriptType, ScriptInfo>();
     private ScriptType lastActiveScriptType;
-    @Getter
     private final MapleCharacter chr;
     private final MapleMap field;
-    @Getter
     private final ScriptMemory memory = new ScriptMemory();
     private final FieldTransferInfo fieldTransferInfo = new FieldTransferInfo();
-    private final Map<String, String> bossUIMap = new HashMap<>();
+    private final Map<String, String> bossUIMap = new HashMap<String, String>();
+
     public ScriptManager(MapleCharacter chr, MapleMap field) {
         this.chr = chr;
         this.field = field;
         this.npcScriptInfo = new NpcScriptInfo();
         this.isField = chr == null;
         this.lastActiveScriptType = ScriptType.None;
-        initBossUIMap();
+        this.initBossUIMap();
     }
+
     public ScriptManager(Char chr) {
         this(chr.getCharacter());
     }
+
     public ScriptManager(MapleCharacter chr) {
         this(chr, chr.getMap());
     }
+
     public ScriptManager(MapleMap field) {
         this(null, field);
     }
+
     public static String getScriptString(String path) throws Exception {
         String script = "";
-        File file = new File(getScriptPath(path));
+        File file = new File(ScriptManager.getScriptPath(path));
         if (file.exists()) {
-            script = Files.readString(file.toPath());
+            script = Files.readString((Path)file.toPath());
             if (file.getName().endsWith(ENCRYPTED_SCRIPT)) {
-                script = AesUtil.decryptScriptByMachineHash(ComputerUniqueIdentificationUtil.getHashCache(), "MapleStory", script);
+                script = AesUtil.decryptScriptByMachineHash((String)ComputerUniqueIdentificationUtil.getHashCache(), (String)"MapleStory", (String)script);
             }
             return script;
         }
         return null;
     }
+
     public static String getScriptPath(String scriptName) {
-        String path = getScriptPath(scriptName, CUSTOM_SCRIPT);
+        String path = ScriptManager.getScriptPath(scriptName, CUSTOM_SCRIPT);
         if (new File(path).exists()) {
-            log.debug("使用自訂腳本:{}", path);
+            log.debug("使用自訂腳本:{}", (Object)path);
             return path;
         }
-        path = getScriptPath(scriptName, DEFAULT_SCRIPT);
+        path = ScriptManager.getScriptPath(scriptName, DEFAULT_SCRIPT);
         if (new File(path).exists()) {
-            log.debug("使用預設腳本:{}", path);
+            log.debug("使用預設腳本:{}", (Object)path);
             return path;
         }
-        path = getScriptPath(scriptName, ENCRYPTED_SCRIPT);
+        path = ScriptManager.getScriptPath(scriptName, ENCRYPTED_SCRIPT);
         if (new File(path).exists()) {
-            log.debug("使用加密腳本:{}", path);
+            log.debug("使用加密腳本:{}", (Object)path);
             return path;
         }
         log.debug("未找到腳本");
         return "";
     }
+
     private static String getScriptPath(String scriptName, String extension) {
         return SCRIPT_PATH_PREFIX + scriptName + extension;
     }
+
     public void initBossUIMap() {
-        bossUIMap.put("0", "balog");
-        bossUIMap.put("1", "zakum");
-        bossUIMap.put("2", "hontale");
-        bossUIMap.put("3", "hillah");
-        bossUIMap.put("4", "pierre");
-        bossUIMap.put("5", "banban");
-        bossUIMap.put("6", "bloody");
-        bossUIMap.put("7", "bellum");
-        bossUIMap.put("8", "vanleon");
-        bossUIMap.put("9", "akayrum");
-        bossUIMap.put("10", "magnus");
-        bossUIMap.put("11", "pinkbeen");
-        bossUIMap.put("12", "shinas");
-        bossUIMap.put("13", "suu");
-        bossUIMap.put("14", "ursus");
-        bossUIMap.put("15", "demian");
-        bossUIMap.put("16", "beidler");
-        bossUIMap.put("17", "ranmaru");
-        bossUIMap.put("18", "princessno");
-        bossUIMap.put("19", "lucid");
-        bossUIMap.put("21", "caoong");
-        bossUIMap.put("22", "papulatus");
-        bossUIMap.put("23", "will");
-        bossUIMap.put("24", "jinhillah");
-        bossUIMap.put("25", "blackmage");
-        bossUIMap.put("26", "dusk");
-        bossUIMap.put("27", "dunkel");
-        bossUIMap.put("28", "seren");
-        bossUIMap.put("29", "slime");
-        bossUIMap.put("30", "kalos");
-        bossUIMap.put("31", "karing");
-    }
-    private Bindings getBindingsByType(ScriptType scriptType) {
-        ScriptInfo si = getScriptInfoByType(scriptType);
-        return si == null ? null : si.getBindings();
-    }
-    public ScriptInfo getScriptInfoByType(ScriptType scriptType) {
-        return scripts.getOrDefault(scriptType, null);
-    }
-    public Invocable getInvocableByType(ScriptType scriptType) {
-        return getScriptInfoByType(scriptType).getInvocable();
-    }
-    public int getParentIDByScriptType(ScriptType scriptType) {
-        return getScriptInfoByType(scriptType) != null ? getScriptInfoByType(scriptType).getParentID() : 2007;
-    }
-    public String startScript(int parentID, String scriptName, ScriptType scriptType) {
-        return startScript(parentID, 0, scriptName, scriptType, null);
+        this.bossUIMap.put("0", "balog");
+        this.bossUIMap.put("1", "zakum");
+        this.bossUIMap.put("2", "hontale");
+        this.bossUIMap.put("3", "hillah");
+        this.bossUIMap.put("4", "pierre");
+        this.bossUIMap.put("5", "banban");
+        this.bossUIMap.put("6", "bloody");
+        this.bossUIMap.put("7", "bellum");
+        this.bossUIMap.put("8", "vanleon");
+        this.bossUIMap.put("9", "akayrum");
+        this.bossUIMap.put("10", "magnus");
+        this.bossUIMap.put("11", "pinkbeen");
+        this.bossUIMap.put("12", "shinas");
+        this.bossUIMap.put("13", "suu");
+        this.bossUIMap.put("14", "ursus");
+        this.bossUIMap.put("15", "demian");
+        this.bossUIMap.put("16", "beidler");
+        this.bossUIMap.put("17", "ranmaru");
+        this.bossUIMap.put("18", "princessno");
+        this.bossUIMap.put("19", "lucid");
+        this.bossUIMap.put("21", "caoong");
+        this.bossUIMap.put("22", "papulatus");
+        this.bossUIMap.put("23", "will");
+        this.bossUIMap.put("24", "jinhillah");
+        this.bossUIMap.put("25", "blackmage");
+        this.bossUIMap.put("26", "dusk");
+        this.bossUIMap.put("27", "dunkel");
+        this.bossUIMap.put("28", "seren");
+        this.bossUIMap.put("29", "slime");
+        this.bossUIMap.put("30", "kalos");
+        this.bossUIMap.put("31", "karing");
     }
 
-    //    public String startScript(int parentID, int objID, ScriptType scriptType) {
-//        return startScript(parentID, objID, null, scriptType, null);
-//    }
+    private Bindings getBindingsByType(ScriptType scriptType) {
+        ScriptInfo si = this.getScriptInfoByType(scriptType);
+        return si == null ? null : si.getBindings();
+    }
+
+    public ScriptInfo getScriptInfoByType(ScriptType scriptType) {
+        return this.scripts.getOrDefault((Object)scriptType, null);
+    }
+
+    public Invocable getInvocableByType(ScriptType scriptType) {
+        return this.getScriptInfoByType(scriptType).getInvocable();
+    }
+
+    public int getParentIDByScriptType(ScriptType scriptType) {
+        return this.getScriptInfoByType(scriptType) != null ? this.getScriptInfoByType(scriptType).getParentID() : 2007;
+    }
+
+    public String startScript(int parentID, String scriptName, ScriptType scriptType) {
+        return this.startScript(parentID, 0, scriptName, scriptType, null);
+    }
+
     public String startNpcScript(int parentID, int objID, String scriptName) {
-        String scriptPath;
+        String wzScriptName;
         int npcID = 0;
         if (parentID >= 0) {
             npcID = parentID;
         }
-        if (scriptName != null && StringUtil.isNaturalNumber(scriptName)) {
-            scriptName = npcID > 0 ? ("npc_" + npcID + "_" + scriptName) : ("expand_" + scriptName);
+        if (scriptName != null && StringUtil.isNaturalNumber((String)scriptName)) {
+            Object object = scriptName = npcID > 0 ? "npc_" + npcID + "_" + (String)scriptName : "expand_" + (String)scriptName;
         }
-        String wzScriptName = MapleLifeFactory.getNpcScriptName(npcID);
-        if (wzScriptName == null && (scriptName == null || scriptName.isEmpty()))
+        if ((wzScriptName = MapleLifeFactory.getNpcScriptName(npcID)) == null && (scriptName == null || ((String)scriptName).isEmpty())) {
             scriptName = "npc_" + npcID;
-//        log.error("startNpcScript - "+wzScriptName);
-        return startScript(npcID, objID, wzScriptName, ScriptType.Npc, scriptName);
+        }
+        return this.startScript(npcID, objID, wzScriptName, ScriptType.Npc, scriptName);
     }
+
     public String startBossUIScript(int parentID, String bossId, String difficulty) {
         int npcID = 0;
         if (parentID >= 0) {
             npcID = parentID;
         }
-        String bossName = bossUIMap.get(bossId);
-//        Map<String, String> BossUIObj = Map.of(bossName, difficulty);
-        return startScript(npcID, 0, bossName, ScriptType.BossUI, difficulty);
+        String bossName = this.bossUIMap.get(bossId);
+        return this.startScript(npcID, 0, bossName, ScriptType.BossUI, difficulty);
     }
+
     public String startItemScript(Item item, int parentID, String scriptName) {
         if (item == null) {
             return "";
@@ -203,371 +239,421 @@ public class ScriptManager {
         } else if (info != null) {
             npcID = info.getNpc();
         }
-        if (scriptName == null || scriptName.isEmpty()) {
-            scriptName = info == null ? null : info.getScript();
-            if (scriptName == null || scriptName.isEmpty()) {
+        if (scriptName == null || ((String)scriptName).isEmpty()) {
+            Object object = scriptName = info == null ? null : info.getScript();
+            if (scriptName == null || ((String)scriptName).isEmpty()) {
                 switch (item.getItemId() / 1000000) {
-                    case 1:
+                    case 1: {
                         scriptName = "equip_";
                         break;
-                    case 2:
+                    }
+                    case 2: {
                         scriptName = "consume_";
                         break;
-                    case 3:
+                    }
+                    case 3: {
                         scriptName = "install_";
                         break;
-                    case 4:
+                    }
+                    case 4: {
                         scriptName = "etc_";
                         break;
-                    case 5:
+                    }
+                    case 5: {
                         scriptName = "cash_";
                         break;
-                    default:
+                    }
+                    default: {
                         scriptName = "item_";
-                        break;
+                    }
                 }
-                scriptName += item.getItemId();
+                scriptName = (String)scriptName + item.getItemId();
             }
         }
-        return startScript(npcID, 0, scriptName, ScriptType.Item, item);
+        return this.startScript(npcID, 0, (String)scriptName, ScriptType.Item, item);
     }
+
     public String startQuestSScript(int parentID, int questId) {
-        return startQuestScript(parentID, questId, true);
+        return this.startQuestScript(parentID, questId, true);
     }
+
     public String startQuestEScript(int parentID, int questId) {
-        return startQuestScript(parentID, questId, false);
+        return this.startQuestScript(parentID, questId, false);
     }
+
     private String startQuestScript(int parentID, int questId, boolean isStartScript) {
         MapleQuest quest = MapleQuest.getInstance(questId);
-        String scriptName = "";
-        if (quest != null)
-            scriptName = isStartScript ? quest.getStartScript() : quest.getEndScript();
-        if (scriptName.isEmpty()) scriptName = "q" + questId + (isStartScript ? "s" : "e");
-        return startScript(parentID, 0, scriptName, isStartScript ? ScriptType.QuestStart : ScriptType.QuestEnd, questId);
+        Object scriptName = "";
+        if (quest != null) {
+            Object object = scriptName = isStartScript ? quest.getStartScript() : quest.getEndScript();
+        }
+        if (((String)scriptName).isEmpty()) {
+            scriptName = "q" + questId + (isStartScript ? "s" : "e");
+        }
+        return this.startScript(parentID, 0, (String)scriptName, isStartScript ? ScriptType.QuestStart : ScriptType.QuestEnd, questId);
     }
+
     public String startPortalScript(MaplePortal portal) {
-        return startScript(0, 0, portal.getScriptName(), ScriptType.Portal, portal);
+        return this.startScript(0, 0, portal.getScriptName(), ScriptType.Portal, portal);
     }
+
     public String startOnUserScript(String scriptName) {
-        return startScript(0, 0, scriptName, ScriptType.onUserEnter, scriptName);
+        return this.startScript(0, 0, scriptName, ScriptType.onUserEnter, scriptName);
     }
+
     public String startOnFirstUserScript(String scriptName) {
-        if (chr.getEventInstance() != null) {
-            if (!chr.getEventInstance().getOnFirstUserMapIds().contains(chr.getMapId())) {
-                chr.getEventInstance().getOnFirstUserMapIds().add(chr.getMapId());
-                return startScript(0, 0, scriptName, ScriptType.onFirstUserEnter, scriptName);
+        if (this.chr.getEventInstance() != null) {
+            if (!this.chr.getEventInstance().getOnFirstUserMapIds().contains(this.chr.getMapId())) {
+                this.chr.getEventInstance().getOnFirstUserMapIds().add(this.chr.getMapId());
+                return this.startScript(0, 0, scriptName, ScriptType.onFirstUserEnter, scriptName);
             }
             return "";
-        } else {
-            return startScript(0, 0, scriptName, ScriptType.onFirstUserEnter, scriptName);
         }
+        return this.startScript(0, 0, scriptName, ScriptType.onFirstUserEnter, scriptName);
     }
+
     public String startRandomPortalScript(int parentID, int objID, String scriptName) {
-        return startScript(parentID, objID, scriptName, ScriptType.Npc, null);
+        return this.startScript(parentID, objID, scriptName, ScriptType.Npc, null);
     }
+
     public String startReactorScript(MapleReactor reactor) {
         int id = reactor.getReactorId();
-        String scriptName = MapleReactorFactory.getAction(id);
-        if (scriptName == null || scriptName.isEmpty()) {
+        Object scriptName = MapleReactorFactory.getAction(id);
+        if (scriptName == null || ((String)scriptName).isEmpty()) {
             scriptName = "reactor_" + id;
         }
-        return startScript(reactor.getReactorId(), reactor.getObjectId(), scriptName, ScriptType.Reactor, reactor);
+        return this.startScript(reactor.getReactorId(), reactor.getObjectId(), (String)scriptName, ScriptType.Reactor, reactor);
     }
+
     public String startCommandScript(String[] line, int parentID, String scriptName) {
-        return startScript(parentID, 0, scriptName, ScriptType.Command, line);
+        return this.startScript(parentID, 0, scriptName, ScriptType.Command, line);
     }
+
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     private String startScript(int parentID, int objID, String scriptName, ScriptType scriptType, Object obj) {
         if (scriptName == null || scriptName.isEmpty()) {
             return "";
         }
-        if (scriptType == ScriptType.None/* || (scriptType == ScriptType.Quest && !isQuestScriptAllowed())*/) {
-            log.error(String.format("Did not allow Plugin.script %s to go through (type %s)  |  Active Script Type: %s", scriptName, scriptType, getLastActiveScriptType()));
+        if (scriptType == ScriptType.None) {
+            log.error(String.format("Did not allow Plugin.script %s to go through (type %s)  |  Active Script Type: %s", new Object[]{scriptName, scriptType, this.getLastActiveScriptType()}));
             return "";
         }
-        if (isActive(scriptType) && (scriptType != ScriptType.Map && scriptType != ScriptType.onFirstUserEnter)) { // because Field Scripts don't get disposed.
+        if (this.isActive(scriptType) && scriptType != ScriptType.Map && scriptType != ScriptType.onFirstUserEnter) {
             return "您當前已經開啟對話. 如果不是請輸入 @ea 命令進行解卡。";
         }
-        setLastActiveScriptType(scriptType);
-        ScriptEngine engine = GraalJSScriptEngine.create(
-                Engine.newBuilder()
-                        .option("engine.WarnInterpreterOnly", "false")
-                        .build(),
-                Context.newBuilder("js")
-                        .allowHostAccess(HostAccess.ALL)
-                        .allowHostClassLookup(s -> true)
-                        .allowHostClassLoading(true)
-                        .allowAllAccess(true)
-                        .allowNativeAccess(true)
-                        .allowCreateThread(true)
-                        .allowCreateProcess(true)
-                        .allowExperimentalOptions(true)
-                        .allowValueSharing(true)
-                        .allowIO(IOAccess.ALL)
-                        .option("js.nashorn-compat", "true")
-                        .option("js.ecmascript-version", "2022")
-//                        .option("js.commonjs-require", "true")
-//                        .option("js.commonjs-require-cwd", commonJsRoot.toString())
-                        .option("js.syntax-extensions", "true")
-//                        .option("js.esm-eval-returns-exports", "true")
-                        .option("js.strict", "false")
-        );
-        engine.getContext().setAttribute(ScriptEngine.FILENAME, "script.mjs", ScriptContext.ENGINE_SCOPE);
-        getNpcScriptInfo().setParam(0);
+        this.setLastActiveScriptType(scriptType);
+        GraalJSScriptEngine engine = GraalJSScriptEngine.create(Engine.newBuilder().option("engine.WarnInterpreterOnly", "false").build(), Context.newBuilder("js").allowHostAccess(HostAccess.ALL).allowHostClassLookup(s -> true).allowHostClassLoading(true).allowAllAccess(true).allowNativeAccess(true).allowCreateThread(true).allowCreateProcess(true).allowExperimentalOptions(true).allowValueSharing(true).allowIO(IOAccess.ALL).option("js.nashorn-compat", "true").option("js.ecmascript-version", "2022").option("js.syntax-extensions", "true").option("js.strict", "false"));
+        engine.getContext().setAttribute("javax.script.filename", "script.mjs", 100);
+        this.getNpcScriptInfo().setParam(0);
         Bindings bindings = engine.createBindings();
-        bindings.put("party", getChr().getParty() == null ? null : new ScriptParty(getChr().getParty()));
-        bindings.put("player", new ScriptPlayer(getChr()));
-        bindings.put("map", new ScriptField(getChr().getMap()));
-        bindings.put("sh", new ScriptHelper());
-        switch (String.valueOf(scriptType)) {
-            case "Portal" -> bindings.put("portal", new ScriptPortal(getChr().getClient(), (MaplePortal) obj));
-            case "Reactor" -> {
-                getNpcScriptInfo().setObjectID(((MapleReactor) obj).getObjectId());
-                bindings.put("reactor", new ScriptReactor(getChr().getClient(), (MapleReactor) obj));
+        bindings.put("party", (Object)(this.getChr().getParty() == null ? null : new ScriptParty(this.getChr().getParty())));
+        bindings.put("player", (Object)new ScriptPlayer(this.getChr()));
+        bindings.put("map", (Object)new ScriptField(this.getChr().getMap()));
+        bindings.put("sh", (Object)new ScriptHelper());
+        switch (String.valueOf((Object)scriptType)) {
+            case "Portal": {
+                bindings.put("portal", (Object)new ScriptPortal(this.getChr().getClient(), (MaplePortal)obj));
+                break;
             }
-            case "onFirstUserEnter" -> {
-                getNpcScriptInfo().setTemplateID(parentID);
-                bindings.put("npc", new ScriptNpc(getChr().getClient(), parentID, scriptName, ScriptType.Npc, obj));
+            case "Reactor": {
+                this.getNpcScriptInfo().setObjectID(((MapleReactor)obj).getObjectId());
+                bindings.put("reactor", (Object)new ScriptReactor(this.getChr().getClient(), (MapleReactor)obj));
+                break;
             }
-            case "BossUI" -> {
-//                Map<String, String> BossUIObj = (Map<String, String>) obj;
-//                bindings.put("index",BossUIObj.get("index"));
-//                bindings.put("difficulty",BossUIObj.get("difficulty"));
-                bindings.put("difficulty", Integer.parseInt((String) obj));
-                getNpcScriptInfo().setTemplateID(parentID);
-                bindings.put("npc", new ScriptNpc(getChr().getClient(), parentID, scriptName, ScriptType.Npc, obj));
+            case "onFirstUserEnter": {
+                this.getNpcScriptInfo().setTemplateID(parentID);
+                bindings.put("npc", (Object)new ScriptNpc(this.getChr().getClient(), parentID, scriptName, ScriptType.Npc, obj));
+                break;
             }
-            case "Item", "Npc", "QuestStart", "QuestEnd", "Command", "onUserEnter" -> {
-                getNpcScriptInfo().setTemplateID(parentID);
-                bindings.put("npc", new ScriptNpc(getChr().getClient(), parentID, scriptName, scriptType, obj));
+            case "BossUI": {
+                bindings.put("difficulty", (Object)Integer.parseInt((String)obj));
+                this.getNpcScriptInfo().setTemplateID(parentID);
+                bindings.put("npc", (Object)new ScriptNpc(this.getChr().getClient(), parentID, scriptName, ScriptType.Npc, obj));
+                break;
+            }
+            case "Item": 
+            case "Npc": 
+            case "QuestStart": 
+            case "QuestEnd": 
+            case "Command": 
+            case "onUserEnter": {
+                this.getNpcScriptInfo().setTemplateID(parentID);
+                bindings.put("npc", (Object)new ScriptNpc(this.getChr().getClient(), parentID, scriptName, scriptType, obj));
             }
         }
-        String scriptPath;
-        if (scriptType == ScriptType.Npc && obj instanceof String && !((String) obj).isEmpty()) {
-            scriptPath = String.format("expands" + File.separator + "%s", obj);
-        } else {
-            scriptPath = String.format("%s" + File.separator + "%s", scriptType.getDir(), scriptName);
-        }
-        getNpcScriptInfo().setObjectID(parentID);
+        String scriptPath = scriptType == ScriptType.Npc && obj instanceof String && !((String)obj).isEmpty() ? String.format("expands" + File.separator + "%s", obj) : String.format("%s" + File.separator + "%s", scriptType.getDir(), scriptName);
+        this.getNpcScriptInfo().setObjectID(parentID);
         String result = scriptPath;
         UserChatMessageType messageColor = UserChatMessageType.青;
         try {
             fileReadLock.lock();
-            String scriptString = getScriptString(scriptPath);
-            if (scriptString == null) throw new FileNotFoundException();
+            String scriptString = ScriptManager.getScriptString(scriptPath);
+            if (scriptString == null) {
+                throw new FileNotFoundException();
+            }
             ScriptInfo scriptInfo = new ScriptInfo(scriptType, bindings, parentID, scriptPath);
             scriptInfo.setObjectID(objID);
-            getScripts().put(scriptType, scriptInfo);
-            // 异步执行腳本
-            CompletableFuture.runAsync(() -> startScript(engine, scriptString, scriptPath, scriptType));
-        } catch (IOException ex) {
+            this.getScripts().put(scriptType, scriptInfo);
+            CompletableFuture.runAsync(() -> this.startScript(engine, scriptString, scriptPath, scriptType));
+        }
+        catch (IOException ex) {
             messageColor = UserChatMessageType.粉;
             result = "";
-            System.err.println("cannot find script " + scriptPath + "\n");
-        }catch (Exception e) {
+        }
+        catch (Exception e) {
             String firstLine = e.getMessage().split("\n")[0];
             if (!firstLine.contains(INTENDED_NPE_MSG)) {
-                if (chr.isGm()) {
-                    chr.dropSpouseMessage(UserChatMessageType.粉, "[" + scriptType + "] " + scriptPath + " " + firstLine);
+                if (this.chr.isGm()) {
+                    this.chr.dropSpouseMessage(UserChatMessageType.粉, "[" + String.valueOf((Object)scriptType) + "] " + scriptPath + " " + firstLine);
                 }
                 e.printStackTrace();
             }
-        } finally {
+        }
+        finally {
             fileReadLock.unlock();
         }
-        if (!isField()) {
-            if (chr.isGm() && !chr.getScriptManagerDebug().contains(scriptType.getDir())) {
-                switch (scriptType) {
-                    case ScriptType.Npc -> chr.dropSpouseMessage(messageColor, "[Npc] npcs/" + scriptName +".js");
-                    case ScriptType.QuestEnd, ScriptType.QuestStart -> chr.dropSpouseMessage(messageColor, "[Quest] quests/" + scriptName + ".js");
-                    case ScriptType.Item -> chr.dropSpouseMessage(messageColor, "[Item] items/" + scriptName +".js");
-                    case ScriptType.onFirstUserEnter -> chr.dropSpouseMessage(messageColor, "[onFirstUserEnter] maps/onFirstUserEnter/" + scriptName +".js");
-                    case ScriptType.onUserEnter -> chr.dropSpouseMessage(messageColor, "[onUserEnter] maps/onUserEnter/" + scriptName +".js");
-                    case ScriptType.Command -> chr.dropSpouseMessage(messageColor, "[Command] commands/" + scriptName +".js");
-                    case ScriptType.Reactor -> chr.dropSpouseMessage(messageColor, "[Reactor] reactors/" + scriptName +".js");
-                    case ScriptType.Portal -> chr.dropSpouseMessage(messageColor, "[Portal] portals/" + scriptName +".js");
+        if (!this.isField() && this.chr.isGm() && !this.chr.getScriptManagerDebug().contains(scriptType.getDir())) {
+            switch (scriptType) {
+                case Npc: {
+                    this.chr.dropSpouseMessage(messageColor, "[Npc] npcs/" + scriptName + DEFAULT_SCRIPT);
+                    break;
                 }
-                System.err.println("[" + scriptType + "] " + scriptPath+".js");
+                case QuestEnd: 
+                case QuestStart: {
+                    this.chr.dropSpouseMessage(messageColor, "[Quest] quests/" + scriptName + DEFAULT_SCRIPT);
+                    break;
+                }
+                case Item: {
+                    this.chr.dropSpouseMessage(messageColor, "[Item] items/" + scriptName + DEFAULT_SCRIPT);
+                    break;
+                }
+                case onFirstUserEnter: {
+                    this.chr.dropSpouseMessage(messageColor, "[onFirstUserEnter] maps/onFirstUserEnter/" + scriptName + DEFAULT_SCRIPT);
+                    break;
+                }
+                case onUserEnter: {
+                    this.chr.dropSpouseMessage(messageColor, "[onUserEnter] maps/onUserEnter/" + scriptName + DEFAULT_SCRIPT);
+                    break;
+                }
+                case Command: {
+                    this.chr.dropSpouseMessage(messageColor, "[Command] commands/" + scriptName + DEFAULT_SCRIPT);
+                    break;
+                }
+                case Reactor: {
+                    this.chr.dropSpouseMessage(messageColor, "[Reactor] reactors/" + scriptName + DEFAULT_SCRIPT);
+                    break;
+                }
+                case Portal: {
+                    this.chr.dropSpouseMessage(messageColor, "[Portal] portals/" + scriptName + DEFAULT_SCRIPT);
+                }
             }
+            System.err.println("[" + String.valueOf((Object)scriptType) + "] " + scriptPath + DEFAULT_SCRIPT);
         }
         return result;
     }
+
     public String processSource(String data) {
-        return data
-                // require('xxx') 預設用 .js 執行，要是帶入副檔名 .jse .jsc .js 就自動帶入執行
-                .replaceAll("(require\\([\"'])([^\"']+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)([\"']\\))", "$1$2.js$3")
-                .replaceAll("(require\\([\"'])([^\"']+[.jse|.jsc|.js])([\"']\\))", "$1$2$3")
-                // import {xxx} from 'xxx' 預設用 .js 執行，要是帶入副檔名 .jse .jsc .js 就自動帶入執行
-                .replaceAll("import +\\{(.+)} +from +(['\"][^'\"]+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)(['\"])$", "const {$1} = require($2.js$3)")
-                .replaceAll("import +\\{(.+)} +from +(['\"][^'\"]+[.jse|.jsc|.js])(['\"])", "const {$1} = require($2$3)")
-                // import * as xxx from 'xxx' 預設用 .js 執行，要是帶入副檔名 .jse .jsc .js 就自動帶入執行
-                .replaceAll("import +\\* +as +(\\w+) +from +(['\"][^'\"]+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)(['\"])", "const $1 = require($2.js$3)")
-                .replaceAll("import +\\* +as +(\\w+) +from +(['\"][^'\"]+[.jse|.jsc|.js])(['\"])", "const $1 = require($2$3)")
-                // import xxx from 'xxx' 預設用 .js 執行，要是帶入副檔名 .jse .jsc .js 就自動帶入執行
-                .replaceAll("import +(\\w+) +from +(['\"][^'\"]+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)(['\"])", "const $1 = require($2.js$3)")
-                .replaceAll("import +(\\w+) +from +(['\"][^'\"]+[.jse|.jsc|.js])(['\"])", "const $1 = require($2$3)");
+        return data.replaceAll("(require\\([\"'])([^\"']+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)([\"']\\))", "$1$2.js$3").replaceAll("(require\\([\"'])([^\"']+[.jse|.jsc|.js])([\"']\\))", "$1$2$3").replaceAll("import +\\{(.+)} +from +(['\"][^'\"]+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)(['\"])$", "const {$1} = require($2.js$3)").replaceAll("import +\\{(.+)} +from +(['\"][^'\"]+[.jse|.jsc|.js])(['\"])", "const {$1} = require($2$3)").replaceAll("import +\\* +as +(\\w+) +from +(['\"][^'\"]+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)(['\"])", "const $1 = require($2.js$3)").replaceAll("import +\\* +as +(\\w+) +from +(['\"][^'\"]+[.jse|.jsc|.js])(['\"])", "const $1 = require($2$3)").replaceAll("import +(\\w+) +from +(['\"][^'\"]+)(?<!\\.js)(?<!\\.jse)(?<!\\.jsc)(['\"])", "const $1 = require($2.js$3)").replaceAll("import +(\\w+) +from +(['\"][^'\"]+[.jse|.jsc|.js])(['\"])", "const $1 = require($2$3)");
     }
 
+    /*
+     * WARNING - Removed try catching itself - possible behaviour change.
+     */
     private void startScript(ScriptEngine engine, String data, String name, ScriptType scriptType) {
-        ScriptInfo si = getScriptInfoByType(scriptType);
+        ScriptInfo si = this.getScriptInfoByType(scriptType);
         si.setActive(true);
-        if (chr != null) {
-            chr.setConversation(ConversationType.TALK_TO_NPC);
-            if (chr.getClient() != null)
-                chr.getClient().setClickedNPC();
+        if (this.chr != null) {
+            this.chr.setConversation(1);
+            if (this.chr.getClient() != null) {
+                this.chr.getClient().setClickedNPC();
+            }
         }
-        CompiledScript cs;
-        Bindings bindings = getBindingsByType(scriptType);
+        Bindings bindings = this.getBindingsByType(scriptType);
         si.setBindings(bindings);
-        si.setInvocable((Invocable) engine);
+        si.setInvocable((Invocable)((Object)engine));
         try {
-//            String ss = processSource(data);
-            cs = ((Compilable) engine).compile(data);
+            CompiledScript cs = ((Compilable)((Object)engine)).compile(data);
             cs.eval(bindings);
-            si.setInvocable((Invocable) engine);
-        } catch (Exception e) {
+            si.setInvocable((Invocable)((Object)engine));
+        }
+        catch (Exception e) {
             String firstLine = e.getMessage().split("\n")[0];
             if (!firstLine.contains(INTENDED_NPE_MSG)) {
-                if (chr.isGm()) {
-                    chr.dropSpouseMessage(UserChatMessageType.粉, "[" + scriptType + "] " + name + " " + firstLine);
+                if (this.chr.isGm()) {
+                    this.chr.dropSpouseMessage(UserChatMessageType.粉, "[" + String.valueOf((Object)scriptType) + "] " + name + " " + firstLine);
                 }
                 e.printStackTrace();
-                lockInGameUI(false); // so players don't get stuck if a Plugin.script fails
+                this.lockInGameUI(false);
             }
-        } finally {
-//            if (si.isActive() && name.equals(si.getScriptName()) &&
-//                    ((scriptType != ScriptType.Map && scriptType != ScriptType.onUserEnter && scriptType != ScriptType.onFirstUserEnter)
-//                            || (chr != null && chr.getMapId() == si.getParentID()))) {
-            if (si.isActive() && name.equals(si.getScriptName()) && chr != null) {
-                stop(scriptType);
+        }
+        finally {
+            FieldTransferInfo fti;
+            if (si.isActive() && name.equals(si.getScriptName()) && this.chr != null) {
+                this.stop(scriptType);
             }
-            FieldTransferInfo fti = getFieldTransferInfo();
-            if (!fti.isInit()) {
+            if (!(fti = this.getFieldTransferInfo()).isInit()) {
                 if (fti.isField()) {
-                    fti.warp(field);
+                    fti.warp(this.field);
                 } else {
-                    fti.warp(chr);
+                    fti.warp(this.chr);
                 }
             }
         }
     }
+
     public void stop(ScriptType scriptType) {
-        NpcScriptInfo nsi = getNpcScriptInfo();
+        ScriptInfo si;
+        NpcScriptInfo nsi = this.getNpcScriptInfo();
         nsi.removeParam(ScriptParam.PlayerAsSpeaker);
         boolean isNotCancellable = nsi.hasParam(ScriptParam.NoEsc);
         nsi.setTemplateID(0);
         if (isNotCancellable) {
             nsi.addParam(ScriptParam.NoEsc);
         }
-        if (getLastActiveScriptType() == scriptType) {
-            setLastActiveScriptType(ScriptType.None);
+        if (this.getLastActiveScriptType() == scriptType) {
+            this.setLastActiveScriptType(ScriptType.None);
         }
-        ScriptInfo si = getScriptInfoByType(scriptType);
-        if (si != null) {
+        if ((si = this.getScriptInfoByType(scriptType)) != null) {
             si.reset();
         }
-        npcScriptInfo = new NpcScriptInfo();
-        getMemory().clear();
-        if (chr != null) {
-            chr.dispose();
-            chr.setConversation(ConversationType.NONE);
-            if (chr.getClient() != null)
-                chr.getClient().removeClickedNPC();
+        this.npcScriptInfo = new NpcScriptInfo();
+        this.getMemory().clear();
+        if (this.chr != null) {
+            this.chr.dispose();
+            this.chr.setConversation(0);
+            if (this.chr.getClient() != null) {
+                this.chr.getClient().removeClickedNPC();
+            }
         }
     }
+
     public void handleAction(ScriptType scriptType, NpcMessageType lastType, int response, long answer, String text) {
-        switch (response) {
-            case -1:
-            case 5:
-                stop(scriptType);
+        block0 : switch (response) {
+            case -1: 
+            case 5: {
+                this.stop(scriptType);
                 break;
-            default:
-                ScriptMemory sm = getMemory();
+            }
+            default: {
+                ScriptMemory sm = this.getMemory();
                 if (sm.get().isPrevPossible() && response == 0) {
-                    // back button pressed
                     NpcScriptInfo prev = sm.decrementAndGet();
-                    chr.write(ScriptMan.scriptMessage(prev, prev.getMessageType()));
-                } else {
-                    if (sm.hasNext()) {
-                        NpcScriptInfo next = sm.incrementAndGet();
-                        chr.write(ScriptMan.scriptMessage(next, next.getMessageType()));
-                    } else {
-                        ScriptInfo si = getScriptInfoByType(scriptType);
-                        if (isActive(scriptType)) {
-                            switch (lastType.getResponseType()) {
-                                case Response:
-                                    si.addResponse((long) response);
-                                    break;
-                                case Answer:
-                                    si.addResponse(answer);
-                                    break;
-                                case Text:
-                                    si.addResponse(text);
-                                    break;
-                            }
-                        }
+                    this.chr.write(ScriptMan.scriptMessage(prev, prev.getMessageType()));
+                    break;
+                }
+                if (sm.hasNext()) {
+                    NpcScriptInfo next = sm.incrementAndGet();
+                    this.chr.write(ScriptMan.scriptMessage(next, next.getMessageType()));
+                    break;
+                }
+                ScriptInfo si = this.getScriptInfoByType(scriptType);
+                if (!this.isActive(scriptType)) break;
+                switch (lastType.getResponseType()) {
+                    case Response: {
+                        si.addResponse(response);
+                        break block0;
+                    }
+                    case Answer: {
+                        si.addResponse(answer);
+                        break block0;
+                    }
+                    case Text: {
+                        si.addResponse(text);
                     }
                 }
+            }
         }
     }
+
     public boolean isActive(ScriptType scriptType) {
-        return getScriptInfoByType(scriptType) != null && getScriptInfoByType(scriptType).isActive();
+        return this.getScriptInfoByType(scriptType) != null && this.getScriptInfoByType(scriptType).isActive();
     }
+
     public NpcScriptInfo getNpcScriptInfo() {
-        return npcScriptInfo;
+        return this.npcScriptInfo;
     }
+
     public Map<ScriptType, ScriptInfo> getScripts() {
-        return scripts;
+        return this.scripts;
     }
+
     public int getParentID() {
         int res = 0;
         for (ScriptType type : ScriptType.values()) {
-            if (getScriptInfoByType(type) != null) {
-                res = getScriptInfoByType(type).getParentID();
-            }
+            if (this.getScriptInfoByType(type) == null) continue;
+            res = this.getScriptInfoByType(type).getParentID();
         }
         return res;
     }
+
     public boolean isField() {
-        return isField;
+        return this.isField;
     }
+
     public MapleMap getField() {
-        return field;
+        return this.field;
     }
+
     public ScriptType getLastActiveScriptType() {
-        return lastActiveScriptType;
+        return this.lastActiveScriptType;
     }
+
     public void setLastActiveScriptType(ScriptType lastActiveScriptType) {
         this.lastActiveScriptType = lastActiveScriptType;
     }
+
     public FieldTransferInfo getFieldTransferInfo() {
-        return fieldTransferInfo;
+        return this.fieldTransferInfo;
     }
+
     public void lockInGameUI(boolean lock) {
-        lockInGameUI(lock, true);
+        this.lockInGameUI(lock, true);
     }
+
     public void lockInGameUI(boolean lock, boolean blackFrame) {
-        if (chr != null) {
-            chr.send(UIPacket.SetInGameDirectionMode(lock, blackFrame, false, !lock));
+        if (this.chr != null) {
+            this.chr.send(UIPacket.SetInGameDirectionMode(lock, blackFrame, false, !lock));
         }
     }
+
     public void dispose() {
-        dispose(false);
+        this.dispose(false);
     }
+
     public void dispose(boolean stop) {
-        if (chr != null) {
-            chr.getClient().removeClickedNPC();
+        if (this.chr != null) {
+            this.chr.getClient().removeClickedNPC();
         }
-        npcScriptInfo = new NpcScriptInfo();
-        getMemory().clear();
-        ScriptType st = getLastActiveScriptType();
-        stop(st);
-        dispose(st);
+        this.npcScriptInfo = new NpcScriptInfo();
+        this.getMemory().clear();
+        ScriptType st = this.getLastActiveScriptType();
+        this.stop(st);
+        this.dispose(st);
         if (stop) {
-            throw new NullPointerException(INTENDED_NPE_MSG); // makes the underlying Plugin.script stop
+            throw new NullPointerException(INTENDED_NPE_MSG);
         }
     }
+
     public void dispose(ScriptType scriptType) {
-        getMemory().clear();
-        stop(scriptType);
+        this.getMemory().clear();
+        this.stop(scriptType);
+    }
+
+    @Generated
+    public void setNpcScriptInfo(NpcScriptInfo npcScriptInfo) {
+        this.npcScriptInfo = npcScriptInfo;
+    }
+
+    @Generated
+    public MapleCharacter getChr() {
+        return this.chr;
+    }
+
+    @Generated
+    public ScriptMemory getMemory() {
+        return this.memory;
     }
 }
+

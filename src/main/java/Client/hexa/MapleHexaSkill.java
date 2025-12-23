@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.hexa;
 
 public class MapleHexaSkill {
@@ -10,14 +13,15 @@ public class MapleHexaSkill {
     }
 
     public int getId() {
-        return id;
+        return this.id;
     }
 
     public int getSkilllv() {
-        return skilllv;
+        return this.skilllv;
     }
 
     public void setSkilllv(int skilllv) {
         this.skilllv = skilllv;
     }
 }
+

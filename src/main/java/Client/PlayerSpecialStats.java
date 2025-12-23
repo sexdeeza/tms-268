@@ -1,28 +1,23 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Client;
 
 import Client.force.MapleForceAtom;
-
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-/**
- * @author PlayDK
- */
-public class PlayerSpecialStats implements Serializable {
-
+public class PlayerSpecialStats
+implements Serializable {
     private static final long serialVersionUID = 9179541993413738569L;
-    private final HashMap<Integer, AtomicInteger> fieldSkillCounters = new HashMap<>();
-    private final AtomicInteger forceCounter = new AtomicInteger(); //惡魔相關
-    private int cardStack; //幻影卡片
+    private final HashMap<Integer, AtomicInteger> fieldSkillCounters = new HashMap();
+    private final AtomicInteger forceCounter = new AtomicInteger();
+    private int cardStack;
     private int moonCycle;
     private int hayatoPoint;
-    private int pp; //超能力者MP
-    private int aranCombo; //戰神連擊點數
+    private int pp;
+    private int aranCombo;
     private int mindBreakCount;
     private transient int cylinder;
     private transient int bullet;
@@ -39,25 +34,10 @@ public class PlayerSpecialStats implements Serializable {
     private int maliceCharge;
     private int shadowHP;
     private int poolMakerCount;
-    /**
-     * 虎影 符文道力
-     */
     private int hoYoungRune;
-    /**
-     * 虎影 卷軸道力
-     */
     private int hoYoungScroll;
-    /**
-     * 虎影 天属性状态
-     */
     private int hoYoungState1;
-    /**
-     * 虎影 地属性状态
-     */
     private int hoYoungState2;
-    /**
-     * 虎影 人属性状态
-     */
     private int hoYoungState3;
     private int flameBeads;
     private int pureBeads;
@@ -66,46 +46,46 @@ public class PlayerSpecialStats implements Serializable {
     private int erosions;
 
     public void resetSpecialStats() {
-        forceCounter.set(0);
-        cardStack = 0;
-        moonCycle = 0;
-        hayatoPoint = 0;
-        pp = 0;
-        aranCombo = 0;
-        cylinder = 0;
-        bullet = 0;
-        maxbullet = 0;
-        remoteDice = -1;
-        shadowHP = 0;
-        flameBeads = 0;
-        pureBeads = 0;
-        galeBeads = 0;
-        abyssBeads = 0;
-        erosions = 0;
-        lastShadowBiteTime = -1;
-        shadowBite = 0;
-        adeleCharge = 0;
-        mindBreakCount = 0;
-        maliceCharge = 0;
+        this.forceCounter.set(0);
+        this.cardStack = 0;
+        this.moonCycle = 0;
+        this.hayatoPoint = 0;
+        this.pp = 0;
+        this.aranCombo = 0;
+        this.cylinder = 0;
+        this.bullet = 0;
+        this.maxbullet = 0;
+        this.remoteDice = -1;
+        this.shadowHP = 0;
+        this.flameBeads = 0;
+        this.pureBeads = 0;
+        this.galeBeads = 0;
+        this.abyssBeads = 0;
+        this.erosions = 0;
+        this.lastShadowBiteTime = -1L;
+        this.shadowBite = 0;
+        this.adeleCharge = 0;
+        this.mindBreakCount = 0;
+        this.maliceCharge = 0;
     }
 
     public int getMindBreakCount() {
-        return mindBreakCount;
+        return this.mindBreakCount;
     }
 
-    public void setMindBreakCount(final int count) {
-        mindBreakCount = count;
+    public void setMindBreakCount(int count) {
+        this.mindBreakCount = count;
     }
 
     public void addMindBreakCount(int val) {
-        mindBreakCount += val;
+        this.mindBreakCount += val;
     }
 
     public int getErosions() {
-        return erosions;
+        return this.erosions;
     }
 
-    public void setErosions(final int erosions) {
+    public void setErosions(int erosions) {
         this.erosions = erosions;
     }
 
@@ -127,11 +107,11 @@ public class PlayerSpecialStats implements Serializable {
         this.pureBeads = Math.max(0, this.pureBeads);
     }
 
-    public void setPureBeads(final int aAc) {
+    public void setPureBeads(int aAc) {
         this.pureBeads = aAc;
     }
 
-    public void setFlameBeads(final int aDb) {
+    public void setFlameBeads(int aDb) {
         this.flameBeads = aDb;
     }
 
@@ -144,7 +124,7 @@ public class PlayerSpecialStats implements Serializable {
         return this.galeBeads;
     }
 
-    public void setGaleBeads(final int aDc) {
+    public void setGaleBeads(int aDc) {
         this.galeBeads = aDc;
     }
 
@@ -157,7 +137,7 @@ public class PlayerSpecialStats implements Serializable {
         return this.abyssBeads;
     }
 
-    public void setAbyssBeads(final int aDd) {
+    public void setAbyssBeads(int aDd) {
         this.abyssBeads = aDd;
     }
 
@@ -167,46 +147,46 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public void addShadowBite(long expiration, int count) {
-        if (System.currentTimeMillis() - lastShadowBiteTime >= expiration) {
-            shadowBite = 0;
-            lastShadowBiteTime = System.currentTimeMillis();
+        if (System.currentTimeMillis() - this.lastShadowBiteTime >= expiration) {
+            this.shadowBite = 0;
+            this.lastShadowBiteTime = System.currentTimeMillis();
         }
-        shadowBite += count;
+        this.shadowBite += count;
     }
 
     public int getShadowBite() {
-        return shadowBite;
+        return this.shadowBite;
     }
 
     public void setAdeleCharge(int val) {
-        adeleCharge = val;
+        this.adeleCharge = val;
     }
 
     public int getAdeleCharge() {
-        return adeleCharge;
+        return this.adeleCharge;
     }
 
     public void setMaliceCharge(int val) {
-        maliceCharge = val;
+        this.maliceCharge = val;
     }
 
     public int getMaliceCharge() {
-        return maliceCharge;
+        return this.maliceCharge;
     }
 
     public int getFieldSkillCounter(int skillID) {
-        return fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0)).get();
+        return this.fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0)).get();
     }
 
     public void setFieldSkillCounter(int skillID, int amount) {
         if (amount < 0) {
             amount = 0;
         }
-        fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0)).set(amount);
+        this.fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0)).set(amount);
     }
 
     public int gainFieldSkillCounter(int skillID) {
-        AtomicInteger ai = fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0));
+        AtomicInteger ai = this.fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0));
         if (ai.get() == Integer.MAX_VALUE) {
             ai.set(0);
         }
@@ -214,7 +194,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int gainFieldSkillCounter(int skillID, int amount) {
-        AtomicInteger ai = fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0));
+        AtomicInteger ai = this.fieldSkillCounters.computeIfAbsent(skillID, k -> new AtomicInteger(0));
         if (ai.get() + amount == Integer.MAX_VALUE || ai.get() + amount < 0) {
             ai.set(0);
         }
@@ -222,14 +202,11 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public void resetFieldSkillCounters() {
-        fieldSkillCounters.clear();
+        this.fieldSkillCounters.clear();
     }
 
-    /**
-     * 惡魔相關
-     */
     public int getForceCounter() {
-        return forceCounter.get();
+        return this.forceCounter.get();
     }
 
     public void setForceCounter(int amount) {
@@ -240,27 +217,24 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int gainForceCounter() {
-        if (forceCounter.get() == Integer.MAX_VALUE) {
-            forceCounter.set(0);
+        if (this.forceCounter.get() == Integer.MAX_VALUE) {
+            this.forceCounter.set(0);
         }
-        return forceCounter.incrementAndGet();
+        return this.forceCounter.incrementAndGet();
     }
 
     public void gainForceCounter(int amount) {
-        if (forceCounter.get() + amount == Integer.MAX_VALUE || forceCounter.get() + amount < 0) {
-            forceCounter.set(0);
+        if (this.forceCounter.get() + amount == Integer.MAX_VALUE || this.forceCounter.get() + amount < 0) {
+            this.forceCounter.set(0);
         }
         this.forceCounter.addAndGet(amount);
     }
 
-    /**
-     * 幻影卡片系統
-     */
     public int getCardStack() {
-        if (cardStack < 0) {
-            cardStack = 0;
+        if (this.cardStack < 0) {
+            this.cardStack = 0;
         }
-        return cardStack;
+        return this.cardStack;
     }
 
     public void setCardStack(int amount) {
@@ -268,27 +242,27 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public void gainCardStack() {
-        this.cardStack++;
+        ++this.cardStack;
     }
 
     public int getMoonCycle() {
-        moonCycle++;
-        if (moonCycle > 1) {
-            moonCycle = 0;
+        ++this.moonCycle;
+        if (this.moonCycle > 1) {
+            this.moonCycle = 0;
         }
-        return moonCycle;
+        return this.moonCycle;
     }
 
     public void addHayatoPoint(int n) {
-        hayatoPoint = Math.max(0, Math.min(1000, hayatoPoint + n));
+        this.hayatoPoint = Math.max(0, Math.min(1000, this.hayatoPoint + n));
     }
 
     public void gainHayatoPoint(int mode) {
-        this.hayatoPoint = Math.min(1000, hayatoPoint + (mode == 1 ? 5 : 2));
+        this.hayatoPoint = Math.min(1000, this.hayatoPoint + (mode == 1 ? 5 : 2));
     }
 
     public int getHayatoPoint() {
-        return hayatoPoint;
+        return this.hayatoPoint;
     }
 
     public void setHayatoPoint(int jianqi) {
@@ -300,7 +274,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getPP() {
-        return pp;
+        return this.pp;
     }
 
     public void setPP(int pp) {
@@ -308,7 +282,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getAranCombo() {
-        return aranCombo;
+        return this.aranCombo;
     }
 
     public void setAranCombo(int aranCombo) {
@@ -316,7 +290,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getCylinder() {
-        return cylinder;
+        return this.cylinder;
     }
 
     public void setCylinder(int cylinder) {
@@ -324,7 +298,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getBullet() {
-        return bullet;
+        return this.bullet;
     }
 
     public void setBullet(int bullet) {
@@ -332,7 +306,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getMaxBullet() {
-        return maxbullet;
+        return this.maxbullet;
     }
 
     public void setMaxBullet(int maxBullet) {
@@ -340,7 +314,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getHurtHP() {
-        return hurtHP;
+        return this.hurtHP;
     }
 
     public void setHurtHP(int hurtHP) {
@@ -352,19 +326,19 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getJaguarSkillID() {
-        return jaguarSkillID;
+        return this.jaguarSkillID;
     }
 
     public int getAngelReborn() {
-        return angelReborn;
+        return this.angelReborn;
     }
 
     public void resetAngelReborn() {
-        angelReborn = 0;
+        this.angelReborn = 0;
     }
 
     public void gainAngelReborn() {
-        angelReborn++;
+        ++this.angelReborn;
     }
 
     public void setMaelstromMoboid(int maelstromMoboid) {
@@ -372,7 +346,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getMaelstromMoboid() {
-        return maelstromMoboid;
+        return this.maelstromMoboid;
     }
 
     public void setGuidedArrow(MapleForceAtom guidedArrow) {
@@ -380,11 +354,11 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public MapleForceAtom getGuidedArrow() {
-        return guidedArrow;
+        return this.guidedArrow;
     }
 
     public int getRemoteDice() {
-        return remoteDice;
+        return this.remoteDice;
     }
 
     public void setRemoteDice(int remoteDice) {
@@ -396,20 +370,19 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getShadowHP() {
-        return shadowHP;
+        return this.shadowHP;
     }
 
     public int getPoolMakerCount() {
-        return poolMakerCount;
+        return this.poolMakerCount;
     }
 
     public void setPoolMakerCount(int poolMakerCount) {
         this.poolMakerCount = poolMakerCount;
     }
 
-
     public int getHoYoungRune() {
-        return hoYoungRune;
+        return this.hoYoungRune;
     }
 
     public void setHoYoungRune(int hoYoungRune) {
@@ -417,7 +390,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getHoYoungScroll() {
-        return hoYoungScroll;
+        return this.hoYoungScroll;
     }
 
     public void setHoYoungScroll(int hoYoungScroll) {
@@ -425,7 +398,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getHoYoungState1() {
-        return hoYoungState1;
+        return this.hoYoungState1;
     }
 
     public void setHoYoungState1(int hoYoungState1) {
@@ -433,7 +406,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getHoYoungState2() {
-        return hoYoungState2;
+        return this.hoYoungState2;
     }
 
     public void setHoYoungState2(int hoYoungState2) {
@@ -441,7 +414,7 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public int getHoYoungState3() {
-        return hoYoungState3;
+        return this.hoYoungState3;
     }
 
     public void setHoYoungState3(int hoYoungState3) {
@@ -449,11 +422,11 @@ public class PlayerSpecialStats implements Serializable {
     }
 
     public void gainHoYoungRune(int diff) {
-        this.hoYoungRune = Math.max(0, Math.min(100, hoYoungRune + diff));
+        this.hoYoungRune = Math.max(0, Math.min(100, this.hoYoungRune + diff));
     }
 
     public void gainHoYoungScroll(int diff) {
-        this.hoYoungScroll = Math.max(0, Math.min(900, hoYoungScroll + diff));
+        this.hoYoungScroll = Math.max(0, Math.min(900, this.hoYoungScroll + diff));
     }
-
 }
+

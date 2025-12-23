@@ -1,10 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Database;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class DatabaseException extends RuntimeException {
-
+public class DatabaseException
+extends RuntimeException {
     private static final Logger log = LoggerFactory.getLogger("Database");
     private static final long serialVersionUID = -420103154764822555L;
 
@@ -21,3 +24,4 @@ public class DatabaseException extends RuntimeException {
         super(message, cause);
     }
 }
+

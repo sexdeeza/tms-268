@@ -1,9 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package SwordieX.enums;
 
 import SwordieX.util.Util;
 
 public enum WorldId {
-    // UI.wz/Login.img/WorldSelect/BtWorld/release
     艾麗亞(0),
     普力特(1),
     琉德(2),
@@ -18,20 +20,20 @@ public enum WorldId {
     燃燒(49),
     燃燒3(52),
     雪吉拉x皮卡啾2(53),
-    버닝4(54), // BURNING 4
-    ;
+    버닝4(54);
 
     private final int val;
 
-    WorldId(int val) {
+    private WorldId(int val) {
         this.val = val;
     }
 
     public int getVal() {
-        return val;
+        return this.val;
     }
 
     public static WorldId getByVal(int val) {
-        return Util.findWithPred(values(), v -> v.getVal() == val);
+        return Util.findWithPred(WorldId.values(), v -> v.getVal() == val);
     }
 }
+

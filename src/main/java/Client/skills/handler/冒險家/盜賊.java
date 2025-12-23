@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.冒險家;
 
 import Client.MapleCharacter;
@@ -9,23 +12,18 @@ import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 import java.util.Map;
 
-import static Config.constants.skills.冒險家_技能群組.盜賊.*;
-
-public class 盜賊 extends AbstractSkillHandler {
-
+public class 盜賊
+extends AbstractSkillHandler {
     public 盜賊() {
-        jobs = new MapleJob[]{
-                MapleJob.盜賊
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.盜賊};
         for (Field field : Config.constants.skills.冒險家_技能群組.盜賊.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -34,21 +32,24 @@ public class 盜賊 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 小偷的狡詐:
+            case 80002770: {
                 statups.put(SecondaryStat.IndieDamR, effect.getIndieDamR());
                 return 1;
-            case 隱身術:
+            }
+            case 4001003: {
                 statups.put(SecondaryStat.DarkSight, effect.getX());
                 return 1;
-            case 終極隱身術:
+            }
+            case 400001023: {
                 statups.put(SecondaryStat.DarkSight, effect.getLevel());
                 return 1;
+            }
         }
         return -1;
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -83,3 +84,4 @@ public class 盜賊 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

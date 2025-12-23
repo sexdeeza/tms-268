@@ -1,40 +1,42 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
 import Client.MapleJob;
 import Client.SecondaryStat;
+import Client.skills.handler.SkillClassApplier;
+import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Config.constants.JobConstants;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-import tools.data.MaplePacketReader;
-
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import tools.data.MaplePacketReader;
 
 public abstract class AbstractSkillHandler {
-
     protected MapleJob[] jobs = new MapleJob[0];
-    protected List<Integer> skills = new LinkedList<>();
+    protected List<Integer> skills = new LinkedList<Integer>();
 
     public List<Integer> getSkills() {
-        return skills;
+        return this.skills;
     }
 
     public boolean containsSkill(int search) {
-        if (skills == null) {
+        if (this.skills == null) {
             return false;
         }
-        return skills.contains(search);
+        return this.skills.contains(search);
     }
 
     public boolean containsJob(int jobWithSub) {
-        for (MapleJob job : jobs) {
-            if (job.getIdWithSub() == jobWithSub) {
-                return true;
-            }
+        for (MapleJob job : this.jobs) {
+            if (job.getIdWithSub() != jobWithSub) continue;
+            return true;
         }
         return false;
     }
@@ -72,11 +74,11 @@ public abstract class AbstractSkillHandler {
         return -1;
     }
 
-    public int onApplySummonEffect(final MapleCharacter applyto, SkillClassApplier applier) {
+    public int onApplySummonEffect(MapleCharacter applyto, SkillClassApplier applier) {
         return -1;
     }
 
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         return -1;
     }
 
@@ -96,3 +98,4 @@ public abstract class AbstractSkillHandler {
         return -1;
     }
 }
+

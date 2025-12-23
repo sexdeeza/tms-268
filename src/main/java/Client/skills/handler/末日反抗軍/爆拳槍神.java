@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.末日反抗軍;
 
 import Client.MapleCharacter;
@@ -14,27 +17,23 @@ import Client.status.MonsterStatus;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Packet.MaplePacketCreator;
+import java.lang.reflect.Field;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
 import tools.data.MaplePacketReader;
 
-import java.lang.reflect.Field;
-import java.util.*;
-
-import static Config.constants.skills.爆拳槍神.*;
-
-public class 爆拳槍神 extends AbstractSkillHandler {
-
+public class 爆拳槍神
+extends AbstractSkillHandler {
     public 爆拳槍神() {
-        jobs = new MapleJob[]{
-                MapleJob.爆拳槍神1轉,
-                MapleJob.爆拳槍神2轉,
-                MapleJob.爆拳槍神3轉,
-                MapleJob.爆拳槍神4轉
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.爆拳槍神1轉, MapleJob.爆拳槍神2轉, MapleJob.爆拳槍神3轉, MapleJob.爆拳槍神4轉};
         for (Field field : Config.constants.skills.爆拳槍神.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -42,14 +41,12 @@ public class 爆拳槍神 extends AbstractSkillHandler {
 
     @Override
     public int baseSkills(MapleCharacter chr, SkillClassApplier applier) {
+        int[] ss;
         super.baseSkills(chr, applier);
-        Skill skil;
-        int[] ss = {旋轉加農砲, 彈丸填裝};
-        for (int i : ss) {
-            skil = SkillFactory.getSkill(i);
-            if (chr.getLevel() >= i / 10000 && skil != null && chr.getSkillLevel(skil) <= 0) {
-                applier.skillMap.put(i, new SkillEntry(1, skil.getMaxMasterLevel(), -1));
-            }
+        for (int i : ss = new int[]{37001001, 37000010}) {
+            Skill skil = SkillFactory.getSkill(i);
+            if (chr.getLevel() < i / 10000 || skil == null || chr.getSkillLevel(skil) > 0) continue;
+            applier.skillMap.put(i, new SkillEntry(1, skil.getMaxMasterLevel(), -1L));
         }
         return -1;
     }
@@ -57,68 +54,88 @@ public class 爆拳槍神 extends AbstractSkillHandler {
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 神聖連發重擊_1:
-            case 神聖連發重擊_2:
-            case 神聖連發重擊_3:
-            case 神聖連發重擊_4:
-            case 神聖連發重擊_5:
-                return 神聖連發重擊;
-            case 釋能衝擊椎_1:
-            case 釋能衝擊椎_2:
-            case 釋能衝擊椎_3:
-            case 釋能衝擊椎_4:
-                return 釋能衝擊椎;
-            case 王之子_1:
-                return 王之子;
-            case 擺動_1:
-                return 擺動;
-            case 錘之碎擊_1:
-            case 錘之碎擊_2:
-                return 錘之碎擊;
-            case 旋轉衝擊椎_1:
-            case 旋轉衝擊椎_2:
-            case 旋轉衝擊椎_3:
-            case 旋轉衝擊椎_4:
-            case 旋轉衝擊椎_5:
-            case 旋轉衝擊椎_6:
-            case 旋轉衝擊椎_7:
-                return 旋轉衝擊椎;
-            case 颶風混裂_1:
-            case 颶風混裂_2:
-                return 颶風混裂;
-            case 旋轉加農砲_雙重棒:
-                return 雙重棒;
-            case 旋轉加農砲_連發重擊:
-                return 連發重擊;
-            case 雙重壓迫_1:
-                return 雙重壓迫;
-            case 末日飄移_爆炸:
-                return 末日飄移;
-            case 衝擊波動_1:
-                return 衝擊波動;
-            case 彈丸填裝:
-                return 旋轉加農砲;
-            case 釋能衝擊椎_7:
-                return 強化旋轉加農砲III;
-            case 釋能衝擊椎_6:
-                return 強化旋轉加農砲II;
-            case 釋能衝擊椎_5:
-                return 強化旋轉加農砲;
-            case 衝擊椎破壞者:
-                return 毀滅左輪;
-            case 火神重擊_1:
-                return 火神重擊;
-            case 燃燒破壞者_1:
-            case 燃燒破壞者_2:
-            case 燃燒破壞者_3:
-            case 燃燒破壞者_4:
-            case 燃燒破壞者_5:
-            case 燃燒破壞者_6:
-            case 燃燒破壞者_7:
-                return 燃燒破壞者;
-            case 殘影衝擊_1:
-            case 殘影衝擊_2:
-                return 殘影衝擊;
+            case 37120055: 
+            case 37120056: 
+            case 37120057: 
+            case 37120058: 
+            case 37120059: {
+                return 37121052;
+            }
+            case 37000008: 
+            case 37000011: 
+            case 37000012: 
+            case 37000013: {
+                return 37001002;
+            }
+            case 37100002: {
+                return 37101001;
+            }
+            case 37110004: {
+                return 37111003;
+            }
+            case 37110001: 
+            case 37110002: {
+                return 37111000;
+            }
+            case 37120014: 
+            case 37120015: 
+            case 37120016: 
+            case 37120017: 
+            case 37120018: 
+            case 37120019: 
+            case 37120023: {
+                return 37121004;
+            }
+            case 37120022: 
+            case 37120024: {
+                return 37121003;
+            }
+            case 37100008: {
+                return 37101000;
+            }
+            case 37000009: {
+                return 37001000;
+            }
+            case 37110011: {
+                return 37111005;
+            }
+            case 37000005: {
+                return 37001004;
+            }
+            case 37120001: {
+                return 37121000;
+            }
+            case 37000010: {
+                return 37001001;
+            }
+            case 37120013: {
+                return 37120008;
+            }
+            case 37110010: {
+                return 37110007;
+            }
+            case 37100009: {
+                return 37100007;
+            }
+            case 400011019: {
+                return 400011017;
+            }
+            case 400010028: {
+                return 400011028;
+            }
+            case 400011092: 
+            case 400011093: 
+            case 400011094: 
+            case 400011095: 
+            case 400011096: 
+            case 400011097: 
+            case 400011103: {
+                return 400011091;
+            }
+            case 400011117: 
+            case 400011133: {
+                return 400011116;
+            }
         }
         return -1;
     }
@@ -126,72 +143,81 @@ public class 爆拳槍神 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 釋能衝擊椎_2:
-            case 釋能衝擊椎_3:
-            case 釋能衝擊椎_4:
+            case 37000011: 
+            case 37000012: 
+            case 37000013: {
                 effect.getInfo().put(MapleStatInfo.time, 7000);
                 statups.put(SecondaryStat.RWOverHeat, 1);
                 return 1;
-            case 續航防盾:
+            }
+            case 37000006: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
-                statups.put(SecondaryStat.RWBarrier, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.RWBarrier, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 旋轉加農砲_連發重擊:
-            case 末日飄移:
-            case 旋轉加農砲_雙重棒:
-            case 旋轉衝擊椎_1:
+            }
+            case 37000009: 
+            case 37001004: 
+            case 37100008: 
+            case 37120014: {
                 return 1;
-            case 彈丸填裝:
+            }
+            case 37000010: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.RWCylinder, 1);
                 return 1;
-            case 王之子_1:
-            case 擺動_1:
-            case 擺動:
-            case 王之子:
-                statups.put(SecondaryStat.RWMovingEvar, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 37100002: 
+            case 37101001: 
+            case 37110004: 
+            case 37111003: {
+                statups.put(SecondaryStat.RWMovingEvar, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 組合訓練:
-            case 組合訓練II:
-                statups.put(SecondaryStat.RWCombination, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 37110009: 
+            case 37120012: {
+                statups.put(SecondaryStat.RWCombination, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 神聖連發重擊:
+            }
+            case 37121052: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.RWMagnumBlow, 1);
                 return 1;
-            case 極大加農:
-                statups.put(SecondaryStat.RWMaximizeCannon, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 37121054: {
+                statups.put(SecondaryStat.RWMaximizeCannon, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 旋轉衝擊椎:
+            }
+            case 37121004: {
                 effect.getInfo().put(MapleStatInfo.time, 3500);
                 statups.put(SecondaryStat.NotDamaged, 1);
-
                 monsterStatus.put(MonsterStatus.Freeze, 1);
                 return 1;
-            case 旋轉加農砲:
+            }
+            case 37001001: {
                 effect.getInfo().put(MapleStatInfo.time, -1);
                 statups.put(SecondaryStat.RWCylinder, 1);
                 return 1;
-            case 護腕加速器:
-                statups.put(SecondaryStat.Booster, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 37101003: {
+                statups.put(SecondaryStat.Booster, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 錘之碎擊:
-            case 錘之碎擊_1:
-            case 錘之碎擊_2:
-                monsterStatus.put(MonsterStatus.AddDamSkill, effect.getInfo().get(MapleStatInfo.x));
-                monsterStatus.put(MonsterStatus.RWChoppingHammer, effect.getInfo().get(MapleStatInfo.y));
+            }
+            case 37110001: 
+            case 37110002: 
+            case 37111000: {
+                monsterStatus.put(MonsterStatus.AddDamSkill, effect.getInfo().get((Object)MapleStatInfo.x));
+                monsterStatus.put(MonsterStatus.RWChoppingHammer, effect.getInfo().get((Object)MapleStatInfo.y));
                 return 1;
-            case 楓葉祝福:
+            }
+            case 37121053: {
                 effect.setPartyBuff(true);
-                statups.put(SecondaryStat.BasicStatUp, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
                 return 1;
-            case 自由意志:
-                effect.setPartyBuff(true);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
-                return 1;
-            case 毀滅左輪:
+            }
+            case 400011017: {
                 statups.put(SecondaryStat.IndieBuffIcon, 1);
                 return 1;
+            }
         }
         return -1;
     }
@@ -199,10 +225,10 @@ public class 爆拳槍神 extends AbstractSkillHandler {
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 旋轉加農砲:
-            case 王之子:
-            case 錘之碎擊:
-            case 擺動: {
+            case 37001001: 
+            case 37101001: 
+            case 37111000: 
+            case 37111003: {
                 return 0;
             }
         }
@@ -212,14 +238,14 @@ public class 爆拳槍神 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 續航防盾: {
+            case 37000006: {
                 int value = applyto.getBuffedIntValue(SecondaryStat.RWBarrier);
                 if (applyto.getBuffedValue(SecondaryStat.RWBarrier) != null) {
                     if (!applier.primary) {
                         value -= value * applier.effect.getY() / 100 + applier.effect.getZ();
                     }
                 } else {
-                    final int shield = applyto.getHurtHP() * applier.effect.getX() / 10;
+                    int shield = applyto.getHurtHP() * applier.effect.getX() / 10;
                     value = Math.max(0, shield < value * applier.effect.getY() / 100 + applier.effect.getZ() ? 0 : shield);
                 }
                 applier.localstatups.put(SecondaryStat.RWBarrier, Math.max(0, value));
@@ -229,19 +255,19 @@ public class 爆拳槍神 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 王之子_1:
-            case 王之子:
-            case 擺動_1:
-            case 擺動: {
+            case 37100002: 
+            case 37101001: 
+            case 37110004: 
+            case 37111003: {
                 if (!applier.primary) {
                     applier.duration = 1500;
                 }
                 return 1;
             }
-            case 釋能衝擊椎_2:
-            case 釋能衝擊椎_3:
-            case 釋能衝擊椎_4:
-            case 釋能衝擊椎: {
+            case 37000011: 
+            case 37000012: 
+            case 37000013: 
+            case 37001002: {
                 applyto.dispelEffect(SecondaryStat.RWOverHeat);
                 applyto.handleCylinder(-8);
                 if (applyto.getBuffedIntValue(SecondaryStat.RWMaximizeCannon) > 0) {
@@ -249,36 +275,36 @@ public class 爆拳槍神 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 彈丸填裝: {
+            case 37000010: {
                 if (!applier.passive) {
                     applyto.handleAmmoClip(8);
                 }
                 return 1;
             }
-            case 神聖連發重擊: {
+            case 37121052: {
                 if (!applier.primary) {
                     return 0;
                 }
                 if (!applier.passive) {
                     return 1;
                 }
-                final int value = applyto.getBuffedIntValue(SecondaryStat.RWMagnumBlow);
+                int value = applyto.getBuffedIntValue(SecondaryStat.RWMagnumBlow);
                 if (value < applier.effect.getSubTime()) {
                     applier.localstatups.put(SecondaryStat.RWMagnumBlow, Math.min(value + 1, applier.effect.getSubTime()));
                     return 1;
                 }
                 return 0;
             }
-            case 組合訓練: {
-                final int n34 = applyto.getBuffedIntValue(SecondaryStat.RWCombination) + 1;
+            case 37110009: {
+                int n34 = applyto.getBuffedIntValue(SecondaryStat.RWCombination) + 1;
                 applier.localstatups.put(SecondaryStat.CombatFrenzy, Math.min(applier.effect.getX(), n34));
                 if (n34 >= 6) {
                     applier.localstatups.put(SecondaryStat.IndieBooster, 1);
                 }
                 return 1;
             }
-            case 組合訓練II: {
-                final int n35 = applyto.getBuffedIntValue(SecondaryStat.RWCombination) + 1;
+            case 37120012: {
+                int n35 = applyto.getBuffedIntValue(SecondaryStat.RWCombination) + 1;
                 applier.localstatups.put(SecondaryStat.RWCombination, Math.min(applier.effect.getX(), n35));
                 applier.localstatups.put(SecondaryStat.IndieCr, Math.min(applier.effect.getQ() * n35, applier.effect.getQ() * applier.effect.getX()));
                 if (n35 >= 6) {
@@ -286,15 +312,15 @@ public class 爆拳槍神 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 自由意志: {
+            case 37121053: {
                 if (applyfrom.getJob() / 1000 != applyto.getJob() / 1000) {
                     return 0;
                 }
-                applyto.dispelEffect(Config.constants.skills.惡魔復仇者.惡魔韌性);
-                applyto.dispelEffect(Config.constants.skills.爆拳槍神.自由意志);
-                applyto.dispelEffect(Config.constants.skills.煉獄巫師.自由意志);
-                applyto.dispelEffect(Config.constants.skills.狂豹獵人.自由意志);
-                applyto.dispelEffect(Config.constants.skills.機甲戰神.自由意志);
+                applyto.dispelEffect(31221053);
+                applyto.dispelEffect(37121053);
+                applyto.dispelEffect(32121053);
+                applyto.dispelEffect(33121053);
+                applyto.dispelEffect(35121053);
                 return 1;
             }
         }
@@ -305,22 +331,15 @@ public class 爆拳槍神 extends AbstractSkillHandler {
     public int onAfterAttack(MapleCharacter player, SkillClassApplier applier) {
         if (applier.effect != null) {
             switch (applier.effect.getSourceId()) {
-                case 釋能衝擊椎_2:
-                case 釋能衝擊椎_3:
-                case 釋能衝擊椎_4:
-                case 釋能衝擊椎: {
+                case 37000011: 
+                case 37000012: 
+                case 37000013: 
+                case 37001002: {
+                    LinkedList<ExtraSkill> eskills;
                     List<Integer> exList = null;
-                    if (applier.effect.getSourceId() == 釋能衝擊椎_4) {
-                        exList = Arrays.asList(釋能衝擊椎_1, 旋轉加農砲_連發重擊, 釋能衝擊椎_5, 釋能衝擊椎_6, 釋能衝擊椎_7);
-                    } else if (applier.effect.getSourceId() == 釋能衝擊椎_3) {
-                        exList = Arrays.asList(釋能衝擊椎_1, 旋轉加農砲_連發重擊, 釋能衝擊椎_5, 釋能衝擊椎_6);
-                    } else if (applier.effect.getSourceId() == 釋能衝擊椎_2) {
-                        exList = Arrays.asList(釋能衝擊椎_1, 旋轉加農砲_連發重擊, 釋能衝擊椎_5);
-                    } else {
-                        exList = Arrays.asList(釋能衝擊椎_1, 旋轉加農砲_連發重擊);
-                    }
+                    exList = applier.effect.getSourceId() == 37000013 ? Arrays.asList(37000008, 37000009, 37100009, 37110010, 37120013) : (applier.effect.getSourceId() == 37000012 ? Arrays.asList(37000008, 37000009, 37100009, 37110010) : (applier.effect.getSourceId() == 37000011 ? Arrays.asList(37000008, 37000009, 37100009) : Arrays.asList(37000008, 37000009)));
                     if (exList != null) {
-                        List<ExtraSkill> eskills = new LinkedList<>();
+                        eskills = new LinkedList();
                         for (int skill : exList) {
                             ExtraSkill eskill = new ExtraSkill(skill, player.getPosition());
                             eskill.Value = 1;
@@ -330,69 +349,62 @@ public class 爆拳槍神 extends AbstractSkillHandler {
                         player.getClient().announce(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), eskills));
                     }
                     player.handleCylinder(-8);
-                    final MapleStatEffect skillEffect15;
-                    if ((skillEffect15 = player.getSkillEffect(彈丸填裝)) != null) {
-                        skillEffect15.unprimaryPassiveApplyTo(player);
-                    }
+                    MapleStatEffect skillEffect15 = player.getSkillEffect(37000010);
+                    if (skillEffect15 == null) break;
+                    skillEffect15.unprimaryPassiveApplyTo(player);
                     break;
                 }
-                case 旋轉加農砲_連發重擊:
-                case 旋轉加農砲_雙重棒:
-                case 旋轉衝擊椎_1: {
-                    if (player.getBuffedIntValue(SecondaryStat.RWOverHeat) <= 0) {
-                        player.handleCylinder(1);
-                        final MapleStatEffect skillEffect14;
-                        if ((skillEffect14 = player.getSkillEffect(彈丸填裝)) != null) {
-                            skillEffect14.unprimaryPassiveApplyTo(player);
-                            return 1;
-                        }
-                    }
-                    break;
+                case 37000009: 
+                case 37100008: 
+                case 37120014: {
+                    if (player.getBuffedIntValue(SecondaryStat.RWOverHeat) > 0) break;
+                    player.handleCylinder(1);
+                    MapleStatEffect skillEffect14 = player.getSkillEffect(37000010);
+                    if (skillEffect14 == null) break;
+                    skillEffect14.unprimaryPassiveApplyTo(player);
+                    return 1;
                 }
-                case 末日飄移_爆炸:
-                case 末日飄移:
-                case 旋轉衝擊椎_2:
-                case 旋轉衝擊椎_3:
-                case 旋轉衝擊椎_4:
-                case 旋轉衝擊椎_5:
-                case 旋轉衝擊椎_6: {
+                case 37000005: 
+                case 37001004: 
+                case 37120015: 
+                case 37120016: 
+                case 37120017: 
+                case 37120018: 
+                case 37120019: {
+                    MapleStatEffect skillEffect14;
                     player.handleAmmoClip(-1);
                     if (player.getSpecialStat().getBullet() <= 0) {
                         player.dispelEffect(SecondaryStat.RWCylinder);
                         player.handleAmmoClip(8);
                     }
-                    final MapleStatEffect skillEffect14;
-                    if ((skillEffect14 = player.getSkillEffect(彈丸填裝)) != null) {
-                        skillEffect14.unprimaryPassiveApplyTo(player);
-                        return 1;
-                    }
-                    break;
+                    if ((skillEffect14 = player.getSkillEffect(37000010)) == null) break;
+                    skillEffect14.unprimaryPassiveApplyTo(player);
+                    return 1;
                 }
-                case 神聖連發重擊: {
+                case 37121052: {
                     player.dispelEffect(SecondaryStat.RWMagnumBlow);
-                    if (player.getCylinder() > 0) {
-                        ExtraSkill eskill = new ExtraSkill(旋轉加農砲精通, player.getPosition());
-                        eskill.Value = 1;
-                        eskill.FaceLeft = player.isFacingLeft() ? 0 : 1;
-                        player.getClient().announce(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), Collections.singletonList(eskill)));
-                    }
-                    break;
-                }
-                case 旋轉衝擊椎: {
-                    player.handleAmmoClip(8);
-                    final MapleStatEffect skillEffect17;
-                    if ((skillEffect17 = player.getSkillEffect(彈丸填裝)) != null) {
-                        skillEffect17.unprimaryPassiveApplyTo(player);
-                    }
-                    ExtraSkill eskill = new ExtraSkill(旋轉衝擊椎_7, player.getPosition());
+                    if (player.getCylinder() <= 0) break;
+                    ExtraSkill eskill = new ExtraSkill(37000007, player.getPosition());
                     eskill.Value = 1;
                     eskill.FaceLeft = player.isFacingLeft() ? 0 : 1;
                     player.getClient().announce(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), Collections.singletonList(eskill)));
                     break;
                 }
-                case 衝擊波動: {
-                    List<Integer> exList = Arrays.asList(釋能衝擊椎_1, 旋轉加農砲_連發重擊);
-                    List<ExtraSkill> eskills = new LinkedList<>();
+                case 37121004: {
+                    player.handleAmmoClip(8);
+                    MapleStatEffect skillEffect17 = player.getSkillEffect(37000010);
+                    if (skillEffect17 != null) {
+                        skillEffect17.unprimaryPassiveApplyTo(player);
+                    }
+                    ExtraSkill eskill = new ExtraSkill(37120023, player.getPosition());
+                    eskill.Value = 1;
+                    eskill.FaceLeft = player.isFacingLeft() ? 0 : 1;
+                    player.getClient().announce(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), Collections.singletonList(eskill)));
+                    break;
+                }
+                case 37121000: {
+                    List<Integer> exList = Arrays.asList(37000008, 37000009);
+                    LinkedList<ExtraSkill> eskills = new LinkedList<ExtraSkill>();
                     for (int skill : exList) {
                         ExtraSkill eskill = new ExtraSkill(skill, player.getPosition());
                         eskill.Value = 1;
@@ -400,60 +412,53 @@ public class 爆拳槍神 extends AbstractSkillHandler {
                         eskills.add(eskill);
                     }
                     player.getClient().announce(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), eskills));
-                    if (player.getBuffStatValueHolder(毀滅左輪) != null) {
-                        player.getClient().announce(MaplePacketCreator.userBonusAttackRequest(衝擊椎破壞者, 0, Collections.emptyList()));
-                    }
+                    if (player.getBuffStatValueHolder(400011017) == null) break;
+                    player.getClient().announce(MaplePacketCreator.userBonusAttackRequest(400011019, 0, Collections.emptyList()));
                     break;
                 }
-                case 錘之碎擊_1:
-                case 錘之碎擊: {
-                    player.getSkillEffect(錘之碎擊_2).applyAffectedArea(player, player.getPosition());
+                case 37110001: 
+                case 37111000: {
+                    player.getSkillEffect(37110002).applyAffectedArea(player, player.getPosition());
                     break;
                 }
-                case 連發重擊:
-                case 雙重棒:
-                case 二段游移:
-                case 颶風混裂:
-                case 火神重擊: {
-                    ExtraSkill eskill = new ExtraSkill(旋轉加農砲精通, player.getPosition());
+                case 37001000: 
+                case 37101000: 
+                case 37120002: 
+                case 37121003: 
+                case 400011028: {
+                    ExtraSkill eskill = new ExtraSkill(37000007, player.getPosition());
                     eskill.Value = 1;
                     eskill.FaceLeft = player.isFacingLeft() ? 0 : 1;
                     player.getClient().announce(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), Collections.singletonList(eskill)));
-                    if (player.getBuffStatValueHolder(毀滅左輪) != null) {
-                        player.getClient().announce(MaplePacketCreator.userBonusAttackRequest(衝擊椎破壞者, 0, Collections.emptyList()));
-                        break;
-                    }
+                    if (player.getBuffStatValueHolder(400011017) == null) break;
+                    player.getClient().announce(MaplePacketCreator.userBonusAttackRequest(400011019, 0, Collections.emptyList()));
                     break;
                 }
             }
             switch (applier.effect.getSourceId()) {
-                case 王之子_1:
-                case 錘之碎擊_1:
-                case 擺動_1: {
-                    MapleStatEffect l801;
-                    if ((l801 = player.getSkillEffect(衝撞精通)) == null) {
-                        break;
-                    }
-                    if (player.getSkillEffect(屬性強化精通) != null) {
-                        l801 = player.getSkillEffect(屬性強化精通);
+                case 37100002: 
+                case 37110001: 
+                case 37110004: {
+                    MapleStatEffect l801 = player.getSkillEffect(37100006);
+                    if (l801 == null) break;
+                    if (player.getSkillEffect(37120011) != null) {
+                        l801 = player.getSkillEffect(37120011);
                     }
                     player.handleAmmoClip(l801.getW());
-                    final MapleStatEffect skillEffect18;
-                    if ((skillEffect18 = player.getSkillEffect(彈丸填裝)) != null) {
-                        skillEffect18.unprimaryPassiveApplyTo(player);
-                    }
+                    MapleStatEffect skillEffect18 = player.getSkillEffect(37000010);
+                    if (skillEffect18 == null) break;
+                    skillEffect18.unprimaryPassiveApplyTo(player);
                     break;
                 }
-                case 連發重擊:
-                case 雙重棒:
-                case 旋轉衝擊椎: {
-                    MapleStatEffect l802;
-                    if ((l802 = player.getSkillEffect(組合訓練)) != null) {
-                        if (player.getSkillEffect(組合訓練II) != null) {
-                            l802 = player.getSkillEffect(組合訓練II);
-                        }
-                        l802.unprimaryPassiveApplyTo(player);
+                case 37001000: 
+                case 37101000: 
+                case 37121004: {
+                    MapleStatEffect l802 = player.getSkillEffect(37110009);
+                    if (l802 == null) break;
+                    if (player.getSkillEffect(37120012) != null) {
+                        l802 = player.getSkillEffect(37120012);
                     }
+                    l802.unprimaryPassiveApplyTo(player);
                     break;
                 }
             }
@@ -461,3 +466,4 @@ public class 爆拳槍神 extends AbstractSkillHandler {
         return 1;
     }
 }
+

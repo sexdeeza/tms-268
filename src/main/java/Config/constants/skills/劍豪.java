@@ -1,17 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Config.constants.skills;
 
 public class 劍豪 {
-
     public static final int 疾風傳授 = 40010001;
     public static final int 疾風傳授_傳授 = 80000003;
-    /*
-     * 0轉技能
-     */
     public static final int 天賦的才能 = 40010000;
     public static final int 攻守兼備 = 40010067;
     public static final int 劇情攻擊 = 40011183;
@@ -25,9 +19,6 @@ public class 劍豪 {
     public static final int 一般姿勢效果 = 40011291;
     public static final int 拔刀姿勢效果 = 40011292;
     public static final int 五星的歸還 = 40011227;
-    /*
-     * 1轉技能
-     */
     public static final int 三連斬_疾 = 41001000;
     public static final int 三連斬_疾_1 = 41001004;
     public static final int 三連斬_疾_2 = 41001005;
@@ -45,9 +36,6 @@ public class 劍豪 {
     public static final int 昇流旋_1 = 41001015;
     public static final int 曉月流基本技 = 41001010;
     public static final int 曉月流跳躍_1 = 41001016;
-    /*
-     * 2轉技能
-     */
     public static final int 三連斬_風 = 41101000;
     public static final int 三連斬_風_1 = 41101008;
     public static final int 三連斬_風_2 = 41101009;
@@ -63,9 +51,6 @@ public class 劍豪 {
     public static final int 昇龍斬_1 = 41101014;
     public static final int 鷹爪閃_1 = 41101015;
     public static final int 武神招來 = 41100003;
-    /*
-     * 3轉技能
-     */
     public static final int 三連斬_迅 = 41111000;
     public static final int 三連斬_迅_2 = 41111011;
     public static final int 三連斬_迅_3 = 41111012;
@@ -82,9 +67,6 @@ public class 劍豪 {
     public static final int 斷空閃_1 = 41111016;
     public static final int 飛鴉_1 = 41111017;
     public static final int 斷空閃_2 = 41111018;
-    /*
-     * 4轉技能
-     */
     public static final int 三連斬_雷 = 41121000;
     public static final int 三連斬_雷_2 = 41121011;
     public static final int 三連斬_雷_3 = 41121012;
@@ -104,9 +86,6 @@ public class 劍豪 {
     public static final int 瞬殺斬_1 = 41121021;
     public static final int 剛健 = 41120003;
     public static final int 一閃_稜 = 41121022;
-    /*
-     * 超級技能 進階技能
-     */
     public static final int 神速無雙_傷害強化 = 41120043;
     public static final int 神速無雙_次數強化 = 41120044;
     public static final int 神速無雙_魔王剋星 = 41120045;
@@ -116,21 +95,13 @@ public class 劍豪 {
     public static final int 一閃_次數強化 = 41120050;
     public static final int 一閃_減少冷卻時間 = 41120051;
     public static final int 一閃_持續效果 = 41120049;
-    /*
-     * 超級技能 主動技能
-     */
     public static final int 曉月大太刀 = 41121052;
     public static final int 公主的加護 = 41121053;
     public static final int 無雙十刃之型 = 41121054;
-    /*
-     * 5轉技能
-     */
     public static final int 嘯月光斬 = 400011026;
     public static final int 嘯月五影劍 = 400011029;
     public static final int 曉月流極義_劍神 = 400011104;
     public static final int 剎那斬擊 = 400011138;
-
-    /* HEXA主插槽 */
     public static final int HEXA_起源技能 = 80003365;
     public static final int HEXA_終焉之須佐能乎 = 41141500;
     public static final int HEXA_終焉之須佐能乎_I = 41141501;
@@ -141,11 +112,9 @@ public class 劍豪 {
     public static final int HEXA_三連斬雷VI_I = 41141001;
     public static final int HEXA_三連斬雷VI_II = 41141002;
     public static final int HEXA_拔刀術雷VI = 41141003;
-
-
-    /* HEXA附帶強化效果插槽 */
     public static final int HEXA_嘯月光斬強化 = 500004184;
     public static final int HEXA_嘯月五影劍強化 = 500004185;
     public static final int HEXA_曉月流極義_劍神強化 = 500004186;
     public static final int HEXA_剎那斬擊強化 = 500004187;
 }
+

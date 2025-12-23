@@ -1,18 +1,14 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server;
 
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * @author PlayDK
- */
 public class StructExclusiveEquip {
-
-    public final List<Integer> itemIDs = new ArrayList<>(); //禁止穿戴的列表
+    public final List<Integer> itemIDs = new ArrayList<Integer>();
     public int id;
-    public String msg; //提示
+    public String msg;
 }
+

@@ -18,7 +18,7 @@ import Config.constants.enums.UserChatMessageType;
 import Net.server.MapleInventoryManipulator;
 import Net.server.MapleItemInformationProvider;
 import Net.server.commands.PlayerRank;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.InventoryPacket;
 import Packet.MaplePacketCreator;
 import Packet.PacketHelper;

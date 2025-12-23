@@ -1,10 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
+import Client.MapleCharacter;
 import java.lang.ref.WeakReference;
 import java.util.concurrent.ScheduledFuture;
 
 public class MapleCoolDownValueHolder {
-
     public final int skillId;
     public final long startTime;
     public final int length;
@@ -18,7 +21,7 @@ public class MapleCoolDownValueHolder {
     }
 
     public int getLeftTime() {
-        return Math.max(0, (int) (this.length - (System.currentTimeMillis() - this.startTime)));
+        return Math.max(0, (int)((long)this.length - (System.currentTimeMillis() - this.startTime)));
     }
 
     public final void cancel() {
@@ -28,21 +31,23 @@ public class MapleCoolDownValueHolder {
         }
     }
 
-    public static class CancelCooldownAction implements Runnable {
+    public static class CancelCooldownAction
+    implements Runnable {
         private final int skillID;
         private final WeakReference<MapleCharacter> chr;
 
         public CancelCooldownAction(int skillID, MapleCharacter chr) {
             this.skillID = skillID;
-            this.chr = new WeakReference<>(chr);
+            this.chr = new WeakReference<MapleCharacter>(chr);
         }
 
         @Override
         public void run() {
-            MapleCharacter chr = this.chr.get();
+            MapleCharacter chr = (MapleCharacter)this.chr.get();
             if (chr != null) {
                 chr.cancelSkillCooldown(this.skillID);
             }
         }
     }
 }
+

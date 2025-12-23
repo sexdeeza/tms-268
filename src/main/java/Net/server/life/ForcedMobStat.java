@@ -1,6 +1,10 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.life;
 
-import Config.constants.GameConstants;
+import Config.configs.ServerConfig;
+import Net.server.life.MapleMonsterStats;
 
 public final class ForcedMobStat {
     private int PDRate;
@@ -17,31 +21,31 @@ public final class ForcedMobStat {
     private long exp;
 
     public ForcedMobStat(MapleMonsterStats stats, int newLevel, double r) {
-        newLevel = Math.min(newLevel, GameConstants.MAX_LEVEL);
+        newLevel = Math.min(newLevel, ServerConfig.CHANNEL_PLAYER_MAXLEVEL);
         if (stats.isBoss()) {
-            PDRate = stats.getPDRate();
-            MDRate = stats.getMDRate();
+            this.PDRate = stats.getPDRate();
+            this.MDRate = stats.getMDRate();
         } else {
-            PDRate = Math.min(50, (int) Math.round(stats.getPDRate() * r));
-            MDRate = Math.min(50, (int) Math.round(stats.getMDRate() * r));
+            this.PDRate = Math.min(50, (int)Math.round((double)stats.getPDRate() * r));
+            this.MDRate = Math.min(50, (int)Math.round((double)stats.getMDRate() * r));
         }
-        exp = (int) (stats.getExp() * r);
-        watk = (int) (stats.getPhysicalAttack() * r);
-        matk = (int) (stats.getMagicAttack() * r);
-        acc = Math.round(stats.getAcc() + Math.max(0, newLevel - stats.getLevel()) * 2);
-        eva = Math.round(stats.getEva() + Math.max(0, newLevel - stats.getLevel()));
-        pushed = (int) (stats.getPushed() * r);
-        speed = 0;
-        level = newLevel;
-        userCount = 0;
-        change = true;
+        this.exp = (int)((double)stats.getExp() * r);
+        this.watk = (int)((double)stats.getPhysicalAttack() * r);
+        this.matk = (int)((double)stats.getMagicAttack() * r);
+        this.acc = Math.round(stats.getAcc() + Math.max(0, newLevel - stats.getLevel()) * 2);
+        this.eva = Math.round(stats.getEva() + Math.max(0, newLevel - stats.getLevel()));
+        this.pushed = (int)((double)stats.getPushed() * r);
+        this.speed = 0;
+        this.level = newLevel;
+        this.userCount = 0;
+        this.change = true;
     }
 
     public int getUserCount() {
         return this.userCount;
     }
 
-    public void setUserCount(final int userCount) {
+    public void setUserCount(int userCount) {
         this.userCount = userCount;
     }
 
@@ -49,7 +53,7 @@ public final class ForcedMobStat {
         return this.level;
     }
 
-    public void setLevel(final int level) {
+    public void setLevel(int level) {
         this.level = level;
     }
 
@@ -57,7 +61,7 @@ public final class ForcedMobStat {
         return this.speed;
     }
 
-    public void setSpeed(final int speed) {
+    public void setSpeed(int speed) {
         this.speed = speed;
     }
 
@@ -65,7 +69,7 @@ public final class ForcedMobStat {
         return this.pushed;
     }
 
-    public void setPushed(final int pushed) {
+    public void setPushed(int pushed) {
         this.pushed = pushed;
     }
 
@@ -73,7 +77,7 @@ public final class ForcedMobStat {
         return this.MDRate;
     }
 
-    public void setMDRate(final int mdRate) {
+    public void setMDRate(int mdRate) {
         this.MDRate = mdRate;
     }
 
@@ -81,7 +85,7 @@ public final class ForcedMobStat {
         return this.PDRate;
     }
 
-    public void setPDRate(final int pdRate) {
+    public void setPDRate(int pdRate) {
         this.PDRate = pdRate;
     }
 
@@ -89,7 +93,7 @@ public final class ForcedMobStat {
         return this.eva;
     }
 
-    public void setEva(final int eva) {
+    public void setEva(int eva) {
         this.eva = eva;
     }
 
@@ -97,7 +101,7 @@ public final class ForcedMobStat {
         return this.acc;
     }
 
-    public void setAcc(final int acc) {
+    public void setAcc(int acc) {
         this.acc = acc;
     }
 
@@ -105,7 +109,7 @@ public final class ForcedMobStat {
         return this.matk;
     }
 
-    public void setMatk(final int matk) {
+    public void setMatk(int matk) {
         this.matk = matk;
     }
 
@@ -113,12 +117,12 @@ public final class ForcedMobStat {
         return this.watk;
     }
 
-    public void setWatk(final int watk) {
+    public void setWatk(int watk) {
         this.watk = watk;
     }
 
     public long getExp() {
-        return exp;
+        return this.exp;
     }
 
     public void setExp(long exp) {
@@ -129,7 +133,8 @@ public final class ForcedMobStat {
         return this.change;
     }
 
-    public void setChange(final boolean change) {
+    public void setChange(boolean change) {
         this.change = change;
     }
 }
+

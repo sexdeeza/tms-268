@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.冒險家;
 
 import Client.MapleCharacter;
@@ -11,25 +14,19 @@ import Client.status.MonsterStatus;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-import tools.data.MaplePacketReader;
-
 import java.lang.reflect.Field;
 import java.util.Map;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.冒險家_技能群組.海盜.海盜旗幟;
-import static Config.constants.skills.冒險家_技能群組.海盜.衝鋒;
-
-public class 海盜 extends AbstractSkillHandler {
-
+public class 海盜
+extends AbstractSkillHandler {
     public 海盜() {
-        jobs = new MapleJob[]{
-                MapleJob.海盜
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.海盜};
         for (Field field : Config.constants.skills.冒險家_技能群組.海盜.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -38,21 +35,23 @@ public class 海盜 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 衝鋒:
-                statups.put(SecondaryStat.DashSpeed, effect.getInfo().get(MapleStatInfo.x));
-                statups.put(SecondaryStat.DashJump, effect.getInfo().get(MapleStatInfo.y));
+            case 5001005: {
+                statups.put(SecondaryStat.DashSpeed, effect.getInfo().get((Object)MapleStatInfo.x));
+                statups.put(SecondaryStat.DashJump, effect.getInfo().get((Object)MapleStatInfo.y));
                 return 1;
-            case 海盜旗幟:
+            }
+            case 400001017: {
                 monsterStatus.put(MonsterStatus.AreaPDR, effect.getW());
-                statups.put(SecondaryStat.IndieStatRBasic, effect.getInfo().get(MapleStatInfo.indieStatRBasic));
+                statups.put(SecondaryStat.IndieStatRBasic, effect.getInfo().get((Object)MapleStatInfo.indieStatRBasic));
                 return 1;
+            }
         }
         return -1;
     }
 
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 海盜旗幟) {
+        if (applier.effect.getSourceId() == 400001017) {
             applier.pos = slea.readPos();
             return 1;
         }
@@ -60,7 +59,7 @@ public class 海盜 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -95,3 +94,4 @@ public class 海盜 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

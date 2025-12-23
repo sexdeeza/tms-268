@@ -1,9 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.stat;
 
 import java.io.Serializable;
 
-
-public class MapleHyperStats implements Serializable {
+public class MapleHyperStats
+implements Serializable {
     private int position;
     private int skillid;
     private int skilllevel;
@@ -15,7 +18,7 @@ public class MapleHyperStats implements Serializable {
     }
 
     public int getPosition() {
-        return position;
+        return this.position;
     }
 
     public void setPosition(int position) {
@@ -23,7 +26,7 @@ public class MapleHyperStats implements Serializable {
     }
 
     public int getSkillid() {
-        return skillid;
+        return this.skillid;
     }
 
     public void setSkillid(int skill) {
@@ -31,10 +34,11 @@ public class MapleHyperStats implements Serializable {
     }
 
     public int getSkillLevel() {
-        return skilllevel;
+        return this.skilllevel;
     }
 
     public void setSkillLevel(int level) {
         this.skilllevel = level;
     }
 }
+

@@ -3,7 +3,7 @@ package Packet;
 import Client.MapleCharacter;
 import Client.MapleClient;
 import Net.server.maps.ForceAtomObject;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.data.MaplePacketLittleEndianWriter;
 import tools.data.MaplePacketReader;
 

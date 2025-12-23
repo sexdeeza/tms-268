@@ -7,7 +7,7 @@ package Packet;
 import Client.BuddylistEntry;
 import Client.MapleCharacter;
 import Config.constants.enums.FriendOperationMode;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.data.MaplePacketLittleEndianWriter;

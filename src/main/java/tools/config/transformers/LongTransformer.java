@@ -1,21 +1,24 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.config.transformers;
 
-import tools.config.TransformationException;
-
 import java.lang.reflect.Field;
+import tools.config.TransformationException;
+import tools.config.transformers.PropertyTransformer;
 
 public class LongTransformer
-        implements PropertyTransformer<Long> {
-    /* 15 */ public static final LongTransformer SHARED_INSTANCE = new LongTransformer();
+implements PropertyTransformer<Long> {
+    public static final LongTransformer SHARED_INSTANCE = new LongTransformer();
 
+    @Override
     public Long transform(String value, Field field) throws TransformationException {
         try {
-            /* 28 */
             return Long.decode(value);
-            /* 29 */
-        } catch (Exception e) {
-            /* 30 */
+        }
+        catch (Exception e) {
             throw new TransformationException(e);
         }
     }
 }
+

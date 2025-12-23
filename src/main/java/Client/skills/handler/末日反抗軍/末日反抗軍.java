@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.末日反抗軍;
 
 import Client.MapleCharacter;
@@ -5,21 +8,18 @@ import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.反抗軍通用;
+import Config.constants.skills.通用V核心;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 
-import static Config.constants.skills.通用V核心.反抗軍通用.末日反抗步兵陣;
-import static Config.constants.skills.通用V核心.反抗軍通用.末日反抗步兵陣_1;
-
-public class 末日反抗軍 extends AbstractSkillHandler {
-
+public class 末日反抗軍
+extends AbstractSkillHandler {
     public 末日反抗軍() {
-        for (Field field : 反抗軍通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.反抗軍通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -32,14 +32,14 @@ public class 末日反抗軍 extends AbstractSkillHandler {
 
     @Override
     public int getLinkedSkillID(int skillId) {
-        if (skillId == 末日反抗步兵陣_1) {
-            return 末日反抗步兵陣;
+        if (skillId == 400001022) {
+            return 400001019;
         }
         return -1;
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -74,3 +74,4 @@ public class 末日反抗軍 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

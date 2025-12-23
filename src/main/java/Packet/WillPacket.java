@@ -3,7 +3,7 @@ package Packet;
 import Client.MapleCharacter;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Server.BossEventHandler.spider.spider;
 import tools.Pair;
 import tools.Triple;

@@ -1,17 +1,11 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Config.constants.skills;
 
 public class 皮卡啾 {
-
     public static final int 收納達人 = 130000111;
     public static final int 黑啾的詛咒 = 130000112;
-    /*
-     * 1轉技能
-     */
     public static final int 皮卡啾攻擊 = 131001000;
     public static final int 皮卡啾攻擊_7 = 131002000;
     public static final int 皮卡啾攻擊_1 = 131001001;
@@ -84,3 +78,4 @@ public class 皮卡啾 {
     public static final int 神祇的黃昏_4 = 131005022;
     public static final int 神祇的黃昏_5 = 131006022;
 }
+

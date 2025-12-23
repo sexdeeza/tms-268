@@ -1,8 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Server;
 
 public interface Buffstat {
+    public int getValue();
 
-    int getValue();
-
-    int getPosition();
+    public int getPosition();
 }
+

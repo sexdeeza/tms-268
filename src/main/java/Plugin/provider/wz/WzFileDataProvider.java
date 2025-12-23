@@ -10,7 +10,7 @@ import java.util.*;
 
 public class WzFileDataProvider implements MapleDataProvider {
 
-    private final File wzfile;
+    public File wzfile;
     public WzHeader Header;
     private final MapleDataDirectoryEntry root;
     private long cOffset;

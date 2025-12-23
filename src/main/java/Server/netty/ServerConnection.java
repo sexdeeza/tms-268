@@ -1,7 +1,10 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Server.netty;
 
-import Config.constants.ServerConstants;
 import Server.ServerType;
+import Server.netty.ServerInitializer;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelOption;
@@ -10,10 +13,9 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 public class ServerConnection {
-
     private final int port;
-    private final EventLoopGroup bossGroup = new NioEventLoopGroup(1); //The initial connection thread where all the new connections go to
-    private final EventLoopGroup workerGroup = new NioEventLoopGroup(); //Once the connection thread has finished it will be moved over to this group where the thread will be managed
+    private final EventLoopGroup bossGroup = new NioEventLoopGroup(1);
+    private final EventLoopGroup workerGroup = new NioEventLoopGroup();
     private final ServerType type;
     private int world = -1;
     private int channels = -1;
@@ -29,23 +31,18 @@ public class ServerConnection {
 
     public void run() {
         try {
-            boot = new ServerBootstrap()
-                    .group(bossGroup, workerGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .option(ChannelOption.SO_BACKLOG, ServerConstants.MAXIMUM_CONNECTIONS)
-                    .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childOption(ChannelOption.SO_KEEPALIVE, true)
-                    .childHandler(new ServerInitializer(world, channels, type));
-            channel = boot.bind(port).sync().channel().closeFuture().channel();
-            //System.out.printf("[ %s ] : %s Started and working...\r\n", type.name(), port);
-        } catch (Exception e) {
-            throw new RuntimeException("啟動失敗 - " + type.name() + ":" + channel.remoteAddress());
+            this.boot = ((ServerBootstrap)((ServerBootstrap)new ServerBootstrap().group(this.bossGroup, this.workerGroup).channel(NioServerSocketChannel.class)).option(ChannelOption.SO_BACKLOG, 1000)).childOption(ChannelOption.TCP_NODELAY, true).childOption(ChannelOption.SO_KEEPALIVE, true).childHandler(new ServerInitializer(this.world, this.channels, this.type));
+            this.channel = this.boot.bind(this.port).sync().channel().closeFuture().channel();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("啟動失敗 - " + this.type.name() + ":" + String.valueOf(this.channel.remoteAddress()));
         }
     }
 
     public void close() {
-        channel.close();
-        bossGroup.shutdownGracefully();
-        workerGroup.shutdownGracefully();
+        this.channel.close();
+        this.bossGroup.shutdownGracefully();
+        this.workerGroup.shutdownGracefully();
     }
 }
+

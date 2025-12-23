@@ -2,7 +2,7 @@ package Packet.FieldPacket;
 
 import Net.server.life.MapleMonster;
 import Net.server.maps.field.FieldSkill;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.Randomizer;
 import tools.data.MaplePacketLittleEndianWriter;
 

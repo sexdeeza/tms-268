@@ -1,9 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 import Net.server.buffs.MapleStatEffect;
 
 public class MonsterEffectHolder {
-
     public MapleStatEffect effect;
     public long startTime;
     public int localDuration;
@@ -19,13 +21,13 @@ public class MonsterEffectHolder {
     public int dotInterval;
     public int dotSuperpos;
 
-    public MonsterEffectHolder(final int sourceID, final int level, final int value) {
+    public MonsterEffectHolder(int sourceID, int level, int value) {
         this.sourceID = sourceID;
         this.level = level;
         this.value = value;
     }
 
-    public MonsterEffectHolder(final int chrID, final int value, final long startTime, final int localDuration, final MapleStatEffect effect) {
+    public MonsterEffectHolder(int chrID, int value, long startTime, int localDuration, MapleStatEffect effect) {
         this.effect = effect;
         this.startTime = startTime;
         this.value = value;
@@ -36,19 +38,20 @@ public class MonsterEffectHolder {
     }
 
     public final boolean canNextDot() {
-        final long currentTimeMillis = System.currentTimeMillis();
+        long currentTimeMillis = System.currentTimeMillis();
         if (this.nextDotTime <= currentTimeMillis) {
-            this.nextDotTime = currentTimeMillis + this.dotInterval;
+            this.nextDotTime = currentTimeMillis + (long)this.dotInterval;
             return true;
         }
         return false;
     }
 
     public final long getLeftTime() {
-        return Math.max((startTime + localDuration - System.currentTimeMillis()), 0);
+        return Math.max(this.startTime + (long)this.localDuration - System.currentTimeMillis(), 0L);
     }
 
     public final long getCancelTime() {
-        return startTime + localDuration;
+        return this.startTime + (long)this.localDuration;
     }
 }
+

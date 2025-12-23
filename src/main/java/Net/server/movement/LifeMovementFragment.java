@@ -1,9 +1,11 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.movement;
 
 import tools.data.MaplePacketLittleEndianWriter;
 
 public interface LifeMovementFragment {
-
-    void serialize(MaplePacketLittleEndianWriter lew);
-
+    public void serialize(MaplePacketLittleEndianWriter var1);
 }
+

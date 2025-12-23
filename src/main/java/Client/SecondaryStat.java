@@ -1,18 +1,16 @@
-//
-// Source code recreated from a .class file by IntelliJ IDEA
-// (powered by FernFlower decompiler)
-//
-
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 import Server.Buffstat;
-import java.io.PrintStream;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import tools.Pair;
 
-public enum SecondaryStat implements Buffstat {
+public enum SecondaryStat implements Buffstat
+{
     IndiePAD(0, true),
     IndieMAD(1, true),
     IndiePDD(2, true),
@@ -48,7 +46,7 @@ public enum SecondaryStat implements Buffstat {
     IndiePDDR(32, true),
     IndieCD(33, true),
     IndieBDR(34, true),
-    BasicStatUp(35, true),
+    IndieStatR(35, true),
     IndieStance(36, true),
     IndieIgnoreMobpdpR(37, true),
     IndieEmpty(38, true),
@@ -962,20 +960,20 @@ public enum SecondaryStat implements Buffstat {
     private final int pos;
     public int stat;
     private boolean stacked = false;
-    public static final SecondaryStat[] isAuraCTS = new SecondaryStat[]{BMageAuraYellow, BMageAuraBlue, BMageAuraDark, BMageAuraDebuff, KnightsAura, MichaelSoulLink};
+    public static final SecondaryStat[] isAuraCTS;
     private int flag;
     private int x;
 
     private SecondaryStat() {
         this.stat = this.ordinal();
         this.value = 1 << 31 - this.ordinal() % 32;
-        this.pos = (int)Math.floor((double)(this.ordinal() / 32));
+        this.pos = (int)Math.floor(this.ordinal() / 32);
     }
 
     private SecondaryStat(boolean stacked) {
         this.stat = this.ordinal();
         this.value = 1 << 31 - this.ordinal() % 32;
-        this.pos = (int)Math.floor((double)(this.ordinal() / 32));
+        this.pos = (int)Math.floor(this.ordinal() / 32);
         this.stacked = stacked;
     }
 
@@ -993,7 +991,7 @@ public enum SecondaryStat implements Buffstat {
     }
 
     public static Map<SecondaryStat, Integer> getSpawnList() {
-        HashMap<SecondaryStat, Integer> SpawnStatsList = new HashMap();
+        HashMap<SecondaryStat, Integer> SpawnStatsList = new HashMap<SecondaryStat, Integer>();
         SpawnStatsList.put(IndieForceSpeed, 0);
         SpawnStatsList.put(IndieLoopEffect, 0);
         SpawnStatsList.put(IndieBuffIcon, 0);
@@ -1030,10 +1028,12 @@ public enum SecondaryStat implements Buffstat {
         return SpawnStatsList;
     }
 
+    @Override
     public int getPosition() {
         return this.pos;
     }
 
+    @Override
     public int getValue() {
         return this.value;
     }
@@ -1043,14 +1043,11 @@ public enum SecondaryStat implements Buffstat {
     }
 
     public String toString() {
-        String var10000 = this.name();
-        return var10000 + "(" + this.stat + ")";
+        return this.name() + "(" + this.stat + ")";
     }
 
     public static SecondaryStat getByValue(int value) {
-        return (SecondaryStat)Arrays.stream(values()).filter((it) -> {
-            return it.stat == value;
-        }).findFirst().orElse((SecondaryStat) null);
+        return Arrays.stream(SecondaryStat.values()).filter(it -> it.stat == value).findFirst().orElse(null);
     }
 
     public int getFlag() {
@@ -1059,58 +1056,43 @@ public enum SecondaryStat implements Buffstat {
 
     public boolean isNormalDebuff() {
         switch (this.ordinal()) {
-            case 9:
-            case 97:
-            case 98:
-            case 99:
-            case 111:
-            case 112:
-            case 113:
-            case 153:
-            case 155:
-            case 191:
+            case 9: 
+            case 97: 
+            case 98: 
+            case 99: 
+            case 111: 
+            case 112: 
+            case 113: 
+            case 153: 
+            case 155: 
+            case 191: {
                 return true;
-            default:
-                return false;
+            }
         }
+        return false;
     }
 
     public boolean isCriticalDebuff() {
         switch (this.ordinal()) {
-            case 96:
-            case 114:
-            case 120:
-            case 127:
-            case 134:
-            case 161:
-            case 207:
-            case 247:
+            case 96: 
+            case 114: 
+            case 120: 
+            case 127: 
+            case 134: 
+            case 161: 
+            case 207: 
+            case 247: {
                 return true;
-            default:
-                return false;
+            }
         }
+        return false;
     }
 
     public boolean isSpecialBuff() {
-        boolean var10000;
-        switch (this.ordinal()) {
-            case 836:
-            case 837:
-            case 838:
-            case 839:
-            case 840:
-            case 841:
-            case 842:
-            case 844:
-            case 845:
-                var10000 = true;
-                break;
-            case 843:
-            default:
-                var10000 = false;
-        }
-
-        return var10000;
+        return switch (this.ordinal()) {
+            case 836, 837, 838, 839, 840, 841, 842, 844, 845 -> true;
+            default -> false;
+        };
     }
 
     public int getX() {
@@ -1118,40 +1100,26 @@ public enum SecondaryStat implements Buffstat {
     }
 
     public static boolean isEncode4Byte(Map<SecondaryStat, Pair<Integer, Integer>> statups) {
-        SecondaryStat[] array = new SecondaryStat[]{CarnivalDefence, SpiritLink, DojangLuckyBonus, SoulGazeCriDamR, PowerTransferGauge, ReturnTeleport, ShadowPartner, SetBaseDamage, QuiverCatridge, ImmuneBarrier, NaviFlying, Dance, SetBaseDamageByBuff, DotHealHPPerSecond, DotHealMPPerSecond, IncMaxDamage, Cyclone, GrabbedByMob, MagnetArea, PairingUser, MegaSmasher, VampDeath, FifthAdvWarriorShield, RidingExpireInfoSave, RWBarrier, SiphonVitalityBarrier};
-        SecondaryStat[] var2 = array;
-        int var3 = array.length;
-
-        for(int var4 = 0; var4 < var3; ++var4) {
-            SecondaryStat stat = var2[var4];
-            if (statups.containsKey(stat)) {
-                return true;
-            }
+        SecondaryStat[] array;
+        for (SecondaryStat stat : array = new SecondaryStat[]{CarnivalDefence, SpiritLink, DojangLuckyBonus, SoulGazeCriDamR, PowerTransferGauge, ReturnTeleport, ShadowPartner, SetBaseDamage, QuiverCatridge, ImmuneBarrier, NaviFlying, Dance, SetBaseDamageByBuff, DotHealHPPerSecond, DotHealMPPerSecond, IncMaxDamage, Cyclone, GrabbedByMob, MagnetArea, PairingUser, MegaSmasher, VampDeath, FifthAdvWarriorShield, RidingExpireInfoSave, RWBarrier, SiphonVitalityBarrier}) {
+            if (!statups.containsKey(stat)) continue;
+            return true;
         }
-
         return false;
     }
 
     public static void main(String[] args) {
-        SecondaryStat[] var1 = values();
-        int var2 = var1.length;
-
-        for(int var3 = 0; var3 < var2; ++var3) {
-            SecondaryStat stat = var1[var3];
+        for (SecondaryStat stat : SecondaryStat.values()) {
             stat.change();
         }
-
-        for(int i = 0; i <= values()[values().length - 1].stat; ++i) {
-            SecondaryStat stat = getByValue(i);
+        for (int i = 0; i <= SecondaryStat.values()[SecondaryStat.values().length - 1].stat; ++i) {
+            SecondaryStat stat = SecondaryStat.getByValue(i);
             if (stat != null) {
-                PrintStream var10000 = System.out;
-                String var10001 = stat.name();
-                var10000.println(var10001 + " = " + stat.stat + ",");
-            } else {
-                System.out.println("\t// " + i);
+                System.out.println(stat.name() + " = " + stat.stat + ",");
+                continue;
             }
+            System.out.println("\t// " + i);
         }
-
     }
 
     private void change() {
@@ -1163,7 +1131,11 @@ public enum SecondaryStat implements Buffstat {
         } else if (this.stat >= 719) {
             change = 13;
         }
-
         this.stat += change;
     }
+
+    static {
+        isAuraCTS = new SecondaryStat[]{BMageAuraYellow, BMageAuraBlue, BMageAuraDark, BMageAuraDebuff, KnightsAura, MichaelSoulLink};
+    }
 }
+

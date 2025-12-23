@@ -1,20 +1,22 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
+import Net.server.maps.MapleReactorStats;
 import Plugin.provider.MapleData;
 import Plugin.provider.MapleDataProvider;
 import Plugin.provider.MapleDataProviderFactory;
 import Plugin.provider.MapleDataTool;
+import java.util.HashMap;
+import java.util.Map;
 import tools.Pair;
 import tools.StringUtil;
 
-import java.util.HashMap;
-import java.util.Map;
-
 public class MapleReactorFactory {
-
     private static final MapleDataProvider data = MapleDataProviderFactory.getReactor();
-    private static final Map<Integer, MapleReactorStats> reactorStats = new HashMap<>();
-    protected static final Map<Integer, String> actionNames = new HashMap<>();
+    private static final Map<Integer, MapleReactorStats> reactorStats = new HashMap<Integer, MapleReactorStats>();
+    protected static final Map<Integer, String> actionNames = new HashMap<Integer, String>();
 
     public static MapleReactorStats getReactor(int rid) {
         MapleReactorStats stats = reactorStats.get(rid);
@@ -27,53 +29,42 @@ public class MapleReactorFactory {
                 stats = reactorStats.get(infoId);
             }
             if (stats == null) {
+                MapleData reactorD;
                 stats = new MapleReactorStats();
                 reactorData = data.getData(StringUtil.getLeftPaddedStr(infoId + ".img", '0', 11));
                 if (reactorData == null) {
                     return stats;
                 }
-                /*
-                 * int i = 0; switch(rid) { case 2002011: case 2002012: case
-                 * 2002013: case 2618003: case 2618004: case 2618005: case
-                 * 2618006: case 2618007: case 2002018: case 9101000: case
-                 * 2512001: case 6109016: case 6109017: case 6109018: case
-                 * 6109019: case 6109020: i = 1; break; case 2006000: i = 20;
-                 * break; } for (int x = 0; x < i; x++) { stats.addState((byte)
-                 * x, 0, null, (byte) (x+1), 0); //test
-                 * }
-                 */
                 boolean canTouch = MapleDataTool.getInt("info/activateByTouch", reactorData, 0) > 0;
                 boolean areaSet = false;
                 boolean foundState = false;
-                for (byte i = 0; true; i++) {
-                    MapleData reactorD = reactorData.getChildByPath(String.valueOf(i));
-                    if (reactorD == null) {
-                        break;
-                    }
+                byte i = 0;
+                while ((reactorD = reactorData.getChildByPath(String.valueOf(i))) != null) {
                     MapleData reactorInfoData_ = reactorD.getChildByPath("event");
                     if (reactorInfoData_ != null && reactorInfoData_.getChildByPath("0") != null) {
                         MapleData reactorInfoData = reactorInfoData_.getChildByPath("0");
                         Pair<Integer, Integer> reactItem = null;
                         int type = MapleDataTool.getIntConvert("type", reactorInfoData);
-                        if (type == 100) { //reactor waits for item
-                            reactItem = new Pair<>(MapleDataTool.getIntConvert("0", reactorInfoData), MapleDataTool.getIntConvert("1", reactorInfoData, 1));
-                            if (!areaSet) { //only set area of effect for item-triggered reactors once
+                        if (type == 100) {
+                            reactItem = new Pair<Integer, Integer>(MapleDataTool.getIntConvert("0", reactorInfoData), MapleDataTool.getIntConvert("1", reactorInfoData, 1));
+                            if (!areaSet) {
                                 stats.setTL(MapleDataTool.getPoint("lt", reactorInfoData));
                                 stats.setBR(MapleDataTool.getPoint("rb", reactorInfoData));
                                 areaSet = true;
                             }
                         }
                         foundState = true;
-                        stats.addState(i, type, reactItem, (byte) MapleDataTool.getIntConvert("state", reactorInfoData), MapleDataTool.getIntConvert("timeOut", reactorInfoData_, -1), (byte) (canTouch ? 2 : (MapleDataTool.getIntConvert("2", reactorInfoData, 0) > 0 || reactorInfoData.getChildByPath("clickArea") != null || type == 9 ? 1 : 0)));
+                        stats.addState(i, type, reactItem, (byte)MapleDataTool.getIntConvert("state", reactorInfoData), MapleDataTool.getIntConvert("timeOut", reactorInfoData_, -1), (byte)(canTouch ? 2 : (MapleDataTool.getIntConvert("2", reactorInfoData, 0) > 0 || reactorInfoData.getChildByPath("clickArea") != null || type == 9 ? 1 : 0)));
                     } else {
-                        stats.addState(i, 999, null, (byte) (foundState ? -1 : (i + 1)), 0, (byte) 0);
+                        stats.addState(i, 999, null, (byte)(foundState ? -1 : i + 1), 0, (byte)0);
                     }
+                    i = (byte)(i + 1);
                 }
                 reactorStats.put(infoId, stats);
                 if (rid != infoId) {
                     reactorStats.put(rid, stats);
                 }
-            } else { // stats exist at infoId but not rid; add to map
+            } else {
                 reactorStats.put(rid, stats);
             }
         }
@@ -88,3 +79,4 @@ public class MapleReactorFactory {
         return actionNames.get(rid);
     }
 }
+

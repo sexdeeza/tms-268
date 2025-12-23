@@ -9,7 +9,7 @@ import Config.constants.ItemConstants;
 import Config.constants.ServerConstants;
 import Net.server.MapleInventoryManipulator;
 import Net.server.MapleItemInformationProvider;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.AuctionPacket;
 import Packet.ChatPacket;
 import Packet.MaplePacketCreator;

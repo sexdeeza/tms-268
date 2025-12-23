@@ -1,7 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider;
 
 public enum MapleDataType {
-
     NONE,
     IMG_0x00,
     SHORT,
@@ -31,5 +33,7 @@ public enum MapleDataType {
     ARRAY,
     MAP,
     ENUM,
-    MS
+    MS;
+
 }
+

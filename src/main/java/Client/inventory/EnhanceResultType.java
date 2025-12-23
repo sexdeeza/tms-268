@@ -1,10 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
 public enum EnhanceResultType {
-    NO_DESTROY((short) 0x1),
-    UPGRADE_TIER((short) 0x2),
-    SCROLL_SUCCESS((short) 0x4),
-    EQUIP_MARK((short) 0x80);
+    NO_DESTROY((short) 1),
+    UPGRADE_TIER((short) 2),
+    SCROLL_SUCCESS((short) 4),
+    EQUIP_MARK((short) 128);
 
     private final short value;
 
@@ -16,7 +19,8 @@ public enum EnhanceResultType {
         return this.value;
     }
 
-    EnhanceResultType(short value) {
+    private EnhanceResultType(short value) {
         this.value = value;
     }
 }
+

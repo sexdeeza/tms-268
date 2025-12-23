@@ -1,21 +1,23 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Server.world.PlayerBuffValueHolder
+ */
 package Server.world;
 
 import Client.MapleCoolDownValueHolder;
-
+import Server.world.PlayerBuffValueHolder;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-/*
- * 角色的BUFF狀態信息
- */
-public class PlayerBuffStorage implements Serializable {
-
-
+public class PlayerBuffStorage
+implements Serializable {
     private static final long serialVersionUID = -5428338713000883808L;
-    private static final Map<Integer, List<PlayerBuffValueHolder>> buffs = new ConcurrentHashMap<>();
-    private static final Map<Integer, List<MapleCoolDownValueHolder>> coolDowns = new ConcurrentHashMap<>();
+    private static final Map<Integer, List<PlayerBuffValueHolder>> buffs = new ConcurrentHashMap<Integer, List<PlayerBuffValueHolder>>();
+    private static final Map<Integer, List<MapleCoolDownValueHolder>> coolDowns = new ConcurrentHashMap<Integer, List<MapleCoolDownValueHolder>>();
 
     public static void addBuffsToStorage(int chrid, List<PlayerBuffValueHolder> toStore) {
         buffs.put(chrid, toStore);
@@ -33,3 +35,4 @@ public class PlayerBuffStorage implements Serializable {
         return coolDowns.remove(chrid);
     }
 }
+

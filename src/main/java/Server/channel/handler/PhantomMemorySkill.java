@@ -7,7 +7,7 @@ import Client.skills.SkillEntry;
 import Client.skills.SkillFactory;
 import Config.constants.JobConstants;
 import Config.constants.skills.幻影俠盜;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MaplePacketCreator;
 import tools.data.MaplePacketLittleEndianWriter;
 import tools.data.MaplePacketReader;

@@ -1,7 +1,7 @@
 package SwordieX.field.fieldeffect;
 
 import Net.server.life.MapleMonster;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import connection.OutPacket;
 import tools.data.MaplePacketLittleEndianWriter;
 

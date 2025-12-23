@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.enums;
 
 public enum ScriptType {
@@ -18,12 +21,12 @@ public enum ScriptType {
 
     private final String dir;
 
-    ScriptType(String dir) {
+    private ScriptType(String dir) {
         this.dir = dir;
     }
 
     public String getDir() {
-        return dir;
+        return this.dir;
     }
-
 }
+

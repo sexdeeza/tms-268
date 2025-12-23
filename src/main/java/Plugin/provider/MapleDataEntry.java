@@ -1,21 +1,19 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Plugin.provider;
 
-/**
- * @author twms Hertz
- * @notice 初步增強了 歷遍檔案的速度
- * @ver 245.
- */
+import Plugin.provider.MapleDataEntity;
 
-public class MapleDataEntry implements MapleDataEntity {
-
+public class MapleDataEntry
+implements MapleDataEntity {
     private final String name;
     private final int size;
     private final int checksum;
     private final MapleDataEntity parent;
-    private final long offset;
+    private long offset;
 
     MapleDataEntry(String name, int size, int checksum, long offset, MapleDataEntity parent) {
-        super();
         this.name = name;
         this.size = size;
         this.checksum = checksum;
@@ -25,37 +23,41 @@ public class MapleDataEntry implements MapleDataEntity {
 
     @Override
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public int getSize() {
-        return size;
+        return this.size;
     }
 
     public int getChecksum() {
-        return checksum;
+        return this.checksum;
     }
 
     public long getOffset() {
-        return offset;
+        return this.offset;
+    }
+
+    public void setOffset(long offset) {
+        this.offset = offset;
     }
 
     @Override
     public MapleDataEntity getParent() {
-        return parent;
+        return this.parent;
     }
 
     @Override
     public String getPath() {
         MapleDataEntity mde;
         MapleDataEntity ode = this;
-        String path = getName();
+        String path = this.getName();
         while ((mde = ode.getParent()) != ode && mde != null) {
             ode = mde;
-            if (!mde.getName().isEmpty()) {
-                path = mde.getName() + "/" + path;
-            }
+            if (mde.getName().isEmpty()) continue;
+            path = mde.getName() + "/" + (String)path;
         }
         return path;
     }
 }
+

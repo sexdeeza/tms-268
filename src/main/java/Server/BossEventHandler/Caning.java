@@ -5,7 +5,7 @@ import Client.MapleClient;
 import Net.server.Timer;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.PacketHelper;
 import lombok.Getter;
 import tools.Randomizer;

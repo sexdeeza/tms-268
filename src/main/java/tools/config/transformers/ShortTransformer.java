@@ -1,21 +1,24 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.config.transformers;
 
-import tools.config.TransformationException;
-
 import java.lang.reflect.Field;
+import tools.config.TransformationException;
+import tools.config.transformers.PropertyTransformer;
 
 public class ShortTransformer
-        implements PropertyTransformer<Short> {
-    /* 17 */ public static final ShortTransformer SHARED_INSTANCE = new ShortTransformer();
+implements PropertyTransformer<Short> {
+    public static final ShortTransformer SHARED_INSTANCE = new ShortTransformer();
 
+    @Override
     public Short transform(String value, Field field) throws TransformationException {
         try {
-            /* 30 */
             return Short.decode(value);
-            /* 31 */
-        } catch (Exception e) {
-            /* 32 */
+        }
+        catch (Exception e) {
             throw new TransformationException(e);
         }
     }
 }
+

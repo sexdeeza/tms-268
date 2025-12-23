@@ -5,7 +5,7 @@ import Client.MapleClient;
 import Net.server.life.MapleLifeFactory;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleMap;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MaplePacketCreator;
 import Packet.MobPacket;
 import tools.Randomizer;
@@ -82,7 +82,7 @@ public class Dusk {
                     for (MapleMonster m : map.getAllMonstersThreadsafe(true)) {
                         if (m.getOwner() == cchr.getId()) {
                             m.setHp(0);
-                            MobPacket.killMonster(player, m.getObjectId(), 1);
+                            MobPacket.killMonster(m.getObjectId(), 1);
                             map.removeMapObject(m);
                             m.killed();
                         }

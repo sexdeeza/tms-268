@@ -1,21 +1,32 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.events.MapleOxQuizFactory
+ *  Net.server.events.MapleOxQuizFactory$MapleOxQuizEntry
+ *  SwordieX.field.ClockPacket
+ *  connection.packet.FieldPacket
+ */
 package Net.server.events;
 
 import Client.MapleCharacter;
 import Client.MapleStat;
-import Net.server.Timer.EventTimer;
-import Net.server.events.MapleOxQuizFactory.MapleOxQuizEntry;
+import Net.server.Timer;
+import Net.server.events.MapleEvent;
+import Net.server.events.MapleEventType;
+import Net.server.events.MapleOxQuizFactory;
 import Net.server.maps.MapleMap;
 import Packet.MaplePacketCreator;
-import connection.packet.FieldPacket;
 import SwordieX.field.ClockPacket;
+import connection.packet.FieldPacket;
+import java.util.Map;
+import java.util.concurrent.ScheduledFuture;
 import tools.Pair;
 
-import java.util.Map.Entry;
-import java.util.concurrent.ScheduledFuture;
-
-public class MapleOxQuiz extends MapleEvent {
-
-    private ScheduledFuture<?> oxSchedule, oxSchedule2;
+public class MapleOxQuiz
+extends MapleEvent {
+    private ScheduledFuture<?> oxSchedule;
+    private ScheduledFuture<?> oxSchedule2;
     private int timesAsked = 0;
     private boolean finished = false;
 
@@ -24,24 +35,24 @@ public class MapleOxQuiz extends MapleEvent {
     }
 
     @Override
-    public void finished(MapleCharacter chr) { //do nothing.
+    public void finished(MapleCharacter chr) {
     }
 
     private void resetSchedule() {
-        if (oxSchedule != null) {
-            oxSchedule.cancel(false);
-            oxSchedule = null;
+        if (this.oxSchedule != null) {
+            this.oxSchedule.cancel(false);
+            this.oxSchedule = null;
         }
-        if (oxSchedule2 != null) {
-            oxSchedule2.cancel(false);
-            oxSchedule2 = null;
+        if (this.oxSchedule2 != null) {
+            this.oxSchedule2.cancel(false);
+            this.oxSchedule2 = null;
         }
     }
 
     @Override
     public void onMapLoad(MapleCharacter chr) {
         super.onMapLoad(chr);
-        if (chr.getMapId() == type.mapids[0] && !chr.isGm()) {
+        if (chr.getMapId() == this.type.mapids[0] && !chr.isGm()) {
             chr.canTalk(false);
         }
     }
@@ -49,89 +60,85 @@ public class MapleOxQuiz extends MapleEvent {
     @Override
     public void reset() {
         super.reset();
-        getMap(0).getPortal("join00").setPortalState(false);
-        resetSchedule();
-        timesAsked = 0;
+        this.getMap(0).getPortal("join00").setPortalState(false);
+        this.resetSchedule();
+        this.timesAsked = 0;
     }
 
     @Override
     public void unreset() {
         super.unreset();
-        getMap(0).getPortal("join00").setPortalState(true);
-        resetSchedule();
+        this.getMap(0).getPortal("join00").setPortalState(true);
+        this.resetSchedule();
     }
-    //apparently npc says 10 questions
 
     @Override
     public void startEvent() {
-        sendQuestion();
-        finished = false;
+        this.sendQuestion();
+        this.finished = false;
     }
 
     public void sendQuestion() {
-        sendQuestion(getMap(0));
+        this.sendQuestion(this.getMap(0));
     }
 
-    public void sendQuestion(final MapleMap toSend) {
-        final Entry<Pair<Integer, Integer>, MapleOxQuizEntry> question = MapleOxQuizFactory.getInstance().grabRandomQuestion();
-        if (oxSchedule2 != null) {
-            oxSchedule2.cancel(false);
+    public void sendQuestion(MapleMap toSend) {
+        Map.Entry question = MapleOxQuizFactory.getInstance().grabRandomQuestion();
+        if (this.oxSchedule2 != null) {
+            this.oxSchedule2.cancel(false);
         }
-        oxSchedule2 = EventTimer.getInstance().schedule(() -> {
+        this.oxSchedule2 = Timer.EventTimer.getInstance().schedule(() -> {
             int number = 0;
             for (MapleCharacter mc : toSend.getCharacters()) {
-                if (mc.isGm() || !mc.isAlive()) {
-                    number++;
-                }
+                if (!mc.isGm() && mc.isAlive()) continue;
+                ++number;
             }
-            if (toSend.getCharactersSize() - number <= 1 || timesAsked == 10) {
+            if (toSend.getCharactersSize() - number <= 1 || this.timesAsked == 10) {
                 toSend.broadcastMessage(MaplePacketCreator.serverNotice(6, "The event has ended"));
-                unreset();
+                this.unreset();
                 for (MapleCharacter chr : toSend.getCharacters()) {
-                    if (chr != null && !chr.isGm() && chr.isAlive()) {
-                        chr.canTalk(true);
-                        givePrize(chr);
-                        warpBack(chr);
-                    }
+                    if (chr == null || chr.isGm() || !chr.isAlive()) continue;
+                    chr.canTalk(true);
+                    MapleOxQuiz.givePrize(chr);
+                    this.warpBack(chr);
                 }
-                //prizes here
-                finished = true;
+                this.finished = true;
                 return;
             }
-            toSend.broadcastMessage(MaplePacketCreator.showOXQuiz(question.getKey().left, question.getKey().right, true));
-            toSend.broadcastMessage(FieldPacket.clock(ClockPacket.secondsClock(10))); //quickly change to 12
-        }, 10000);
-        if (oxSchedule != null) {
-            oxSchedule.cancel(false);
+            toSend.broadcastMessage(MaplePacketCreator.showOXQuiz((Integer)((Pair)question.getKey()).left, (Integer)((Pair)question.getKey()).right, true));
+            toSend.broadcastMessage(FieldPacket.clock((ClockPacket)ClockPacket.secondsClock((long)10L)));
+        }, 10000L);
+        if (this.oxSchedule != null) {
+            this.oxSchedule.cancel(false);
         }
-        oxSchedule = EventTimer.getInstance().schedule(() -> {
-            if (finished) {
+        this.oxSchedule = Timer.EventTimer.getInstance().schedule(() -> {
+            if (this.finished) {
                 return;
             }
-            toSend.broadcastMessage(MaplePacketCreator.showOXQuiz(question.getKey().left, question.getKey().right, false));
-            timesAsked++;
+            toSend.broadcastMessage(MaplePacketCreator.showOXQuiz((Integer)((Pair)question.getKey()).left, (Integer)((Pair)question.getKey()).right, false));
+            ++this.timesAsked;
             for (MapleCharacter chr : toSend.getCharacters()) {
-                if (chr != null && !chr.isGm() && chr.isAlive()) { // make sure they aren't null... maybe something can happen in 12 seconds.
-                    if (!isCorrectAnswer(chr, question.getValue().getAnswer())) {
-                        chr.getStat().setHp((short) 0, chr);
-                        chr.updateSingleStat(MapleStat.HP, 0);
-                    } else {
-                        chr.gainExp(3000, true, true, false);
-                    }
+                if (chr == null || chr.isGm() || !chr.isAlive()) continue;
+                if (!this.isCorrectAnswer(chr, ((MapleOxQuizFactory.MapleOxQuizEntry)question.getValue()).getAnswer())) {
+                    chr.getStat().setHp(0, chr);
+                    chr.updateSingleStat(MapleStat.HP, 0L);
+                    continue;
                 }
+                chr.gainExp(3000L, true, true, false);
             }
-            sendQuestion();
-        }, 20000); // Time to answer = 30 seconds ( Ox Quiz packet shows a 30 second timer.
+            this.sendQuestion();
+        }, 20000L);
     }
 
     private boolean isCorrectAnswer(MapleCharacter chr, int answer) {
         double x = chr.getPosition().getX();
         double y = chr.getPosition().getY();
-        if ((x > -234 && y > -26 && answer == 0) || (x < -234 && y > -26 && answer == 1)) {
-            chr.dropMessage(6, "[Ox Quiz] Correct!"); //i think this is its own packet
+        if (x > -234.0 && y > -26.0 && answer == 0 || x < -234.0 && y > -26.0 && answer == 1) {
+            chr.dropMessage(6, "[Ox Quiz] Correct!");
             return true;
         }
         chr.dropMessage(6, "[Ox Quiz] Incorrect!");
         return false;
     }
 }
+

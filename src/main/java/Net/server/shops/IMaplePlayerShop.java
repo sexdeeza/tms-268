@@ -1,91 +1,98 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.shops.AbstractPlayerStore$BoughtItem
+ *  Net.server.shops.MaplePlayerShopItem
+ */
 package Net.server.shops;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
-import Net.server.shops.AbstractPlayerStore.BoughtItem;
+import Net.server.shops.AbstractPlayerStore;
+import Net.server.shops.MaplePlayerShopItem;
+import java.util.List;
 import tools.Pair;
 
-import java.util.List;
-
 public interface IMaplePlayerShop {
+    public static final byte HIRED_MERCHANT = 1;
+    public static final byte PLAYER_SHOP = 2;
+    public static final byte OMOK = 3;
+    public static final byte MATCH_CARD = 4;
+    public static final byte HIRED_FISHER = 75;
 
-    byte HIRED_MERCHANT = 1;
-    byte PLAYER_SHOP = 2;
-    byte OMOK = 3;
-    byte MATCH_CARD = 4;
-    byte HIRED_FISHER = 75;
+    public String getOwnerName();
 
-    String getOwnerName();
+    public String getDescription();
 
-    String getDescription();
+    public void setDescription(String var1);
 
-    void setDescription(String desc);
+    public List<Pair<Byte, MapleCharacter>> getVisitors();
 
-    List<Pair<Byte, MapleCharacter>> getVisitors();
+    public List<MaplePlayerShopItem> getItems();
 
-    List<MaplePlayerShopItem> getItems();
+    public boolean isOpen();
 
-    boolean isOpen();
+    public void setOpen(boolean var1);
 
-    void setOpen(boolean open);
+    public boolean saveItems();
 
-    boolean saveItems();
+    public boolean removeItem(int var1);
 
-    boolean removeItem(int item);
+    public boolean isOwner(MapleCharacter var1);
 
-    boolean isOwner(MapleCharacter chr);
+    public byte getShopType();
 
-    byte getShopType();
+    public byte getVisitorSlot(MapleCharacter var1);
 
-    byte getVisitorSlot(MapleCharacter visitor);
+    public byte getFreeSlot();
 
-    byte getFreeSlot();
+    public int getItemId();
 
-    int getItemId();
+    public long getMeso();
 
-    long getMeso();
+    public void setMeso(long var1);
 
-    void setMeso(long meso);
+    public int getOwnerId();
 
-    int getOwnerId();
+    public int getOwnerAccId();
 
-    int getOwnerAccId();
+    public void addItem(MaplePlayerShopItem var1);
 
-    void addItem(MaplePlayerShopItem item);
+    public void removeFromSlot(int var1);
 
-    void removeFromSlot(int slot);
+    public void broadcastToVisitors(byte[] var1);
 
-    void broadcastToVisitors(byte[] packet);
+    public void addVisitor(MapleCharacter var1);
 
-    void addVisitor(MapleCharacter visitor);
+    public void removeVisitor(MapleCharacter var1);
 
-    void removeVisitor(MapleCharacter visitor);
+    public void removeAllVisitors(int var1, int var2);
 
-    void removeAllVisitors(int error, int type);
+    public void buy(MapleClient var1, int var2, short var3);
 
-    void buy(MapleClient c, int item, short quantity);
+    public void closeShop(boolean var1, boolean var2);
 
-    void closeShop(boolean saveItems, boolean remove);
+    public String getPassword();
 
-    String getPassword();
+    public int getMaxSize();
 
-    int getMaxSize();
+    public int getSize();
 
-    int getSize();
+    public int getGameType();
 
-    int getGameType();
+    public void update();
 
-    void update();
+    public boolean isAvailable();
 
-    boolean isAvailable();
+    public void setAvailable(boolean var1);
 
-    void setAvailable(boolean b);
+    public List<AbstractPlayerStore.BoughtItem> getBoughtItems();
 
-    List<BoughtItem> getBoughtItems();
+    public List<Pair<String, Byte>> getMessages();
 
-    List<Pair<String, Byte>> getMessages();
+    public int getMapId();
 
-    int getMapId();
-
-    int getChannel();
+    public int getChannel();
 }
+

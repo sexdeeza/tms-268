@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.冒險家;
 
 import Client.MapleCharacter;
@@ -10,24 +13,19 @@ import Client.skills.handler.SkillClassFetcher;
 import Client.status.MonsterStatus;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
-import tools.data.MaplePacketReader;
-
 import java.lang.reflect.Field;
 import java.util.Map;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.冒險家_技能群組.type_劍士.劍士.*;
-
-public class 劍士 extends AbstractSkillHandler {
-
+public class 劍士
+extends AbstractSkillHandler {
     public 劍士() {
-        jobs = new MapleJob[]{
-                MapleJob.劍士
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.劍士};
         for (Field field : Config.constants.skills.冒險家_技能群組.type_劍士.劍士.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -35,8 +33,8 @@ public class 劍士 extends AbstractSkillHandler {
 
     @Override
     public int getLinkedSkillID(int skillId) {
-        if (skillId == 突擊之盾_1) {
-            return 突擊之盾;
+        if (skillId == 400001011) {
+            return 400001010;
         }
         return -1;
     }
@@ -44,19 +42,21 @@ public class 劍士 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 無形的信任:
+            case 80002758: {
                 statups.put(SecondaryStat.DotHealHPPerSecond, effect.getY());
                 return 1;
-            case 突擊之盾:
+            }
+            case 400001010: {
                 statups.put(SecondaryStat.FifthAdvWarriorShield, effect.getLevel());
                 return 1;
+            }
         }
         return -1;
     }
 
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 突擊之盾_1) {
+        if (applier.effect.getSourceId() == 400001011) {
             chr.dispelEffect(SecondaryStat.FifthAdvWarriorShield);
             return 1;
         }
@@ -65,7 +65,7 @@ public class 劍士 extends AbstractSkillHandler {
 
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 突擊之盾) {
+        if (applier.effect.getSourceId() == 400001010) {
             applier.localstatups.put(SecondaryStat.FifthAdvWarriorShield, applyto.getStat().getCurrentMaxHP() * applier.effect.getX() / 100);
             return 1;
         }
@@ -73,7 +73,7 @@ public class 劍士 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -108,3 +108,4 @@ public class 劍士 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

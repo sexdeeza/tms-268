@@ -1,18 +1,25 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.config;
 
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 import tools.config.transformers.PropertyTransformer;
 
-import java.lang.annotation.*;
-
 @Documented
-@Target({ElementType.FIELD})
-@Retention(RetentionPolicy.RUNTIME)
+@Target(value={ElementType.FIELD})
+@Retention(value=RetentionPolicy.RUNTIME)
 public @interface Property {
-    String DEFAULT_VALUE = "DO_NOT_OVERWRITE_INITIALIAZION_VALUE";
+    public static final String DEFAULT_VALUE = "DO_NOT_OVERWRITE_INITIALIAZION_VALUE";
 
-    String key();
+    public String key();
 
-    Class<? extends PropertyTransformer> propertyTransformer() default PropertyTransformer.class;
+    public Class<? extends PropertyTransformer> propertyTransformer() default PropertyTransformer.class;
 
-    String defaultValue() default "DO_NOT_OVERWRITE_INITIALIAZION_VALUE";
+    public String defaultValue() default "DO_NOT_OVERWRITE_INITIALIAZION_VALUE";
 }
+

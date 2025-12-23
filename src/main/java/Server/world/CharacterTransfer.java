@@ -1,9 +1,34 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Client.BuddylistEntry
+ *  Client.CharacterNameAndId
+ *  Client.MapleSigninStatus
+ *  Client.inventory.MaplePotionPot
+ */
 package Server.world;
 
-import Client.*;
+import Client.BuddylistEntry;
+import Client.CharacterNameAndId;
+import Client.MapleCharacter;
+import Client.MaplePvpStats;
+import Client.MapleQuestStatus;
+import Client.MapleSigninStatus;
+import Client.MapleTraitType;
+import Client.MapleUnion;
+import Client.MonsterFamiliar;
+import Client.PlayerSpecialStats;
+import Client.VCoreSkillEntry;
+import Client.VMatrixSlot;
 import Client.anticheat.CheatTracker;
 import Client.anticheat.ReportType;
-import Client.inventory.*;
+import Client.inventory.Item;
+import Client.inventory.MapleImp;
+import Client.inventory.MapleInventory;
+import Client.inventory.MapleMount;
+import Client.inventory.MaplePet;
+import Client.inventory.MaplePotionPot;
 import Client.skills.InnerSkillEntry;
 import Client.skills.SkillEntry;
 import Client.skills.SkillMacro;
@@ -11,36 +36,66 @@ import Net.server.MapleTrunk;
 import Net.server.cashshop.CashShop;
 import Net.server.shop.MapleShopItem;
 import SwordieX.client.character.keys.FuncKeyMap;
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 import tools.Pair;
 
-import java.util.*;
-import java.util.Map.Entry;
-
-/**
- * 角色在換頻道時的數據交換
- */
-
 public class CharacterTransfer {
-
-    public final Map<MapleTraitType, Integer> traits = new EnumMap<>(MapleTraitType.class);
-    public final List<CharacterNameAndId> buddies = new LinkedList<>();
-    public final Map<Integer, MapleQuestStatus> Quest = new LinkedHashMap<>();
-    public final Map<Integer, SkillEntry> skills = new LinkedHashMap<>();
+    public final Map<MapleTraitType, Integer> traits = new EnumMap<MapleTraitType, Integer>(MapleTraitType.class);
+    public final List<CharacterNameAndId> buddies = new LinkedList<CharacterNameAndId>();
+    public final Map<Integer, MapleQuestStatus> Quest = new LinkedHashMap<Integer, MapleQuestStatus>();
+    public final Map<Integer, SkillEntry> skills = new LinkedHashMap<Integer, SkillEntry>();
     public final Map<String, Integer> credit;
-    public final Map<Byte, Integer> reports = new LinkedHashMap<>();
+    public final Map<Byte, Integer> reports = new LinkedHashMap<Byte, Integer>();
     public final List<Pair<Integer, Integer>> quickslot;
     public final Map<Integer, String> InfoQuest;
     public final Map<String, String> KeyValue;
     public final Map<Integer, String> worldShareInfo;
-    public final Map<Integer, VCoreSkillEntry> vcoreskills = new LinkedHashMap<>();
+    public final Map<Integer, VCoreSkillEntry> vcoreskills = new LinkedHashMap<Integer, VCoreSkillEntry>();
     public final Map<Integer, VMatrixSlot> vMatrixSlot;
-    public Map<Integer, Pair<Integer, SkillEntry>> sonOfLinedSkills = new LinkedHashMap<>();
-    public Map<Integer, FuncKeyMap> funcKeyMaps = new LinkedHashMap<>();
-    public int characterid, accountid, fame, pvpExp, pvpPoints,
-            hair, face, mapid, guildid,
-            partyid, messengerid, maplePoint, /*ACash,*/
-            mount_itemid, mount_exp, points, vpoints, marriageId, maxhp, maxmp, hp, mp, friendshiptoadd,
-            familyid, seniorid, junior1, junior2, currentrep, totalrep, gachexp, guildContribution, totalWins, totalLosses, todayonlinetime, totalonlinetime, weaponPoint;
+    public Map<Integer, Pair<Integer, SkillEntry>> sonOfLinedSkills = new LinkedHashMap<Integer, Pair<Integer, SkillEntry>>();
+    public Map<Integer, FuncKeyMap> funcKeyMaps = new LinkedHashMap<Integer, FuncKeyMap>();
+    public int characterid;
+    public int accountid;
+    public int fame;
+    public int pvpExp;
+    public int pvpPoints;
+    public int hair;
+    public int face;
+    public int mapid;
+    public int guildid;
+    public int partyid;
+    public int messengerid;
+    public int maplePoint;
+    public int mount_itemid;
+    public int mount_exp;
+    public int points;
+    public int vpoints;
+    public int marriageId;
+    public int maxhp;
+    public int maxmp;
+    public int hp;
+    public int mp;
+    public int friendshiptoadd;
+    public int familyid;
+    public int seniorid;
+    public int junior1;
+    public int junior2;
+    public int currentrep;
+    public int totalrep;
+    public int gachexp;
+    public int guildContribution;
+    public int totalWins;
+    public int totalLosses;
+    public int todayonlinetime;
+    public int totalonlinetime;
+    public int weaponPoint;
     public int channel;
     public byte gender;
     public byte guildrank;
@@ -52,9 +107,18 @@ public class CharacterTransfer {
     public byte mount_level;
     public byte mount_Fatigue;
     public byte subcategory;
-    public long lastfametime, TranferTime, exp, meso;
-    public String name, accountname, BlessOfFairy, BlessOfEmpress, chalkboard, tempIP;
-    public int level, gmLevel;
+    public long lastfametime;
+    public long TranferTime;
+    public long exp;
+    public long meso;
+    public String name;
+    public String accountname;
+    public String BlessOfFairy;
+    public String BlessOfEmpress;
+    public String chalkboard;
+    public String tempIP;
+    public int level;
+    public int gmLevel;
     public short str;
     public short dex;
     public short int_;
@@ -71,15 +135,26 @@ public class CharacterTransfer {
     public CashShop cs;
     public CheatTracker anticheat;
     public InnerSkillEntry[] innerSkills;
-    public int[] savedlocation, wishlist, rocks, remainingSp, regrocks, hyperrocks, friendshippoints;
+    public int[] savedlocation;
+    public int[] wishlist;
+    public int[] rocks;
+    public int[] remainingSp;
+    public int[] regrocks;
+    public int[] hyperrocks;
+    public int[] friendshippoints;
     public MaplePet[] spawnPets;
     public MapleImp[] imps;
-    public List<Integer> famedcharacters = null, battledaccs = null;
+    public List<Integer> famedcharacters = null;
+    public List<Integer> battledaccs = null;
     public List<MapleShopItem> rebuy = null;
     public int decorate;
     public int beans;
     public int warning;
-    public int reborns, reborns1, reborns2, reborns3, apstorage;
+    public int reborns;
+    public int reborns1;
+    public int reborns2;
+    public int reborns3;
+    public int apstorage;
     public int honor;
     public int love;
     public long lastLoveTime;
@@ -111,18 +186,18 @@ public class CharacterTransfer {
     public long burningChrTime;
 
     public CharacterTransfer() {
-        famedcharacters = new ArrayList<>();
-        battledaccs = new ArrayList<>();
-        extendedSlots = new HashMap<>();
-        loveCharacters = new LinkedHashMap<>();
-        rebuy = new ArrayList<>();
-        KeyValue = new LinkedHashMap<>();
-        InfoQuest = new LinkedHashMap<>();
-        worldShareInfo = new LinkedHashMap<>();
-        quickslot = new ArrayList<>();
-        credit = new LinkedHashMap<>();
-        vMatrixSlot = new TreeMap<>();
-        salon = new HashMap<>();
+        this.famedcharacters = new ArrayList<Integer>();
+        this.battledaccs = new ArrayList<Integer>();
+        this.extendedSlots = new HashMap<Byte, List<Item>>();
+        this.loveCharacters = new LinkedHashMap<Integer, Long>();
+        this.rebuy = new ArrayList<MapleShopItem>();
+        this.KeyValue = new LinkedHashMap<String, String>();
+        this.InfoQuest = new LinkedHashMap<Integer, String>();
+        this.worldShareInfo = new LinkedHashMap<Integer, String>();
+        this.quickslot = new ArrayList<Pair<Integer, Integer>>();
+        this.credit = new LinkedHashMap<String, Integer>();
+        this.vMatrixSlot = new TreeMap<Integer, VMatrixSlot>();
+        this.salon = new HashMap<Integer, List<Integer>>();
     }
 
     public CharacterTransfer(MapleCharacter chr) {
@@ -136,8 +211,6 @@ public class CharacterTransfer {
         this.maplePoint = chr.getClient().getMaplePoints();
         this.gmLevel = chr.getClient().getGmLevel();
         this.channel = channel;
-
-
         this.vpoints = chr.getVPoints();
         this.name = chr.getName();
         this.fame = chr.getFame();
@@ -203,36 +276,29 @@ public class CharacterTransfer {
         this.friendshiptoadd = chr.getFriendShipToAdd();
         this.friendshippoints = chr.getFriendShipPoints();
         this.soulcount = chr.getSoulMP();
-        summonedFamiliar = chr.getSummonedFamiliar();
-
+        this.summonedFamiliar = chr.getSummonedFamiliar();
         for (MapleTraitType t : MapleTraitType.values()) {
             this.traits.put(t, chr.getTrait(t).getTotalExp());
         }
-        for (BuddylistEntry qs : chr.getBuddylist().getBuddies()) {
-            this.buddies.add(new CharacterNameAndId(qs.getCharacterId(), qs.getName(), qs.getGroup(), qs.isVisible()));
+        for (BuddylistEntry buddylistEntry : chr.getBuddylist().getBuddies()) {
+            this.buddies.add(new CharacterNameAndId(buddylistEntry.getCharacterId(), buddylistEntry.getName(), buddylistEntry.getGroup(), buddylistEntry.isVisible()));
         }
-        for (Entry<ReportType, Integer> ss : chr.getReports().entrySet()) {
-            this.reports.put(ss.getKey().i, ss.getValue());
+        for (Map.Entry entry : chr.getReports().entrySet()) {
+            this.reports.put(((ReportType)((Object)entry.getKey())).i, (Integer)entry.getValue());
         }
         this.buddysize = chr.getBuddyCapacity();
-
         this.partyid = chr.getParty() == null ? -1 : chr.getParty().getId();
-
-        if (chr.getMessenger() != null) {
-            this.messengerid = chr.getMessenger().getId();
-        } else {
-            this.messengerid = 0;
-        }
+        this.messengerid = chr.getMessenger() != null ? chr.getMessenger().getId() : 0;
         this.KeyValue = chr.getKeyValue_Map();
         this.InfoQuest = chr.getInfoQuest_Map();
         this.worldShareInfo = chr.getWorldShareInfo();
-        for (Entry<Integer, MapleQuestStatus> qs : chr.getQuest_Map().entrySet()) {
-            this.Quest.put(qs.getKey(), qs.getValue());
+        for (Map.Entry entry : chr.getQuest_Map().entrySet()) {
+            this.Quest.put((Integer)entry.getKey(), (MapleQuestStatus)entry.getValue());
         }
         this.inventorys = chr.getInventorys();
-        chr.getSkills().forEach(skills::put);
-        chr.getSonOfLinkedSkills().forEach(sonOfLinedSkills::put);
-        chr.getVCoreSkill().forEach(vcoreskills::put);
+        chr.getSkills().forEach(this.skills::put);
+        chr.getSonOfLinkedSkills().forEach(this.sonOfLinedSkills::put);
+        chr.getVCoreSkill().forEach(this.vcoreskills::put);
         this.SpecialStats = chr.getSpecialStat();
         this.BlessOfFairy = chr.getBlessOfFairyOrigin();
         this.BlessOfEmpress = chr.getBlessOfEmpressOrigin();
@@ -261,7 +327,7 @@ public class CharacterTransfer {
         this.mount_exp = mount.getExp();
         this.lastLoveTime = chr.getLastLoveTime();
         this.loveCharacters = chr.getLoveCharacters();
-        TranferTime = System.currentTimeMillis();
+        this.TranferTime = System.currentTimeMillis();
         this.todayonlinetime = chr.getTodayOnlineTime();
         this.totalonlinetime = chr.getTotalOnlineTime();
         this.weaponPoint = chr.getWeaponPoint();
@@ -282,5 +348,5 @@ public class CharacterTransfer {
         this.burningChrType = chr.getBurningChrType();
         this.burningChrTime = chr.getBurningChrTime();
     }
-
 }
+

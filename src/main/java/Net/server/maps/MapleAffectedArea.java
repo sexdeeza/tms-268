@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Net.server.maps;
 
 import Client.MapleCharacter;
@@ -6,43 +9,46 @@ import Client.SecondaryStat;
 import Client.SecondaryStatValueHolder;
 import Client.skills.Skill;
 import Client.skills.SkillFactory;
-import Config.constants.skills.*;
-import Config.constants.skills.冒險家_技能群組.type_法師.主教;
-import Config.constants.skills.冒險家_技能群組.type_法師.冰雷;
-import Config.constants.skills.冒險家_技能群組.type_法師.火毒;
-import Config.constants.skills.冒險家_技能群組.夜使者;
-import Config.constants.skills.冒險家_技能群組.暗影神偷;
-import Config.constants.skills.皇家騎士團_技能群組.暗夜行者;
-import Config.constants.skills.皇家騎士團_技能群組.烈焰巫師;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
 import Net.server.life.MobSkill;
+import Net.server.maps.MapleMap;
+import Net.server.maps.MapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.MaplePacketCreator;
-
-import java.awt.*;
+import java.awt.Point;
+import java.awt.Rectangle;
 import java.util.EnumMap;
 import java.util.concurrent.ScheduledFuture;
 
-/**
- * 表示楓之谷地圖中所有具體煙幕效果的對象.例如俠盜職業的四轉技能煙幕彈
- *
- * @author dongjak
- */
-public class MapleAffectedArea extends MapleMapObject {
-
+public class MapleAffectedArea
+extends MapleMapObject {
     private final Rectangle area;
     private final boolean isMobMist;
-    private final int skilllevel, ownerId;
+    private final int skilllevel;
+    private final int ownerId;
     private MapleStatEffect effect;
     private MobSkill skill;
-    private boolean poisonMist, facingLeft, needHandle;
-    private int skillDelay, areaType, healCount/*神聖源泉恢復的總次數*/, healHPr, subtype, force, forcex, duration, skillID;
-    private ScheduledFuture<?> schedule = null, poisonSchedule = null;
+    private boolean poisonMist;
+    private boolean facingLeft;
+    private boolean needHandle;
+    private int skillDelay;
+    private int areaType;
+    private int healCount;
+    private int healHPr;
+    private int subtype;
+    private int force;
+    private int forcex;
+    private int duration;
+    private int skillID;
+    private ScheduledFuture<?> schedule = null;
+    private ScheduledFuture<?> poisonSchedule = null;
     private Point ownerPosition;
     private MapleCharacter owner;
     private final long startTime = System.currentTimeMillis();
-    private long cancelTime = 0;
-    public boolean BUnk1 = false, BUnk2 = false;
+    private long cancelTime = 0L;
+    public boolean BUnk1 = false;
+    public boolean BUnk2 = false;
 
     public MapleAffectedArea(Rectangle area, MapleMonster mob, MobSkill skill, Point position) {
         this.area = area;
@@ -63,9 +69,6 @@ public class MapleAffectedArea extends MapleMapObject {
         this.needHandle = true;
     }
 
-    /*
-     * 角色技能召喚的煙霧
-     */
     public MapleAffectedArea(Rectangle area, MapleCharacter owner, MapleStatEffect effect, Point point) {
         this.owner = owner;
         this.area = area;
@@ -84,121 +87,143 @@ public class MapleAffectedArea extends MapleMapObject {
         this.duration = effect.getSummonDuration(owner);
         this.setPosition(point);
         switch (effect.getSourceId()) {
-            case 烈焰巫師.燃燒軍團:
-            case 35121010:
-            case 陰陽師.結界_櫻:
-            case 狂狼勇士.瑪哈的領域_MIST:
-            case 菈菈.釋放_日光井_2:
-            case 菈菈.釋放_日光井_5:
-            case 菈菈.神木:
-            case 22161003:
+            case 12121005: 
+            case 21121068: 
+            case 22161003: 
+            case 35121010: 
+            case 42111004: 
+            case 162101010: 
+            case 162121018: 
+            case 162121043: {
                 this.skillDelay = 2;
                 break;
-            case 菈菈.發現_風之鞦韆:
-            case 菈菈.發現_充滿陽光之處:
+            }
+            case 162111000: 
+            case 162111003: {
                 this.skillDelay = 2;
                 this.needHandle = true;
                 break;
-            case 冰雷.冰雪結界_1:
+            }
+            case 2221055: {
                 this.skillDelay = 2;
                 this.BUnk2 = true;
                 break;
-            case 狂豹獵人.連弩陷阱:
+            }
+            case 33111013: {
                 this.skillDelay = 5;
                 break;
-            case 狂豹獵人.鑽孔集裝箱:
+            }
+            case 33121016: {
                 this.skillDelay = 8;
                 break;
-            case 暗影神偷.煙幕彈:
-            case 亞克.迷惑之拘束_1:
-            case 龍魔導士.迅捷_回來吧_1:
+            }
+            case 4221006: 
+            case 22170093: 
+            case 155121006: {
                 this.skillDelay = 3;
                 break;
-            case 阿戴爾.魔力爆裂:
+            }
+            case 151121041: {
                 this.BUnk1 = true;
                 this.skillDelay = 3;
                 break;
-            case 煉獄巫師.魔法屏障:
+            }
+            case 32121006: {
                 this.areaType = 0;
                 this.BUnk2 = true;
                 break;
-            case 傑諾.時空膠囊:
+            }
+            case 36121007: {
                 this.areaType = 5;
                 this.needHandle = true;
                 break;
-            case 冰雷.寒冰迅移:
+            }
+            case 2201009: {
                 this.skillDelay = 3;
                 this.poisonMist = true;
                 this.needHandle = false;
                 break;
-            case 皮卡啾.帕拉美:
+            }
+            case 131001207: {
                 this.skillDelay = 12;
                 break;
-            case 火毒.致命毒霧:
+            }
+            case 2111003: {
                 this.poisonMist = true;
                 break;
-            case 幻影俠盜.玫瑰四重曲:
+            }
+            case 24121052: {
                 this.needHandle = false;
                 break;
-            case 惡魔復仇者.惡魔狂亂_魔族之血:
-            case 冰雷.冰河紀元:
+            }
+            case 400010010: 
+            case 400020002: {
                 this.skillDelay = 3;
                 this.poisonMist = true;
                 break;
-            case 陰陽師.結界_鈴蘭:
+            }
+            case 42121005: {
                 this.skillDelay = 10;
                 break;
-            case 陰陽師.靈脈的氣息:
+            }
+            case 42001101: {
                 this.skillDelay = 2;
                 this.poisonMist = true;
                 break;
-            case 凱撒.龍烈焰:
-            case 冰雷.落雷凝聚_2:
-            case 暗夜行者.影之槍_1:
-            case 暗夜行者.影之槍:
+            }
+            case 61121105: 
+            case 400021040: 
+            case 400040008: 
+            case 400041008: {
                 this.duration = 10000;
                 this.poisonMist = true;
                 break;
-            case 冰雷.落雷凝聚_1:
-//                this.skillDelay = 26;
+            }
+            case 400021031: {
                 this.duration = 300;
                 this.poisonMist = true;
                 break;
-            case 神之子.進階碎地猛擊:
+            }
+            case 101120104: {
                 this.skillDelay = 16;
                 break;
-            case 主教.神聖之泉:
+            }
+            case 2311011: {
                 this.healCount = effect.getY();
                 this.needHandle = false;
                 break;
-            case 主教.神聖之水:
+            }
+            case 2321015: {
                 int intValue = owner.getStat().getTotalInt();
                 this.duration = effect.getQ();
                 if (intValue >= effect.getS2()) {
-                    duration += (intValue / effect.getS2()) * effect.getQ2();
+                    this.duration += intValue / effect.getS2() * effect.getQ2();
                 }
-                this.duration = effect.calcSummonDuration(duration * 1000, owner);
+                this.duration = effect.calcSummonDuration(this.duration * 1000, owner);
                 this.healHPr = effect.getU2();
                 if (intValue >= effect.getDot()) {
-                    healHPr += (intValue / effect.getDot()) * effect.getW2();
+                    this.healHPr += intValue / effect.getDot() * effect.getW2();
                 }
                 this.skillDelay = 10;
                 this.BUnk2 = true;
                 this.needHandle = false;
                 break;
-            case 重砲指揮官.ICBM_3:
-                this.duration = owner.getSkillEffect(重砲指揮官.ICBM).getU2() * 1000;
+            }
+            case 400051026: {
+                this.duration = owner.getSkillEffect(400051024).getU2() * 1000;
                 this.poisonMist = true;
                 break;
-            case 重砲指揮官.精準轟炸_2:
+            }
+            case 400051076: {
                 this.healHPr = effect.getX();
                 break;
-            case 火毒.劇毒領域:
+            }
+            case 2111013: {
                 this.skillDelay = 14;
                 this.duration = effect.getS() * 1000;
                 this.poisonMist = true;
                 this.BUnk2 = true;
-                break;
+            }
         }
     }
 
@@ -219,41 +244,35 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public Skill getSourceSkill() {
-        return SkillFactory.getSkill(effect.getSourceId());
+        return SkillFactory.getSkill(this.effect.getSourceId());
     }
 
-    /*
-     * 是否為怪物召喚的煙霧
-     */
     public boolean isMobMist() {
-        return isMobMist;
+        return this.isMobMist;
     }
 
-    /*
-     * 是否為中毒效果的煙霧
-     */
     public boolean isPoisonMist() {
-        return poisonMist;
+        return this.poisonMist;
     }
 
     public int getHealCount() {
-        return healCount;
+        return this.healCount;
     }
 
     public void setHealCount(int count) {
-        healCount = count;
+        this.healCount = count;
     }
 
     public int getHealHPR() {
-        return healHPr;
+        return this.healHPr;
     }
 
     public void setHealHPR(int hpr) {
-        healHPr = hpr;
+        this.healHPr = hpr;
     }
 
     public int getAreaType() {
-        return areaType;
+        return this.areaType;
     }
 
     public void setAreaType(int areaType) {
@@ -261,7 +280,7 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public int getSkillDelay() {
-        return skillDelay;
+        return this.skillDelay;
     }
 
     public void setSkillDelay(int skillDelay) {
@@ -269,11 +288,11 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public int getSkillLevel() {
-        return skilllevel;
+        return this.skilllevel;
     }
 
     public int getOwnerId() {
-        return ownerId;
+        return this.ownerId;
     }
 
     public MobSkill getMobSkill() {
@@ -281,23 +300,23 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public Rectangle getArea() {
-        return area;
+        return this.area;
     }
 
     public MapleStatEffect getEffect() {
-        return effect;
+        return this.effect;
     }
 
     public Point getOwnerPosition() {
-        return ownerPosition;
+        return this.ownerPosition;
     }
 
     public boolean isFacingLeft() {
-        return facingLeft;
+        return this.facingLeft;
     }
 
     public int getSubtype() {
-        return subtype;
+        return this.subtype;
     }
 
     public void setSubtype(int subtype) {
@@ -305,11 +324,11 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public int getForce() {
-        return force;
+        return this.force;
     }
 
     public int getForcex() {
-        return forcex;
+        return this.forcex;
     }
 
     @Override
@@ -324,11 +343,11 @@ public class MapleAffectedArea extends MapleMapObject {
 
     @Override
     public void sendDestroyData(MapleClient c) {
-        c.announce(MaplePacketCreator.removeMist(getObjectId(), false));
+        c.announce(MaplePacketCreator.removeMist(this.getObjectId(), false));
     }
 
     public boolean makeChanceResult() {
-        return effect.makeChanceResult();
+        return this.effect.makeChanceResult();
     }
 
     public MapleCharacter getOwner() {
@@ -336,28 +355,22 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public boolean shouldCancel(long now) {
-        return (cancelTime > 0 && cancelTime <= now);
+        return this.cancelTime > 0L && this.cancelTime <= now;
     }
 
-    /*
-     * 獲取怪物取消BUFF的時間
-     */
     public long getCancelTask() {
         return this.cancelTime;
     }
 
-    /*
-     * 設置取消怪物BUFF的時間
-     */
     public void setCancelTask(long cancelTask) {
         this.cancelTime = System.currentTimeMillis() + cancelTask;
     }
 
     public int getLeftTime() {
-        if (this.skillID == 冰雷.落雷凝聚_1) {
-            return (int) (-(this.startTime + this.duration - System.currentTimeMillis()));
+        if (this.skillID == 400021031) {
+            return (int)(-(this.startTime + (long)this.duration - System.currentTimeMillis()));
         }
-        return (int) (this.startTime + this.duration - System.currentTimeMillis());
+        return (int)(this.startTime + (long)this.duration - System.currentTimeMillis());
     }
 
     public void setSchedule(ScheduledFuture<?> schedule) {
@@ -380,25 +393,26 @@ public class MapleAffectedArea extends MapleMapObject {
     }
 
     public boolean isNeedHandle() {
-        return needHandle;
+        return this.needHandle;
     }
 
     public int getDuration() {
-        return duration;
+        return this.duration;
     }
 
     public int getSkillID() {
-        return skillID;
+        return this.skillID;
     }
 
     public void handleEffect(MapleCharacter chr, int numTimes) {
-        if (getSkillID() == 火毒.劇毒領域) {
+        MapleCharacter fchr;
+        if (this.getSkillID() == 2111013) {
             return;
         }
-        if (isMobMist()) {
-            if (getSkillID() == 131 && chr.getPosition().y > -20) {
-                final int x;
-                if ((x = getMobSkill().getX()) < 50) {
+        if (this.isMobMist()) {
+            if (this.getSkillID() == 131 && chr.getPosition().y > -20) {
+                int x = this.getMobSkill().getX();
+                if (x < 50) {
                     chr.addHPMP(-10, 0);
                 } else {
                     chr.addHPMP(-x, 0, false, true);
@@ -406,67 +420,56 @@ public class MapleAffectedArea extends MapleMapObject {
             }
             return;
         }
-        final MapleCharacter fchr;
-        if (numTimes > -2 && (fchr = chr.getMap().getPlayerObject(getOwnerId())) != null && (fchr == chr || (fchr.getParty() != null && fchr.getParty() == chr.getParty()))) {
-            if (area.getBounds().contains(chr.getPosition())) {
-                if (getSkillID() == 傑諾.時空膠囊) {
-                    fchr.reduceAllSkillCooldown(4000, true);
-                } else if (getSkillID() == 菈菈.發現_風之鞦韆 || getSkillID() == 菈菈.發現_充滿陽光之處) {
-                    int skil;
-                    if (getSkillID() == 菈菈.發現_充滿陽光之處) {
-                        if (numTimes < 0 || numTimes % getEffect().getZ() == 0) {
-                            chr.addHPMP(getEffect().getHp(), 0);
-                        }
-                        skil = 菈菈.發現_充滿陽光之處_1;
-                    } else {
-                        skil = 菈菈.發現_風之鞦韆_1;
+        if (numTimes > -2 && (fchr = chr.getMap().getPlayerObject(this.getOwnerId())) != null && (fchr == chr || fchr.getParty() != null && fchr.getParty() == chr.getParty()) && this.area.getBounds().contains(chr.getPosition())) {
+            if (this.getSkillID() == 36121007) {
+                fchr.reduceAllSkillCooldown(4000, true);
+            } else if (this.getSkillID() == 162111000 || this.getSkillID() == 162111003) {
+                MapleStatEffect effect;
+                int skil;
+                if (this.getSkillID() == 162111003) {
+                    if (numTimes < 0 || numTimes % this.getEffect().getZ() == 0) {
+                        chr.addHPMP(this.getEffect().getHp(), 0);
                     }
-                    if (chr.getBuffStatValueHolder(skil) == null) {
-                        MapleStatEffect effect = fchr.getSkillEffect(skil);
-                        if (effect != null) {
-                            int duration = effect.calcBuffDuration(fchr == chr ? effect.getDuration() : (getEffect().getX() * 1000), fchr);
-                            effect.applyTo(fchr, chr, duration, false, false, true, getPosition());
-                        }
-                    }
-                } else if (chr.getBuffStatValueHolder(getSkillID()) == null) {
-                    if (菈菈.神木 != getSkillID() || fchr == chr) {
-                        getEffect().applyTo(fchr, chr, getLeftTime(), false, false, true, getPosition());
-                    }
+                    skil = 162111004;
+                } else {
+                    skil = 162111001;
                 }
-                return;
+                if (chr.getBuffStatValueHolder(skil) == null && (effect = fchr.getSkillEffect(skil)) != null) {
+                    int duration = effect.calcBuffDuration(fchr == chr ? effect.getDuration() : this.getEffect().getX() * 1000, fchr);
+                    effect.applyTo(fchr, chr, duration, false, false, true, this.getPosition());
+                }
+            } else if (chr.getBuffStatValueHolder(this.getSkillID()) == null && (162121043 != this.getSkillID() || fchr == chr)) {
+                this.getEffect().applyTo(fchr, chr, this.getLeftTime(), false, false, true, this.getPosition());
             }
+            return;
         }
-
-        final SecondaryStatValueHolder mbsvh = chr.getBuffStatValueHolder(getSkillID());
+        SecondaryStatValueHolder mbsvh = chr.getBuffStatValueHolder(this.getSkillID());
         if (mbsvh != null) {
-            EnumMap<SecondaryStat, Integer> status = new EnumMap(mbsvh.effect.getStatups());
+            EnumMap<SecondaryStat, Integer> status = new EnumMap<SecondaryStat, Integer>(mbsvh.effect.getStatups());
             status.remove(SecondaryStat.IndieBuffIcon);
             chr.cancelEffect(mbsvh.effect, false, mbsvh.startTime, status);
         }
     }
 
     public void handleMonsterEffect(MapleMap map, int numTimes) {
-        final MapleStatEffect effect;
-        final MapleCharacter chr;
-        if (!isMobMist() && (effect = getEffect()) != null && (chr = map.getPlayerObject(getOwnerId())) != null) {
-            if (!effect.getMonsterStatus().isEmpty()) {
-                for (MapleMonster monster : map.getMonsters()) {
-                    if (numTimes > -2 && getArea().contains(monster.getPosition())) {
-                        if (monster.getSponge() == null) {
-                            effect.applyMonsterEffect(chr, monster, effect.getMobDebuffDuration(chr));
-                        }
-                    } else {
-                        if (skillID == 夜使者.絕對領域) {
-                            monster.removeEffect(ownerId, skillID);
-                        }
-                    }
+        MapleCharacter chr;
+        MapleStatEffect effect;
+        if (!this.isMobMist() && (effect = this.getEffect()) != null && (chr = map.getPlayerObject(this.getOwnerId())) != null && !effect.getMonsterStatus().isEmpty()) {
+            for (MapleMonster monster : map.getMonsters()) {
+                if (numTimes > -2 && this.getArea().contains(monster.getPosition())) {
+                    if (monster.getSponge() != null) continue;
+                    effect.applyMonsterEffect(chr, monster, effect.getMobDebuffDuration(chr));
+                    continue;
                 }
+                if (this.skillID != 4121015) continue;
+                monster.removeEffect(this.ownerId, this.skillID);
             }
         }
     }
 
     @Override
     public Rectangle getBounds() {
-        return effect.calculateBoundingBox(getPosition());
+        return this.effect.calculateBoundingBox(this.getPosition());
     }
 }
+

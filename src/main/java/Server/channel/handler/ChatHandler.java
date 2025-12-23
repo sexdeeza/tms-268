@@ -13,7 +13,7 @@ import Net.server.commands.AdminCommand;
 import Net.server.commands.CommandManager;
 import Net.server.commands.GMCommand;
 import Net.server.commands.PlayerRank;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MTSCSPacket;
 import Packet.MaplePacketCreator;
 import Packet.MessengerPacket;

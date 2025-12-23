@@ -1,33 +1,37 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.inventory;
 
 public enum EnchantScrollFlag {
-    物攻(0x1),
-    魔攻(0x2),
-    力量(0x4),
-    敏捷(0x8),
-    智力(0x10),
-    幸運(0x20),
-    物防(0x40),
-    魔防(0x80),
-    Hp(0x100),
-    Mp(0x200),
-    命中(0x400),
-    迴避(0x800),
-    跳躍(0x1000),
-    速度(0x2000),
-    手技(0x4000);
+    物攻(1),
+    魔攻(2),
+    力量(4),
+    敏捷(8),
+    智力(16),
+    幸運(32),
+    物防(64),
+    魔防(128),
+    Hp(256),
+    Mp(512),
+    命中(1024),
+    迴避(2048),
+    跳躍(4096),
+    速度(8192),
+    手技(16384);
 
     private final int value;
 
-    public final boolean check(final int mask) {
-        return (mask & this.value) != 0x0;
+    public final boolean check(int mask) {
+        return (mask & this.value) != 0;
     }
 
     public final int getValue() {
-        return value;
+        return this.value;
     }
 
-    EnchantScrollFlag(final int value) {
+    private EnchantScrollFlag(int value) {
         this.value = value;
     }
 }
+

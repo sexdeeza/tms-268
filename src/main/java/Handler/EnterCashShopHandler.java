@@ -1,20 +1,20 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Handler;
 
 import Client.MapleClient;
 import Client.inventory.Item;
 import Config.constants.ServerConstants;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MTSCSPacket;
 import Packet.MaplePacketCreator;
 import Server.cashshop.CashShopServer;
 import connection.OutPacket;
 import connection.packet.Login;
+import java.util.List;
 import tools.Pair;
 import tools.data.MaplePacketLittleEndianWriter;
-
-import java.util.List;
-
-import static Server.cashshop.handler.CashShopOperation.*;
 
 public class EnterCashShopHandler {
     private static MapleClient c;
@@ -27,24 +27,24 @@ public class EnterCashShopHandler {
         c.write(Login.sendServerValues());
         c.write(Login.sendServerEnvironment());
         c.announce(c.getEncryptOpcodesData(ServerConstants.OpcodeEncryptionKey));
-        c.outPacket(OutHeader.LP_LOGIN_ACTION_CHECK.getValue());
+        c.outPacket(OutHeader.LP_LOGIN_ACTION_CHECK.getValue(), new Object[0]);
         c.announce(MTSCSPacket.warpchartoCS(c));
         c.announce(MTSCSPacket.warpCS(false));
         c.updateLoginState(2, c.getSessionIPAddress());
-        c.write(chatServerResult());
+        c.write(EnterCashShopHandler.chatServerResult());
         c.announce(MTSCSPacket.getCashShopStyleCouponPreviewInfo());
         c.announce(MTSCSPacket.loadLockerDone(c));
-        c.write(EventNotice_unk());
-        c.write(enterCashShop());
-        c.write(CASH_SHOP_ENTER_TYPE());
+        c.write(EnterCashShopHandler.EventNotice_unk());
+        c.write(EnterCashShopHandler.enterCashShop());
+        c.write(EnterCashShopHandler.CASH_SHOP_ENTER_TYPE());
         c.outPacket(2515, "06 00 00 00 30 00 35 00 00 00 11 00");
-        c.outPacket(OutHeader.LP_Parcel.getValue(), 0);
+        c.outPacket(OutHeader.LP_Parcel.getValue(), (byte)0);
         c.outPacket(2515, "07 00 00");
         c.outPacket(2515, "09 00 00");
         c.outPacket(2536, "01 03 00 6E 65 77");
         c.outPacket(2515, "0B 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00");
         c.outPacket(2521, "00 00 00 00 00 00 00 00 00 00 00 00");
-        c.announce(CashShopQueryCashResult(c, true, true, true));
+        c.announce(EnterCashShopHandler.CashShopQueryCashResult(c, true, true, true));
         CashShopServer.getPlayerStorage().registerPlayer(c.getPlayer());
         c.announce(MaplePacketCreator.serverMessage(""));
         List<Pair<Item, String>> gifts = c.getPlayer().getCashInventory().loadGifts();
@@ -56,7 +56,7 @@ public class EnterCashShopHandler {
     public static OutPacket CASH_SHOP_ENTER_TYPE() {
         OutPacket outPacket = new OutPacket(OutHeader.CASH_SHOP_ENTER_TYPE);
         outPacket.encodeInt(3);
-        outPacket.encodeByte((int)0);
+        outPacket.encodeByte(0);
         return outPacket;
     }
 
@@ -68,26 +68,23 @@ public class EnterCashShopHandler {
         } else {
             mplew.writeInt(0);
         }
-
         if (cs_2) {
             mplew.writeInt(c.getPlayer().getCSPoints(2));
         } else {
             mplew.writeInt(0);
         }
-
         if (cs_3) {
             mplew.writeInt(c.getPlayer().getMileage());
         } else {
             mplew.writeInt(0);
         }
-
         return mplew.getPacket();
     }
 
     public static OutPacket chatServerResult() {
         OutPacket outPacket = new OutPacket(OutHeader.CHAT_SERVER_RESULT);
         outPacket.encodeInt(0);
-        outPacket.encodeShort((int)0);
+        outPacket.encodeShort(0);
         return outPacket;
     }
 
@@ -111,7 +108,7 @@ public class EnterCashShopHandler {
         outPacket.encodeInt(0);
         outPacket.encodeInt(0);
         outPacket.encodeInt(0);
-        outPacket.encodeByte((int)0);
+        outPacket.encodeByte(0);
         outPacket.encodeString("如果有想移動的現金道具，請利用布萊爾小姐的夢幻快遞！");
         outPacket.encodeInt(0);
         return outPacket;
@@ -122,7 +119,6 @@ public class EnterCashShopHandler {
         if (c.getPlayer() != null) {
             say.encodeInt(quest_cid);
         }
-
         return say;
     }
 
@@ -140,8 +136,9 @@ public class EnterCashShopHandler {
 
     public static OutPacket enterCashShopOpenWeb() {
         OutPacket outPacket = new OutPacket(OutHeader.ENTER_CASH_SHOP);
-        outPacket.encodeByte((int)3);
+        outPacket.encodeByte(3);
         outPacket.encodeInt(0);
         return outPacket;
     }
 }
+

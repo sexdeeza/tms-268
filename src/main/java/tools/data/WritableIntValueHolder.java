@@ -1,12 +1,15 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools.data;
 
 public interface WritableIntValueHolder {
+    public short getValue();
 
-    short getValue();
+    public short getCode();
 
-    short getCode();
+    public void setValue(short var1);
 
-    void setValue(short newval);
-
-    void setValue(Short code);
+    public void setValue(Short var1);
 }
+

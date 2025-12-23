@@ -1,21 +1,18 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server.maps;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
 import Config.constants.GameConstants;
+import Net.server.maps.MapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.MaplePacketCreator;
+import java.awt.Point;
 
-import java.awt.*;
-
-/**
- * @author PlayDK
- */
-public class MapleLove extends MapleMapObject {
-
+public class MapleLove
+extends MapleMapObject {
     private final Point pos;
     private final MapleCharacter owner;
     private final String text;
@@ -42,7 +39,7 @@ public class MapleLove extends MapleMapObject {
 
     @Override
     public Point getPosition() {
-        return pos.getLocation();
+        return this.pos.getLocation();
     }
 
     @Override
@@ -51,20 +48,21 @@ public class MapleLove extends MapleMapObject {
     }
 
     public MapleCharacter getOwner() {
-        return owner;
+        return this.owner;
     }
 
     public int getItemId() {
-        return itemid;
+        return this.itemid;
     }
 
     @Override
     public void sendSpawnData(MapleClient c) {
-        c.announce(MaplePacketCreator.spawnLove(getObjectId(), itemid, owner.getName(), text, pos, ft));
+        c.announce(MaplePacketCreator.spawnLove(this.getObjectId(), this.itemid, this.owner.getName(), this.text, this.pos, this.ft));
     }
 
     @Override
     public void sendDestroyData(MapleClient c) {
-        c.announce(MaplePacketCreator.removeLove(getObjectId(), itemid));
+        c.announce(MaplePacketCreator.removeLove(this.getObjectId(), this.itemid));
     }
 }
+

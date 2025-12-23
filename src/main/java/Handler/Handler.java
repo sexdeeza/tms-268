@@ -1,12 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Handler;
 
-import Opcode.Headler.InHeader;
-
+import Opcode.header.InHeader;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
-@Retention(RetentionPolicy.RUNTIME)
+@Retention(value=RetentionPolicy.RUNTIME)
 public @interface Handler {
-    InHeader op() default InHeader.UNKNOWN;
-    InHeader[] ops() default {};
+    public InHeader op() default InHeader.UNKNOWN;
+
+    public InHeader[] ops() default {};
 }
+

@@ -20,7 +20,7 @@ import Net.server.cashshop.CashItemFactory;
 import Net.server.cashshop.CashItemInfo;
 import Net.server.cashshop.CashShop;
 import Net.server.quest.MapleQuest;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import Packet.MTSCSPacket;
 import Packet.MaplePacketCreator;
 import Server.channel.ChannelServer;

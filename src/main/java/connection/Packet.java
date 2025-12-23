@@ -1,9 +1,12 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package connection;
 
 import SwordieX.util.Util;
 
-public class Packet implements Cloneable {
-
+public class Packet
+implements Cloneable {
     private byte[] data;
 
     public Packet(byte[] data) {
@@ -12,38 +15,39 @@ public class Packet implements Cloneable {
     }
 
     public int getLength() {
-        if (data != null) {
-            return data.length;
+        if (this.data != null) {
+            return this.data.length;
         }
         return 0;
     }
 
     public short getHeader() {
-        if (data.length < 2) {
-            return (short) 0xFFFF;
+        if (this.data.length < 2) {
+            return -1;
         }
-        return (short) ((data[0] & 0xFF) + ((data[1] & 0xFF) << 8));
+        return (short)((this.data[0] & 0xFF) + ((this.data[1] & 0xFF) << 8));
     }
 
     public void setData(byte[] nD) {
-        data = nD;
+        this.data = nD;
     }
 
     public byte[] getData() {
-        return data;
+        return this.data;
     }
 
-    @Override
     public String toString() {
-        if (data == null) return "";
-        return "[Pck] | " + Util.readableByteArray(data);
+        if (this.data == null) {
+            return "";
+        }
+        return "[Pck] | " + Util.readableByteArray(this.data);
     }
 
-    @Override
     public Packet clone() {
-        return new Packet(data);
+        return new Packet(this.data);
     }
 
     public void release() {
     }
 }
+

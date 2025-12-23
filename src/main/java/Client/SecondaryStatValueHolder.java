@@ -1,30 +1,37 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
 import Net.server.Timer;
 import Net.server.buffs.MapleStatEffect;
-import Net.server.buffs.MapleStatEffect.CancelEffectAction;
-
 import java.util.concurrent.ScheduledFuture;
 
 public class SecondaryStatValueHolder {
-
     public MapleStatEffect effect;
     public long startTime;
-    public int localDuration, fromChrID, value, sourceID, x, z;
-    public int DropRate = 0, BDR = 0, AttackBossCount = 0, NormalMobKillCount = 0;
+    public int localDuration;
+    public int fromChrID;
+    public int value;
+    public int sourceID;
+    public int x;
+    public int z;
+    public int DropRate = 0;
+    public int BDR = 0;
+    public int AttackBossCount = 0;
+    public int NormalMobKillCount = 0;
     private final long startChargeTime;
-
-    public CancelEffectAction CancelAction;
+    public MapleStatEffect.CancelEffectAction CancelAction;
     public ScheduledFuture<?> schedule;
 
     public SecondaryStatValueHolder(int value, int sourceID) {
         this.value = value;
         this.sourceID = sourceID;
-        startChargeTime = 0;
-        startTime = System.currentTimeMillis();
+        this.startChargeTime = 0L;
+        this.startTime = System.currentTimeMillis();
     }
 
-    public SecondaryStatValueHolder(final int chrID, final int value, final int z, final long startTime, final long startChargeTime, final int localDuration, final MapleStatEffect effect, final CancelEffectAction cancelAction) {
+    public SecondaryStatValueHolder(int chrID, int value, int z, long startTime, long startChargeTime, int localDuration, MapleStatEffect effect, MapleStatEffect.CancelEffectAction cancelAction) {
         this.effect = effect;
         this.startTime = startTime;
         this.value = value;
@@ -46,7 +53,7 @@ public class SecondaryStatValueHolder {
 
     public int getLeftTime() {
         if (this.localDuration < 2100000000) {
-            return Math.max((int) (startTime + localDuration - System.currentTimeMillis()), 0);
+            return Math.max((int)(this.startTime + (long)this.localDuration - System.currentTimeMillis()), 0);
         }
         return 2100000000;
     }
@@ -58,3 +65,4 @@ public class SecondaryStatValueHolder {
         }
     }
 }
+

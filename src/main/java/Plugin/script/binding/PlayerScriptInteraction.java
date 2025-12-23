@@ -1,8 +1,31 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.commands.SuperGMCommand$HotTime
+ *  Net.server.events.DimensionMirrorEvent
+ *  Packet.EldasPacket
+ *  Packet.GuildPacket
+ *  Packet.MessengerPacket
+ *  Plugin.script.EventManager
+ *  Plugin.script.binding.ScriptParty
+ *  Server.BossEventHandler.Caning
+ *  Server.world.WorldBroadcastService
+ *  SwordieX.client.party.Party
+ *  SwordieX.client.party.PartyMember
+ *  SwordieX.client.party.PartyResult
+ *  connection.packet.WvsContext
+ *  java.net.http.HttpClient
+ *  java.net.http.HttpRequest
+ *  java.net.http.HttpRequest$BodyPublishers
+ *  java.net.http.HttpResponse
+ *  java.net.http.HttpResponse$BodyHandlers
+ *  lombok.Generated
+ */
 package Plugin.script.binding;
 
 import Client.MapleCharacter;
 import Client.MapleClient;
-import Client.MapleReward;
 import Client.inventory.Item;
 import Client.inventory.ItemAttribute;
 import Client.inventory.MaplePet;
@@ -16,53 +39,79 @@ import Net.server.RaffleItem;
 import Net.server.RafflePool;
 import Net.server.commands.SuperGMCommand;
 import Net.server.events.DimensionMirrorEvent;
-import Net.server.life.*;
+import Net.server.life.MapleLifeFactory;
+import Net.server.life.MapleMonster;
+import Net.server.life.MapleMonsterInformationProvider;
+import Net.server.life.MapleMonsterStats;
+import Net.server.life.MapleNPC;
 import Net.server.maps.MapleMap;
 import Net.server.maps.MapleReactor;
 import Net.server.maps.MapleReactorFactory;
 import Net.server.quest.MapleQuest;
-import Opcode.Headler.OutHeader;
 import Opcode.Opcode.EffectOpcode;
-import Packet.*;
+import Opcode.header.OutHeader;
+import Packet.EffectPacket;
+import Packet.EldasPacket;
+import Packet.GuildPacket;
+import Packet.MaplePacketCreator;
+import Packet.MessengerPacket;
+import Packet.UIPacket;
 import Plugin.script.EventManager;
 import Plugin.script.ScriptManager;
+import Plugin.script.binding.ScriptBase;
+import Plugin.script.binding.ScriptEvent;
+import Plugin.script.binding.ScriptField;
+import Plugin.script.binding.ScriptHelper;
+import Plugin.script.binding.ScriptNpc;
+import Plugin.script.binding.ScriptParty;
+import Plugin.script.binding.ScriptPlayer;
 import Server.BossEventHandler.Caning;
 import Server.channel.ChannelServer;
 import Server.world.WorldBroadcastService;
 import SwordieX.client.party.Party;
 import SwordieX.client.party.PartyMember;
 import SwordieX.client.party.PartyResult;
+import SwordieX.world.World;
 import connection.packet.WvsContext;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import tools.DateUtil;
-import tools.Pair;
-import tools.data.MaplePacketLittleEndianWriter;
-
-import javax.script.Bindings;
-import javax.script.Compilable;
-import javax.script.CompiledScript;
-import javax.script.ScriptEngine;
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Component;
+import java.awt.GridLayout;
+import java.awt.Point;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
+import javax.script.Bindings;
+import javax.script.Compilable;
+import javax.script.CompiledScript;
+import javax.script.ScriptEngine;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import lombok.Generated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import tools.DateUtil;
+import tools.Pair;
+import tools.data.MaplePacketLittleEndianWriter;
 
-@Slf4j
-public class PlayerScriptInteraction extends ScriptBase {
-
+public class PlayerScriptInteraction
+extends ScriptBase {
+    @Generated
+    private static final Logger log = LoggerFactory.getLogger(PlayerScriptInteraction.class);
     private static MapleNPC npc;
-    @Getter
     private final MapleCharacter player;
-    @Getter
     private final MapleClient client;
     private int quest;
     private boolean start;
@@ -79,189 +128,119 @@ public class PlayerScriptInteraction extends ScriptBase {
         return npc.getId();
     }
 
-    /**
-     * 根据事件名获取当前频道事件实例
-     * 不需要当前角色处于实例中也可以获取
-     *
-     */
     public ScriptEvent getEvent() {
-        return getPlayer().getEventInstance();
+        return this.getPlayer().getEventInstance();
     }
 
     public ScriptEvent makeEvent(String script, Object attachment) {
-        ScriptEvent event = new EventManager(script, getPlayer().getClient().getChannel(), null).runScript(getPlayer(), script, true, attachment);
+        ScriptEvent event = new EventManager(script, this.getPlayer().getClient().getChannel(), null).runScript(this.getPlayer(), script, true, attachment);
         return event;
     }
 
-    /**
-     * 根据事件名获取当前频道事件实例
-     * 不需要当前角色处于实例中也可以获取
-     *
-     * @param event
-     * @return
-     */
     public ScriptEvent getEvent(String event) {
-        for (MapleMap map : ChannelServer.getInstance(getPlayer().getClient().getChannel()).getMapFactory().getAllMaps()){
-            if (map.getEvent() != null && map.getEvent().getName().equals(event)) {
-                return map.getEvent();
-            }
+        for (MapleMap map : ChannelServer.getInstance(this.getPlayer().getClient().getChannel()).getMapFactory().getAllMaps()) {
+            if (map.getEvent() == null || !map.getEvent().getName().equals(event)) continue;
+            return map.getEvent();
         }
         return null;
     }
 
-    /**
-     * 获取当前频道所有角色
-     *
-     * @return
-     */
     public List<MapleCharacter> getChannelPlayers() {
-        int channel = getClient().getChannelServer().getChannel();
+        int channel = this.getClient().getChannelServer().getChannel();
         return ChannelServer.getInstance(channel).getPlayerStorage().getAllCharacters();
     }
 
-
-
     public int[] resetRememberedMap(String variable) {
-
-        String rMap = getPlayer().getQuestInfo(100642, variable + "_rMap");
-        String rPoratl = getPlayer().getQuestInfo(100642, variable + "_rPoratl");
-
+        String rMap = this.getPlayer().getQuestInfo(100642, variable + "_rMap");
+        String rPoratl = this.getPlayer().getQuestInfo(100642, variable + "_rPoratl");
         if (rMap == null || rMap.equals("")) {
             rMap = "100000000";
         } else {
-            getPlayer().updateOneQuestInfo(100642, variable + "_rMap", "");
+            this.getPlayer().updateOneQuestInfo(100642, variable + "_rMap", "");
         }
         if (rPoratl == null || rPoratl.equals("")) {
             rPoratl = "0";
         } else {
-            getPlayer().updateOneQuestInfo(100642, variable + "_rPoratl", "");
+            this.getPlayer().updateOneQuestInfo(100642, variable + "_rPoratl", "");
         }
-
         return new int[]{Integer.parseInt(rMap), Integer.parseInt(rPoratl)};
-
     }
 
     public void rememberMap(String variable) {
-        getPlayer().updateOneQuestInfo(100642, variable + "_rMap", Integer.toString(getPlayer().getMapId()));
-        getPlayer().updateOneQuestInfo(100642, variable + "_rPoratl", null);
+        this.getPlayer().updateOneQuestInfo(100642, variable + "_rMap", Integer.toString(this.getPlayer().getMapId()));
+        this.getPlayer().updateOneQuestInfo(100642, variable + "_rPoratl", null);
     }
 
     public String getRememberedMap(String variable) {
-        return getPlayer().getQuestInfo(100642, variable + "_rMap");
+        return this.getPlayer().getQuestInfo(100642, variable + "_rMap");
     }
 
-    /**
-     * 创建道具实例。
-     *
-     * @param itemId
-     * @return
-     */
     public Item makeItemWithId(int itemId) {
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         if (!ii.itemExists(itemId)) {
-            getPlayer().dropMessage(5, itemId + " 這個道具不存在.");
+            this.getPlayer().dropMessage(5, itemId + " 這個道具不存在.");
             return null;
-        } else {
-            Item item;
-            int flag = (short) ItemAttribute.Seal.getValue();
-            final MaplePet pet;
-            if (ItemConstants.類型.寵物(itemId)) {
-                pet = MaplePet.createPet(itemId);
-            } else {
-                pet = null;
-            }
-            item = new Item(itemId, (byte) 0, (byte) 1, 0);
-            item.setPet(pet);
-            return item;
         }
+        short flag = (short)ItemAttribute.Seal.getValue();
+        MaplePet pet = ItemConstants.類型.寵物(itemId) ? MaplePet.createPet(itemId) : null;
+        Item item = new Item(itemId, (short) 0,  (short)1, 0);
+        item.setPet(pet);
+        return item;
     }
 
-
-    /**
-     * 设置全局共享变量
-     *
-     * @param key
-     * @param value
-     */
     public void setVariable(String key, Object value) {
         if (value == null || "".equals(value)) {
-            getPlayer().getVariable().remove(key);
+            this.getPlayer().getVariable().remove(key);
         } else {
-            getPlayer().getVariable().put(key, value);
+            this.getPlayer().getVariable().put(key, value);
         }
     }
 
-    /**
-     * 获取全局共享变量
-     *
-     * @param key
-     * @return
-     */
     public Object getVariable(String key) {
-        return getPlayer().getVariable().get(key);
+        return this.getPlayer().getVariable().get(key);
     }
-
 
     public String httpGet(String url) {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(url))
-                    .header("Content-Type", "application/json")
-                    .GET()
-                    .timeout(Duration.ofSeconds(5))
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            // 获取响应码
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("Content-Type", "application/json").GET().timeout(Duration.ofSeconds(5L)).build();
+            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int responseCode = response.statusCode();
             if (responseCode == 200) {
-                return response.body();
-            } else {
-                return null;
+                return (String)response.body();
             }
-        } catch (Exception e) {
+            return null;
+        }
+        catch (Exception e) {
             log.error("[httpPost]error:", e);
             return null;
         }
     }
-
 
     public String httpPost(String url, String body) {
         try {
             HttpClient client = HttpClient.newHttpClient();
-            HttpRequest request = HttpRequest.newBuilder()
-                    .uri(new URI(url))
-                    .header("Content-Type", "application/json")
-                    .POST(HttpRequest.BodyPublishers.ofString(body, StandardCharsets.UTF_8))
-                    .timeout(Duration.ofSeconds(5))
-                    .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            // 获取响应码
+            HttpRequest request = HttpRequest.newBuilder().uri(new URI(url)).header("Content-Type", "application/json").POST(HttpRequest.BodyPublishers.ofString((String)body, (Charset)StandardCharsets.UTF_8)).timeout(Duration.ofSeconds(5L)).build();
+            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
             int responseCode = response.statusCode();
             if (responseCode == 200) {
-                return response.body();
-            } else {
-                return null;
+                return (String)response.body();
             }
-        } catch (Exception e) {
+            return null;
+        }
+        catch (Exception e) {
             log.error("[httpPost]error:", e);
             return null;
         }
     }
 
-    /**
-     * 啟動BOSSUI
-     *
-     * @param BossType
-     * @param difficulty 0~6分別為簡單 ~ 故事難度
-     */
     public void startBossUI(int BossType, int[] difficulty) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.CTX_PORTAL_BOSS_EVENT_UI.getValue());
         mplew.writeInt(BossType);
-        mplew.writeBool(false); // 關閉入口
+        mplew.writeBool(false);
         mplew.writeInt(difficulty.length);
-        for (int i = 0; i < difficulty.length; i++) {
+        for (int i = 0; i < difficulty.length; ++i) {
             mplew.write(difficulty[i]);
             mplew.writeHexString("00 00 00 05 00 00 00 00 00 00 00 01 05 00 00 00");
         }
@@ -439,62 +418,52 @@ public class PlayerScriptInteraction extends ScriptBase {
         mplew.write(1);
         mplew.write(0);
         mplew.write(49);
-        getPlayer().send(mplew.getPacket());
-        if (getPlayer().getParty() == null) {
-            Party party = Party.createNewParty(false, false, getPlayer().getName() + "的隊伍", getPlayer().getClient().getWorld());
-            PartyMember pm = new PartyMember(getPlayer());
+        this.getPlayer().send(mplew.getPacket());
+        if (this.getPlayer().getParty() == null) {
+            Party party = Party.createNewParty((boolean)false, (boolean)false, (String)(this.getPlayer().getName() + "的隊伍"), (World)this.getPlayer().getClient().getWorld());
+            PartyMember pm = new PartyMember(this.getPlayer());
             party.setPartyLeaderID(pm.getCharID());
             party.getPartyMembers()[0] = pm;
-            getPlayer().setParty(party);
-            getPlayer().write(WvsContext.partyResult(PartyResult.createNewParty(party)));
+            this.getPlayer().setParty(party);
+            this.getPlayer().write(WvsContext.partyResult((PartyResult)PartyResult.createNewParty((Party)party)));
         }
     }
 
     public int pecketToolUI() {
-        frame = new JFrame("[Tools] PhantomTMS_Packet Tools by Hertz.");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(500, 200);
-        frame.setLayout(new BorderLayout());
+        this.frame = new JFrame("[Tools] PhantomTMS_Packet Tools by Hertz.");
+        this.frame.setDefaultCloseOperation(3);
+        this.frame.setSize(500, 200);
+        this.frame.setLayout(new BorderLayout());
         JPanel inputPanel = new JPanel();
-
         inputPanel.setLayout(new GridLayout(5, 5));
-
         JLabel handlerLabel = new JLabel("請輸入封包包頭:");
-        handlerField = new JTextField();
+        this.handlerField = new JTextField();
         JLabel packetContentLabel = new JLabel("請輸入封包內容:");
-        packetContentArea = new JTextArea();
-
+        this.packetContentArea = new JTextArea();
         inputPanel.add(handlerLabel);
-        inputPanel.add(handlerField);
+        inputPanel.add(this.handlerField);
         inputPanel.add(packetContentLabel);
-        inputPanel.add(packetContentArea);
-
+        inputPanel.add(this.packetContentArea);
         JButton sendButton = new JButton("發送");
-        sendButton.addActionListener(e -> sendPacket());
-
-        frame.add(inputPanel, BorderLayout.CENTER);
-        frame.add(sendButton, BorderLayout.SOUTH);
-
-        frame.setVisible(true);
-        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-
+        sendButton.addActionListener(e -> this.sendPacket());
+        this.frame.add((Component)inputPanel, "Center");
+        this.frame.add((Component)sendButton, "South");
+        this.frame.setVisible(true);
+        this.frame.setDefaultCloseOperation(2);
         return 1;
     }
 
-    /*
-     * 解散公會
-     */
     public void guildDisband(int guildId) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_GuildResult.getValue());
         mplew.writeInt(40);
         mplew.writeInt(guildId);
-        getPlayer().send(mplew.getPacket());
+        this.getPlayer().send(mplew.getPacket());
     }
 
     private void sendPacket() {
-        String handlerText = handlerField.getText();
-        String packetContentText = packetContentArea.getText();
+        String handlerText = this.handlerField.getText();
+        String packetContentText = this.packetContentArea.getText();
         try {
             int sendOpcode = Integer.parseInt(handlerText);
             String packetContent = packetContentText.replaceAll("\\s+", "");
@@ -502,61 +471,68 @@ public class PlayerScriptInteraction extends ScriptBase {
             mplew.writeShort(sendOpcode);
             if (packetContent == null) {
                 return;
-            } else {
-                mplew.writeHexString(packetContent);
             }
-            client.getPlayer().dropMessage(15, "[發送封包包頭]: " + sendOpcode + " / 封包內容:[" + Arrays.toString(mplew.getPacket()) + "]");
-            client.announce(mplew.getPacket());
-            JOptionPane.showMessageDialog(frame, "資料包發送成功.");
-        } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(frame, "處理程序格式無效.");
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(frame, "資料包內容格式無效.");
+            mplew.writeHexString(packetContent);
+            this.client.getPlayer().dropMessage(15, "[發送封包包頭]: " + sendOpcode + " / 封包內容:[" + Arrays.toString(mplew.getPacket()) + "]");
+            this.client.announce(mplew.getPacket());
+            JOptionPane.showMessageDialog(this.frame, "資料包發送成功.");
+        }
+        catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this.frame, "處理程序格式無效.");
+        }
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(this.frame, "資料包內容格式無效.");
         }
     }
 
     public void setDelay(int delay) {
         try {
             TimeUnit.MILLISECONDS.sleep(delay);
-        } catch (InterruptedException e) {
+        }
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 
     public void setSpirtValue(int value) {
-        for (MapleCharacter player : getPlayer().getMap().getAllChracater()) {
-            Caning.setSpirtValue(value, player.getClient());
+        for (MapleCharacter player : this.getPlayer().getMap().getAllChracater()) {
+            Caning.setSpirtValue((int)value, (MapleClient)player.getClient());
         }
     }
 
     public void setSelMapLoad() {
-        for (MapleCharacter player : getPlayer().getMap().getAllChracater()) {
-            Caning.setSelMapLoad(player.getClient());
+        for (MapleCharacter player : this.getPlayer().getMap().getAllChracater()) {
+            Caning.setSelMapLoad((MapleClient)player.getClient());
         }
     }
 
     public void setSelMapLoadNext() {
-        for (MapleCharacter player : getPlayer().getMap().getAllChracater()) {
-            Caning.setSelMapLoadNext(player.getClient());
+        for (MapleCharacter player : this.getPlayer().getMap().getAllChracater()) {
+            Caning.setSelMapLoadNext((MapleClient)player.getClient());
         }
     }
 
     public void setSelMapLoadParty() {
-        for (MapleCharacter player : getPlayer().getMap().getAllChracater()) {
-            Caning.setSelMapLoadParty(player.getClient());
+        for (MapleCharacter player : this.getPlayer().getMap().getAllChracater()) {
+            Caning.setSelMapLoadParty((MapleClient)player.getClient());
         }
     }
 
     public void showHint(String message, int heigth, int width) {
-        getClient().announce(MaplePacketCreator.sendHint(message, heigth, width, null));
+        this.getClient().announce(MaplePacketCreator.sendHint(message, heigth, width, null));
+    }
+
+    public MapleCharacter sendReward(int cid, int itemId, long amount, String desc) {
+        MapleCharacter player = MapleCharacter.getCharacterById(cid);
+        return this.sendAccRewardPeriod(player.getAccountID(), cid, itemId, amount, desc);
     }
 
     public MapleCharacter sendAccReward(int accountId, int itemId, long amount, String desc) {
-        return sendAccRewardPeriod(accountId, 0, itemId, amount, desc);
+        return this.sendAccRewardPeriod(accountId, 0, itemId, amount, desc);
     }
 
     public MapleCharacter sendAccRewardPeriod(int accountId, int day, int itemId, long amount, String desc) {
-        return sendReward(accountId, 0, DateUtil.getNextDayTime(0), day <= 0 ? 0 : (DateUtil.getNextDayTime(day) - 60000), itemId, amount, desc);
+        return this.sendReward(accountId, 0, DateUtil.getNextDayTime(0), day <= 0 ? 0L : DateUtil.getNextDayTime(day) - 60000L, itemId, amount, desc);
     }
 
     public MapleMonsterInformationProvider getMonsterInfo() {
@@ -567,7 +543,7 @@ public class PlayerScriptInteraction extends ScriptBase {
         return new MapleReactor(MapleReactorFactory.getReactor(id), id);
     }
 
-    public final MapleMonster getMonster(final int mobId) {
+    public final MapleMonster getMonster(int mobId) {
         return MapleLifeFactory.getMonster(mobId);
     }
 
@@ -578,7 +554,6 @@ public class PlayerScriptInteraction extends ScriptBase {
     public MapleMonster getEliteMonster(int mobId, MapleMonsterStats stats) {
         return MapleLifeFactory.getEliteMonster(mobId, stats);
     }
-
 
     public MapleMonster getEliteMonster(int mobId, MapleMonsterStats stats, int eliteGrade) {
         return MapleLifeFactory.getEliteMonster(mobId, stats, eliteGrade);
@@ -601,83 +576,76 @@ public class PlayerScriptInteraction extends ScriptBase {
     }
 
     public MapleItemInformationProvider getItemInfo() {
-
         return MapleItemInformationProvider.getInstance();
     }
 
+    /*
+     * Enabled force condition propagation
+     * Lifted jumps to return sites
+     */
     public MapleCharacter sendReward(int accountId, int characterId, long start, long end, int itemId, long amount, String desc) {
         int type;
         if (itemId < 1000000) {
-            if (itemId > 2 && itemId < 6) {
-                type = itemId;
-            } else {
-                return null;
-            }
-        } else if (getItemInfo().isCash(itemId)) {
-            type = MapleReward.現金道具;
-        } else if (getItemInfo().itemExists(itemId)) {
-            type = MapleReward.道具;
+            if (itemId <= 2 || itemId >= 6) return null;
+            type = itemId;
+        } else if (this.getItemInfo().isCash(itemId)) {
+            type = 2;
         } else {
-            return null;
+            if (!this.getItemInfo().itemExists(itemId)) return null;
+            type = 1;
         }
         MapleCharacter.addReward(accountId, characterId, start, end, type, amount, itemId, desc);
         for (ChannelServer cserv : ChannelServer.getAllInstances()) {
             for (MapleCharacter mch : cserv.getPlayerStorage().getAllCharacters()) {
-                if (mch.getAccountID() == accountId || mch.getId() == characterId) {
-                    mch.updateReward();
-                    return mch;
-                }
+                if (mch.getAccountID() != accountId && mch.getId() != characterId) continue;
+                mch.updateReward();
+                return mch;
             }
         }
         return null;
     }
 
     public void runScript(String scriptName) throws Exception {
-        runScript(0, "expands/" + scriptName);
+        this.runScript(0, "expands/" + scriptName);
     }
 
-    /**
-     * 不要更改這個方法，不然會導致runScript執行完後還會繼續執行runScript後面的代碼導致作用域問題和回調地獄
-     */
     public void runScript(int npcId, String scriptName) throws Exception {
-        var scriptString = ScriptManager.getScriptString(scriptName);
+        String scriptString = ScriptManager.getScriptString(scriptName);
         if (!scriptString.isEmpty()) {
-            ScriptEngine engine = (ScriptEngine) getPlayer().getScriptManager().getInvocableByType(getPlayer().getScriptManager().getLastActiveScriptType());
-            getPlayer().dropSpouseMessage(UserChatMessageType.青, "[runScript] " + scriptName + ".js");
+            ScriptEngine engine = (ScriptEngine)((Object)this.getPlayer().getScriptManager().getInvocableByType(this.getPlayer().getScriptManager().getLastActiveScriptType()));
+            this.getPlayer().dropSpouseMessage(UserChatMessageType.青, "[runScript] " + scriptName + ".js");
             Bindings bindings = engine.createBindings();
-            bindings.put("party", getPlayer().getParty() == null ? null : new ScriptParty(getPlayer().getParty()));
-            bindings.put("player", new ScriptPlayer(getPlayer()));
-            bindings.put("map", new ScriptField(getPlayer().getMap()));
-            bindings.put("sh", new ScriptHelper());
-            bindings.put("npc", new ScriptNpc(getPlayer().getClient(), npcId, scriptName, ScriptType.Npc, null));
-            CompiledScript cs = ((Compilable) engine).compile(scriptString);
+            bindings.put("party", (Object)(this.getPlayer().getParty() == null ? null : new ScriptParty(this.getPlayer().getParty())));
+            bindings.put("player", (Object)new ScriptPlayer(this.getPlayer()));
+            bindings.put("map", (Object)new ScriptField(this.getPlayer().getMap()));
+            bindings.put("sh", (Object)new ScriptHelper());
+            bindings.put("npc", (Object)new ScriptNpc(this.getPlayer().getClient(), npcId, scriptName, ScriptType.Npc, null));
+            CompiledScript cs = ((Compilable)((Object)engine)).compile(scriptString);
             cs.eval(bindings);
         }
-        throw new NullPointerException(ScriptManager.INTENDED_NPE_MSG);
+        throw new NullPointerException("Intended NPE by forceful Plugin.script stop.");
     }
 
-    /* creat hertz */
     public void showUnityPortal() {
         List<DimensionMirrorEvent> list = Arrays.stream(DimensionMirrorEvent.values()).filter(it -> it.getMapID() > 0).collect(Collectors.toList());
-        getClient().announce(UIPacket.showDimensionMirror(list));
+        this.getClient().announce(UIPacket.showDimensionMirror(list));
     }
 
     public void SayEldasMessage(String Notice) {
-        getPlayer().send(EldasPacket.Eldas_200(Notice));
-        getPlayer().removeItem(2636883, 1);
+        this.getPlayer().send(EldasPacket.Eldas_200((String)Notice));
+        this.getPlayer().removeItem(2636883, 1);
     }
 
     public void eventSay(String Notice) {
-        getPlayer().send(MessengerPacket.npcEffectChat_BlackLock(Notice));
+        this.getPlayer().send(MessengerPacket.npcEffectChat_BlackLock((String)Notice));
     }
 
-
     public void addEdraCount(int Count) {
-        getPlayer().addEdraSoul(Count);
+        this.getPlayer().addEdraSoul(Count);
     }
 
     public void CreatGuildName() {
-        getPlayer().send(GuildPacket.genericGuildMessage((byte) 0x00));
+        this.getPlayer().send(GuildPacket.genericGuildMessage((byte)0));
     }
 
     public void playMusicBox(String music) {
@@ -688,7 +656,7 @@ public class PlayerScriptInteraction extends ScriptBase {
         ctx.writeInt(0);
         ctx.writeInt(0);
         ctx.writeInt(0);
-        getPlayer().send(ctx.getPacket());
+        this.getPlayer().send(ctx.getPacket());
     }
 
     public void playMusicBox2(String music) {
@@ -699,7 +667,7 @@ public class PlayerScriptInteraction extends ScriptBase {
         ctx.writeInt(0);
         ctx.writeInt(0);
         ctx.writeInt(0);
-        getPlayer().send(ctx.getPacket());
+        this.getPlayer().send(ctx.getPacket());
     }
 
     public void playMusicBox3(String music) {
@@ -710,7 +678,7 @@ public class PlayerScriptInteraction extends ScriptBase {
         ctx.writeInt(0);
         ctx.writeInt(0);
         ctx.writeInt(0);
-        getPlayer().send(ctx.getPacket());
+        this.getPlayer().send(ctx.getPacket());
     }
 
     public void playMusicBox4(String music) {
@@ -721,7 +689,7 @@ public class PlayerScriptInteraction extends ScriptBase {
         ctx.writeInt(0);
         ctx.writeInt(0);
         ctx.writeInt(0);
-        getPlayer().send(ctx.getPacket());
+        this.getPlayer().send(ctx.getPacket());
     }
 
     public void playMusicBox5(String music) {
@@ -732,104 +700,89 @@ public class PlayerScriptInteraction extends ScriptBase {
         ctx.writeInt(0);
         ctx.writeInt(0);
         ctx.writeInt(0);
-        getPlayer().send(ctx.getPacket());
+        this.getPlayer().send(ctx.getPacket());
     }
 
     public void WeatherMessage(String fieldMessage, int type, int ms) {
-        getPlayer().getMap().showWeatherEffectNotice(fieldMessage, type, ms);
+        this.getPlayer().getMap().showWeatherEffectNotice(fieldMessage, type, ms);
     }
 
-    /* new */
     public boolean isQuestStarted(int questId) {
-        return getPlayer().getQuestStatus(questId) == 1;
+        return this.getPlayer().getQuestStatus(questId) == 1;
     }
 
     public boolean isQuestFinished(int questId) {
-        return getPlayer().getQuestStatus(questId) == 2;
+        return this.getPlayer().getQuestStatus(questId) == 2;
     }
 
-    /* new */
     public boolean isQuestCompleted(int questId) {
-        return getPlayer().getQuestStatus(questId) == 2;
+        return this.getPlayer().getQuestStatus(questId) == 2;
     }
-
 
     public int getQuest() {
-        return quest;
+        return this.quest;
     }
 
     public boolean isStart() {
-        return start;
+        return this.start;
     }
 
     public void forceStartQuest() {
-        forceStartQuest(false);
+        this.forceStartQuest(false);
     }
 
     public void forceStartQuest(boolean isWorldShare) {
-        forceStartQuest(null, isWorldShare);
+        this.forceStartQuest(null, isWorldShare);
     }
 
-
     public void forceStartQuest(String customData) {
-        forceStartQuest(customData, false);
+        this.forceStartQuest(customData, false);
     }
 
     public void forceStartQuest(String customData, boolean isWorldShare) {
-        MapleQuest.getInstance(quest).forceStart(getPlayer(), getNpc(), customData, isWorldShare);
+        MapleQuest.getInstance(this.quest).forceStart(this.getPlayer(), PlayerScriptInteraction.getNpc(), customData, isWorldShare);
     }
 
     public void forceCompleteQuest() {
-        forceCompleteQuest(false);
+        this.forceCompleteQuest(false);
     }
 
     public void forceCompleteQuest(int questId) {
-        MapleQuest.getInstance(questId).forceComplete(getPlayer(), 0, false);
+        MapleQuest.getInstance(questId).forceComplete(this.getPlayer(), 0, false);
     }
 
     public void forceCompleteQuest(boolean isWorldShare) {
-        MapleQuest.getInstance(quest).forceComplete(getPlayer(), 0, isWorldShare);
+        MapleQuest.getInstance(this.quest).forceComplete(this.getPlayer(), 0, isWorldShare);
     }
 
     public void resetQuest() {
-        MapleQuest.getInstance(quest).reset(getPlayer());
+        MapleQuest.getInstance(this.quest).reset(this.getPlayer());
     }
 
     public String getQuestCustomData() {
-        return getPlayer().getQuestNAdd(MapleQuest.getInstance(quest)).getCustomData();
+        return this.getPlayer().getQuestNAdd(MapleQuest.getInstance(this.quest)).getCustomData();
     }
 
     public void setQuestCustomData(String customData) {
-        getPlayer().getQuestNAdd(MapleQuest.getInstance(quest)).setCustomData(customData);
+        this.getPlayer().getQuestNAdd(MapleQuest.getInstance(this.quest)).setCustomData(customData);
     }
 
     public void showCompleteQuestEffect() {
-        getPlayer().getClient().announce(EffectPacket.showSpecialEffect(EffectOpcode.UserEffect_QuestComplete)); // 任務完成
-        getPlayer().getMap().broadcastMessage(getPlayer(), EffectPacket.showForeignEffect(getPlayer().getId(), EffectOpcode.UserEffect_QuestComplete), false);
+        this.getPlayer().getClient().announce(EffectPacket.showSpecialEffect(EffectOpcode.UserEffect_QuestComplete));
+        this.getPlayer().getMap().broadcastMessage(this.getPlayer(), EffectPacket.showForeignEffect(this.getPlayer().getId(), EffectOpcode.UserEffect_QuestComplete), false);
     }
 
     public final void spawnNpcForPlayer(int npcId, int x, int y) {
-        getPlayer().getMap().spawnNpcForPlayer(getClient(), npcId, new Point(x, y));
+        this.getPlayer().getMap().spawnNpcForPlayer(this.getClient(), npcId, new Point(x, y));
     }
 
-    /*
-     * 隨機抽獎
-     * 參數 道具的ID
-     * 參數 道具的數量
-     */
     public int gainGachaponItem(int id, int quantity) {
-        return gainGachaponItem(id, quantity, getPlayer().getMap().getStreetName() + " - " + getPlayer().getMap().getMapName());
+        return this.gainGachaponItem(id, quantity, this.getPlayer().getMap().getStreetName() + " - " + this.getPlayer().getMap().getMapName());
     }
 
-    /*
-     * 隨機抽獎
-     * 參數 道具的ID
-     * 參數 道具的數量
-     * 參數 獲得裝備的日誌
-     */
     public int gainGachaponItem(int id, int quantity, String msg) {
         byte rareness = GameConstants.gachaponRareItem(id);
-        return gainGachaponItem(id, quantity, msg, rareness == 1 || rareness == 2 || rareness == 3);
+        return this.gainGachaponItem(id, quantity, msg, rareness == 1 || rareness == 2 || rareness == 3);
     }
 
     public int gainGachaponItem(int id, int quantity, String msg, boolean smega) {
@@ -838,83 +791,62 @@ public class PlayerScriptInteraction extends ScriptBase {
             if (!ii.itemExists(id)) {
                 return -1;
             }
-            Item item = MapleInventoryManipulator.addbyId_Gachapon(getClient(), id, quantity, "從 " + msg + " 中獲得時間: " + DateUtil.getNowTime());
+            Item item = MapleInventoryManipulator.addbyId_Gachapon(this.getClient(), id, quantity, "從 " + msg + " 中獲得時間: " + DateUtil.getNowTime());
             if (item == null) {
                 return -1;
             }
             if (smega) {
-                WorldBroadcastService.getInstance().broadcastMessage(MaplePacketCreator.gachaponMsg("恭喜" + getPlayer().getName() + "從" + msg + "獲得{" + ii.getName(item.getItemId()) + "}", item));
+                WorldBroadcastService.getInstance().broadcastMessage(MaplePacketCreator.gachaponMsg("恭喜" + this.getPlayer().getName() + "從" + msg + "獲得{" + ii.getName(item.getItemId()) + "}", item));
             }
             return item.getItemId();
-        } catch (Exception e) {
-            log.error("gainGachaponItem 錯誤", e);
         }
-        return -1;
+        catch (Exception e) {
+            log.error("gainGachaponItem 錯誤", e);
+            return -1;
+        }
     }
 
-    /*
-     * NPC給玩家道具帶公告
-     * 參數 道具的ID
-     * 參數 道具的數量
-     * 參數 獲得裝備的日誌
-     * 參數 公告喇叭的類型[1-3]
-     */
     public int gainGachaponItem(int id, int quantity, String msg, int rareness) {
-        return gainGachaponItem(id, quantity, msg, rareness, false, 0);
+        return this.gainGachaponItem(id, quantity, msg, rareness, false, 0L);
     }
 
-    /*
-     * NPC給玩家道具帶公告
-     * 參數 道具的ID
-     * 參數 道具的數量
-     * 參數 獲得裝備的日誌
-     * 參數 公告喇叭的類型[1-3]
-     * 參數 道具的使用時間
-     */
     public int gainGachaponItem(int id, int quantity, String msg, int rareness, long period) {
-        return gainGachaponItem(id, quantity, msg, rareness, false, period);
+        return this.gainGachaponItem(id, quantity, msg, rareness, false, period);
     }
 
-    /*
-     * NPC給玩家道具帶公告
-     * 參數 道具的ID
-     * 參數 道具的數量
-     * 參數 獲得裝備的日誌
-     * 參數 公告喇叭的類型[1-3]
-     * 參數 是否NPC購買
-     * 參數 道具的使用時間
-     */
     public int gainGachaponItem(int id, int quantity, String msg, int rareness, boolean buy) {
-        return gainGachaponItem(id, quantity, msg, rareness, buy, 0);
+        return this.gainGachaponItem(id, quantity, msg, rareness, buy, 0L);
     }
 
-    /*
-     * NPC給玩家道具帶公告
-     * 參數 道具的ID
-     * 參數 道具的數量
-     * 參數 獲得裝備的日誌
-     * 參數 公告喇叭的類型[1-3]
-     * 參數 是否NPC購買
-     * 參數 道具的使用時間
-     */
     public int gainGachaponItem(int id, int quantity, String msg, int rareness, boolean buy, long period) {
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
         try {
             if (!ii.itemExists(id)) {
                 return -1;
             }
-            Item item = MapleInventoryManipulator.addbyId_Gachapon(getClient(), id, quantity, "從 " + msg + " 中" + (buy ? "購買" : "獲得") + "時間: " + DateUtil.getNowTime(), period);
+            Item item = MapleInventoryManipulator.addbyId_Gachapon(this.getClient(), id, quantity, "從 " + msg + " 中" + (buy ? "購買" : "獲得") + "時間: " + DateUtil.getNowTime(), period);
             if (item == null) {
                 return -1;
             }
             if (rareness == 1 || rareness == 2 || rareness == 3) {
-                WorldBroadcastService.getInstance().broadcastMessage(MaplePacketCreator.getGachaponMega(getPlayer().getName(), " : 從" + msg + "中" + (buy ? "購買" : "獲得") + "{" + ii.getName(item.getItemId()) + "}！大家一起恭喜他（她）吧！！！！", item, (byte) rareness, getClient().getChannel()));
+                WorldBroadcastService.getInstance().broadcastMessage(MaplePacketCreator.getGachaponMega(this.getPlayer().getName(), " : 從" + msg + "中" + (buy ? "購買" : "獲得") + "{" + ii.getName(item.getItemId()) + "}！大家一起恭喜他（她）吧！！！！", item, (byte)rareness, this.getClient().getChannel()));
             }
             return item.getItemId();
-        } catch (Exception e) {
-            log.error("gainGachaponItem 錯誤", e);
         }
-        return -1;
+        catch (Exception e) {
+            log.error("gainGachaponItem 錯誤", e);
+            return -1;
+        }
     }
 
+    @Generated
+    public MapleCharacter getPlayer() {
+        return this.player;
+    }
+
+    @Generated
+    public MapleClient getClient() {
+        return this.client;
+    }
 }
+

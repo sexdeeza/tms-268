@@ -1,3 +1,9 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  lombok.Generated
+ */
 package Plugin.script.binding;
 
 import Client.inventory.Equip;
@@ -6,14 +12,13 @@ import Client.inventory.Item;
 import Client.inventory.MaplePet;
 import Config.constants.ItemConstants;
 import Net.server.MapleItemInformationProvider;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Generated;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Slf4j
 public class ScriptItem {
-    @Getter
-    @Setter
+    @Generated
+    private static final Logger log = LoggerFactory.getLogger(ScriptItem.class);
     private Item item;
 
     public ScriptItem(Item item) {
@@ -21,115 +26,112 @@ public class ScriptItem {
     }
 
     public Item copy() {
-        return getItem().copy();
+        return this.getItem().copy();
     }
 
     public int getItemId() {
-        return getItem().getItemId();
+        return this.getItem().getItemId();
     }
 
     public void setItemId(int id) {
-        getItem().setItemId(id);
+        this.getItem().setItemId(id);
     }
 
     public byte getItemType() {
-        return ItemConstants.getInventoryType(getItem().getItemId()).getType();
+        return ItemConstants.getInventoryType(this.getItem().getItemId()).getType();
     }
 
     public Equip asEquip() {
-        return MapleItemInformationProvider.getInstance().getEquipById(getItem().getItemId());
+        return MapleItemInformationProvider.getInstance().getEquipById(this.getItem().getItemId());
     }
 
     public MaplePet asPet() {
-        return getItem().getPet();
+        return this.getItem().getPet();
     }
 
     public FamiliarCard asFamiliarCard() {
-        return getItem().getFamiliarCard();
+        return this.getItem().getFamiliarCard();
     }
 
     public int getAttribute() {
-        return getItem().getAttribute();
+        return this.getItem().getAttribute();
     }
 
     public void setAttribute(int attribute) {
-        getItem().setAttribute(attribute);
+        this.getItem().setAttribute(attribute);
     }
 
     public short getQuantity() {
-        return getItem().getQuantity();
+        return this.getItem().getQuantity();
     }
 
     public void setQuantity(short quantity) {
-        getItem().setQuantity(quantity);
+        this.getItem().setQuantity(quantity);
     }
 
     public long getDateExpire() {
-        return getItem().getExpiration();
+        return this.getItem().getExpiration();
     }
 
     public void setExpiration(long expire) {
-        getItem().setExpiration(expire);
+        this.getItem().setExpiration(expire);
     }
 
     public int getSN() {
-        return getItem().getSN();
+        return this.getItem().getSN();
     }
 
     public void setSN(int sn) {
-        getItem().setSN(sn);
+        this.getItem().setSN(sn);
     }
 
     public long getInventoryId() {
-        return getItem().getInventoryId();
+        return this.getItem().getInventoryId();
     }
 
     public void setInventoryId(long ui) {
-        getItem().setInventoryId(ui);
+        this.getItem().setInventoryId(ui);
     }
 
-//    ItemConstants.getInventoryType(getItem().getItemId()).Trade
-
     public boolean isTradeAvailable() {
-        return MapleItemInformationProvider.getInstance().isTradeAvailable(getItem().getItemId());
+        return MapleItemInformationProvider.getInstance().isTradeAvailable(this.getItem().getItemId());
     }
 
     public boolean isTradeBlock() {
-        return MapleItemInformationProvider.getInstance().isTradeBlock(getItem().getItemId());
+        return MapleItemInformationProvider.getInstance().isTradeBlock(this.getItem().getItemId());
     }
 
     public boolean isAccountSharable() {
-        return MapleItemInformationProvider.getInstance().isAccountShared(getItem().getItemId());
+        return MapleItemInformationProvider.getInstance().isAccountShared(this.getItem().getItemId());
     }
 
     public String getItemName() {
-        return getItem().getName();
+        return this.getItem().getName();
     }
 
     public boolean isCash() {
         MapleItemInformationProvider ii = MapleItemInformationProvider.getInstance();
-        return ii.isCash(getItem().getItemId());
+        return ii.isCash(this.getItem().getItemId());
     }
 
-    /**
-     * 獲取裝備潛能
-     * @param pos
-     * @return
-     */
     public int getOption(int pos) {
-        Equip equip = (Equip) getItem();
+        Equip equip = (Equip)this.getItem();
         return equip.getPotential(pos, pos > 3);
     }
 
-    /**
-     * 設置裝備潛能
-     * @param pos
-     * @param option
-     */
     public void setOption(int pos, int option) {
-        Equip equip = (Equip) getItem();
+        Equip equip = (Equip)this.getItem();
         equip.setPotential(option, pos, pos > 3);
     }
 
+    @Generated
+    public Item getItem() {
+        return this.item;
+    }
 
+    @Generated
+    public void setItem(Item item) {
+        this.item = item;
+    }
 }
+

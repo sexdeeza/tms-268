@@ -1,7 +1,5 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server.maps;
 
@@ -9,13 +7,13 @@ import Client.MapleCharacter;
 import Client.MapleClient;
 import Client.inventory.MapleInventory;
 import Client.inventory.MapleInventoryType;
-import Config.constants.skills.陰陽師;
+import Net.server.maps.AnimatedMapleMapObject;
+import Net.server.maps.MapleMapObjectType;
 import Packet.SummonPacket;
+import java.awt.Point;
 
-import java.awt.*;
-
-public class MapleSkillPet extends AnimatedMapleMapObject {
-
+public class MapleSkillPet
+extends AnimatedMapleMapObject {
     private final int owner;
     private final int jobid;
     private int weapon;
@@ -29,19 +27,14 @@ public class MapleSkillPet extends AnimatedMapleMapObject {
     public MapleSkillPet(MapleCharacter owner) {
         this.owner = owner.getId();
         this.jobid = owner.getJob();
-        this.skillid = 陰陽師.花狐的同行;
+        this.skillid = 40020109;
         this.show = true;
         this.stats = false;
         this.state = 1;
-        setPosition(owner.getPosition());
-        setStance(owner.getFH());
-
+        this.setPosition(owner.getPosition());
+        this.setStance(owner.getFH());
         MapleInventory equipped = owner.getInventory(MapleInventoryType.EQUIPPED);
-        if (equipped == null || equipped.getItem((short) -5200) == null) {
-            weapon = 0;
-        } else {
-            weapon = equipped.getItem((short) -5200).getItemId();
-        }
+        this.weapon = equipped == null || equipped.getItem((short)-5200) == null ? 0 : equipped.getItem((short)-5200).getItemId();
     }
 
     public int getOwner() {
@@ -53,11 +46,11 @@ public class MapleSkillPet extends AnimatedMapleMapObject {
     }
 
     public void setWeapon(int id) {
-        weapon = id;
+        this.weapon = id;
     }
 
     public int getWeapon() {
-        return weapon;
+        return this.weapon;
     }
 
     public int getSkillId() {
@@ -69,7 +62,7 @@ public class MapleSkillPet extends AnimatedMapleMapObject {
     }
 
     public boolean isShow() {
-        return show;
+        return this.show;
     }
 
     public void setShow(boolean show) {
@@ -104,7 +97,6 @@ public class MapleSkillPet extends AnimatedMapleMapObject {
 
     @Override
     public void sendDestroyData(MapleClient client) {
-//        Client.announce(SummonPacket.showLittleWhite(this));
     }
 
     public final void update(MapleCharacter chr) {
@@ -121,7 +113,7 @@ public class MapleSkillPet extends AnimatedMapleMapObject {
     }
 
     public int getState() {
-        return state;
+        return this.state;
     }
 
     public void setState(int state) {
@@ -129,10 +121,11 @@ public class MapleSkillPet extends AnimatedMapleMapObject {
     }
 
     public int getSpecialState() {
-        return specialState;
+        return this.specialState;
     }
 
     public void setSpecialState(int specialState) {
         this.specialState = specialState;
     }
 }
+

@@ -1,6 +1,13 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.曉之陣;
 
-import Client.*;
+import Client.MapleCharacter;
+import Client.MapleClient;
+import Client.MapleJob;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Client.force.MapleForceFactory;
 import Client.inventory.Equip;
 import Client.inventory.Item;
@@ -10,39 +17,33 @@ import Client.skills.Skill;
 import Client.skills.SkillEntry;
 import Client.skills.SkillFactory;
 import Client.skills.handler.AbstractSkillHandler;
-import Client.skills.handler.HexaSKILL;
 import Client.skills.handler.SkillClassApplier;
 import Client.status.MonsterStatus;
 import Net.server.MapleStatInfo;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MapleMonster;
 import Net.server.maps.MapleSummon;
-import Packet.*;
-import tools.Randomizer;
-import tools.data.MaplePacketReader;
-
-import java.awt.*;
+import Packet.BuffPacket;
+import Packet.ForcePacket;
+import Packet.MaplePacketCreator;
+import Packet.MobPacket;
+import Packet.SummonPacket;
+import java.awt.Point;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.Map;
+import tools.Randomizer;
+import tools.data.MaplePacketReader;
 
-import static Config.constants.skills.陰陽師.*;
-
-public class 陰陽師 extends AbstractSkillHandler {
-
+public class 陰陽師
+extends AbstractSkillHandler {
     public 陰陽師() {
-        jobs = new MapleJob[]{
-                MapleJob.陰陽師,
-                MapleJob.陰陽師1轉,
-                MapleJob.陰陽師2轉,
-                MapleJob.陰陽師3轉,
-                MapleJob.陰陽師4轉
-        };
-
+        this.jobs = new MapleJob[]{MapleJob.陰陽師, MapleJob.陰陽師1轉, MapleJob.陰陽師2轉, MapleJob.陰陽師3轉, MapleJob.陰陽師4轉};
         for (Field field : Config.constants.skills.陰陽師.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -50,90 +51,108 @@ public class 陰陽師 extends AbstractSkillHandler {
 
     @Override
     public int baseSkills(MapleCharacter chr, SkillClassApplier applier) {
-        Skill skil;
-        int[] ss = {五行的陰陽師, 無限的靈力, 花狐的同行, 英雄共鳴, 五星的歸還};
-        for (int i : ss) {
-            if (chr.getLevel() < 200 && i == 英雄共鳴) {
-                continue;
-            }
-            skil = SkillFactory.getSkill(i);
-            if (skil != null && chr.getSkillLevel(skil) <= 0) {
-                applier.skillMap.put(i, new SkillEntry(skil.getMaxLevel(), skil.getMaxMasterLevel(), -1));
-            }
+        int[] ss;
+        for (int i : ss = new int[]{40020000, 40020001, 40020109, 40021005, 40021227}) {
+            Skill skil;
+            if (chr.getLevel() < 200 && i == 40021005 || (skil = SkillFactory.getSkill(i)) == null || chr.getSkillLevel(skil) > 0) continue;
+            applier.skillMap.put(i, new SkillEntry(skil.getMaxLevel(), skil.getMaxMasterLevel(), -1L));
         }
         return -1;
     }
 
     public boolean is紫扇仰波(int skillId) {
-        int linkedSkillID = getLinkedSkillID(skillId);
-        return linkedSkillID == 紫扇仰波 || linkedSkillID == 紫扇仰波_貳 || linkedSkillID == 紫扇仰波_參 || linkedSkillID == 紫扇仰波_肆;
+        int linkedSkillID = this.getLinkedSkillID(skillId);
+        return linkedSkillID == 42001000 || linkedSkillID == 42100024 || linkedSkillID == 42110013 || linkedSkillID == 42120025;
     }
 
     @Override
     public int getLinkedSkillID(int skillId) {
         switch (skillId) {
-            case 42141501:
-            case 42141502:
-                return HexaSKILL.十尾妖狐的羈絆;
-            case HexaSKILL.雪女召喚強化:
+            case 42141501: 
+            case 42141502: {
+                return 42141500;
+            }
+            case 500004188: {
                 return 400021017;
-            case HexaSKILL.靈石召喚強化:
+            }
+            case 500004189: {
                 return 400021054;
-            case HexaSKILL.怨靈解放陣強化:
+            }
+            case 500004190: {
                 return 400021078;
-            case HexaSKILL.鬼夜叉_大鬼封魂陣強化:
+            }
+            case 500004191: {
                 return 400021114;
-            case 靈脈轉移_1:
-                return 靈脈轉移;
-            case 花狐的回復:
-            case 花炎結界:
-            case 花狐的祝福:
-            case 幽玄氣息:
-                return 影朋_花狐;
-            case 花炎結界2:
-            case 花狐的祝福2:
-            case 幽玄氣息2:
-                return 幻醒_花狐;
-            case 式神炎舞_1:
-                return 式神炎舞;
-            case 紫扇仰波_2擊:
-            case 紫扇仰波_3擊:
-                return 紫扇仰波;
-            case 紫扇仰波_肆_1擊:
-            case 紫扇仰波_肆_2擊:
-            case 紫扇仰波_肆_3擊:
-                return 紫扇仰波_肆;
-            case 紫扇仰波_參_1擊:
-            case 紫扇仰波_參_2擊:
-            case 紫扇仰波_參_3擊:
-                return 紫扇仰波_參;
-            case 紫扇仰波_貳_1擊:
-            case 紫扇仰波_貳_2擊:
-            case 紫扇仰波_貳_3擊:
-                return 紫扇仰波_貳;
-            case 紫光白狐_被動:
-                return 紫光白狐;
-            case 結界_櫻_靈脈結合:
-                return 結界_櫻;
-            case 雙天狗_左:
-            case 雙天狗_右:
-                return 雙天狗;
-            case 迎式神_發動:
-                return 迎式神;
-            case 妖繪釋放_炒炭:
-                return 妖繪釋放;
-            case 結界_鈴蘭_靈脈結合:
-                return 結界_鈴蘭;
-            case 靈脈的氣息:
-                return 風水師;
-            case 雪女招喚_1:
-                return 雪女招喚;
-            case 怨靈解放陣_1:
-            case 怨靈解放陣_2:
-            case 怨靈解放陣_3:
-                return 怨靈解放陣;
-            case 鬼夜叉_大鬼封魂陣_1:
-                return 鬼夜叉_大鬼封魂陣;
+            }
+            case 42001007: {
+                return 42001002;
+            }
+            case 42101020: 
+            case 42101021: 
+            case 42101022: 
+            case 42101023: {
+                return 42101002;
+            }
+            case 42121021: 
+            case 42121022: 
+            case 42121023: {
+                return 42120011;
+            }
+            case 42100010: {
+                return 42101001;
+            }
+            case 42001005: 
+            case 42001006: {
+                return 42001000;
+            }
+            case 42120026: 
+            case 42120027: 
+            case 42120028: {
+                return 42120025;
+            }
+            case 42111110: 
+            case 42111111: 
+            case 42111112: {
+                return 42110013;
+            }
+            case 42101100: 
+            case 42101101: 
+            case 42101102: {
+                return 42100024;
+            }
+            case 42120000: {
+                return 42121102;
+            }
+            case 42111113: {
+                return 42111004;
+            }
+            case 42111101: 
+            case 42111102: {
+                return 42111100;
+            }
+            case 42121105: {
+                return 42121104;
+            }
+            case 42121101: {
+                return 42121100;
+            }
+            case 42121103: {
+                return 42121005;
+            }
+            case 42001101: {
+                return 42000000;
+            }
+            case 400021018: {
+                return 400021017;
+            }
+            case 400021079: 
+            case 400021080: 
+            case 400021081: {
+                return 400021078;
+            }
+            case 400021115: {
+                return 400021114;
+            }
         }
         return -1;
     }
@@ -141,85 +160,101 @@ public class 陰陽師 extends AbstractSkillHandler {
     @Override
     public int onSkillLoad(Map<SecondaryStat, Integer> statups, Map<MonsterStatus, Integer> monsterStatus, MapleStatEffect effect) {
         switch (effect.getSourceId()) {
-            case 英雄共鳴:
+            case 40021005: {
                 effect.setRangeBuff(true);
                 effect.getInfo().put(MapleStatInfo.time, effect.getDuration() * 1000);
                 statups.put(SecondaryStat.MaxLevelBuff, effect.getX());
                 return 1;
-            case 影朋_花狐:
+            }
+            case 42101002: {
                 statups.put(SecondaryStat.ChangeFoxMan, 1);
                 return 1;
-            case 花炎結界:
-            case 花炎結界2:
+            }
+            case 42101021: 
+            case 42121021: {
                 statups.put(SecondaryStat.FireBarrier, 3);
                 return 1;
-            case 幽玄氣息:
-            case 幽玄氣息2:
+            }
+            case 42101023: 
+            case 42121023: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.Stance, 0);
                 statups.put(SecondaryStat.IgnoreTargetDEF, 0);
                 statups.put(SecondaryStat.BlessEnsenble, 5);
                 return 1;
-            case 花狐的祝福:
-            case 花狐的祝福2:
+            }
+            case 42101022: 
+            case 42121022: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
-                statups.put(SecondaryStat.FoxBless, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.FoxBless, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 迎式神:
+            }
+            case 42121104: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.KannaSiksinAutoAttack, effect.getLevel());
                 return 1;
-            case 結界_櫻:
-                monsterStatus.put(MonsterStatus.PAD, effect.getInfo().get(MapleStatInfo.x));
-                monsterStatus.put(MonsterStatus.MAD, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 42111004: {
+                monsterStatus.put(MonsterStatus.PAD, effect.getInfo().get((Object)MapleStatInfo.x));
+                monsterStatus.put(MonsterStatus.MAD, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 扇_孔雀:
-                statups.put(SecondaryStat.Booster, effect.getInfo().get(MapleStatInfo.x));
+            }
+            case 42101003: {
+                statups.put(SecondaryStat.Booster, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 曉月勇者:
+            }
+            case 42121053: {
                 effect.setPartyBuff(true);
-                statups.put(SecondaryStat.BasicStatUp, effect.getInfo().get(MapleStatInfo.x));
+                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get((Object)MapleStatInfo.indieDamR));
                 return 1;
-            case 公主的加護:
-                effect.setPartyBuff(true);
-                statups.put(SecondaryStat.IndieDamR, effect.getInfo().get(MapleStatInfo.indieDamR));
+            }
+            case 400021017: {
+                statups.put(SecondaryStat.ReduceMP, effect.getInfo().get((Object)MapleStatInfo.x));
                 return 1;
-            case 雪女招喚:
-                statups.put(SecondaryStat.ReduceMP, effect.getInfo().get(MapleStatInfo.x));
-                return 1;
-            case 陰陽除靈符:
+            }
+            case 42101005: {
                 monsterStatus.put(MonsterStatus.Burned, 1);
                 return 1;
-            case 退魔流星符:
+            }
+            case 42121004: {
                 monsterStatus.put(MonsterStatus.Freeze, 1);
                 return 1;
-            case 紫扇仰波_貳:
+            }
+            case 42100024: {
                 monsterStatus.put(MonsterStatus.Burned, 1);
                 return 1;
-            case 紫扇仰波_肆:
+            }
+            case 42120025: {
                 monsterStatus.put(MonsterStatus.Burned, 4);
                 return 1;
-            case 一鬼踏殲:
+            }
+            case 42121052: {
                 monsterStatus.put(MonsterStatus.Freeze, 1);
                 return 1;
-            case 破魔陣:
+            }
+            case 42121054: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.AntiEvilShield, effect.getLevel());
                 return 1;
-            case 怨靈解放陣:
+            }
+            case 400021078: {
                 effect.getInfo().put(MapleStatInfo.time, 2100000000);
                 statups.put(SecondaryStat.GhostLiberationStack, 0);
                 return 1;
-            case 靈石召喚:
+            }
+            case 400021054: {
                 statups.put(SecondaryStat.IndieAsrR, effect.getW());
                 return 1;
-            case 鬼夜叉_大鬼封魂陣:
+            }
+            case 400021114: {
                 statups.put(SecondaryStat.KannaFifthAttract, 1);
                 return 1;
-            case 鬼夜叉_大鬼封魂陣_1:
-                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get(MapleStatInfo.attackDelay));
+            }
+            case 400021115: {
+                effect.getInfo().put(MapleStatInfo.time, effect.getInfo().get((Object)MapleStatInfo.attackDelay));
                 statups.put(SecondaryStat.IndieNotDamaged, 1);
                 return 1;
+            }
         }
         return -1;
     }
@@ -227,34 +262,32 @@ public class 陰陽師 extends AbstractSkillHandler {
     @Override
     public int onSkillUse(MaplePacketReader slea, MapleClient c, MapleCharacter chr, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 雙天狗: {
+            case 42111100: {
                 Point pos = slea.readPos();
-                MapleSummon summon = chr.getSummonBySkillID(雙天狗_隱藏);
+                MapleSummon summon = chr.getSummonBySkillID(42111103);
                 if (summon != null) {
-                    final int ownerId = summon.getOwnerId();
-                    final int objectId = summon.getObjectId();
-
+                    int ownerId = summon.getOwnerId();
+                    int objectId = summon.getObjectId();
                     chr.getMap().broadcastMessage(SummonPacket.SummonedForceReturn(ownerId, objectId, pos), chr.getPosition());
-                    chr.getMap().broadcastMessage(SummonPacket.SummonedForceMove(summon, 雙天狗, applier.effect.getLevel(), pos), chr.getPosition());
+                    chr.getMap().broadcastMessage(SummonPacket.SummonedForceMove(summon, 42111100, applier.effect.getLevel(), pos), chr.getPosition());
                     chr.getMap().disappearMapObject(summon);
                     chr.removeSummon(summon);
-                    for (int i = 0; i < 2; i++) {
-                        summon = chr.getSummonBySkillID(雙天狗_左 + i);
-                        if (summon != null) {
-                            chr.getMap().broadcastMessage(SummonPacket.SummonedForceMove(summon, summon.getSkillId(), summon.getSkillLevel(), pos), chr.getPosition());
-                            chr.getMap().broadcastMessage(SummonPacket.SummonMagicCircleAttack(summon, 9, pos), chr.getPosition());
-                        }
+                    for (int i = 0; i < 2; ++i) {
+                        summon = chr.getSummonBySkillID(42111101 + i);
+                        if (summon == null) continue;
+                        chr.getMap().broadcastMessage(SummonPacket.SummonedForceMove(summon, summon.getSkillId(), summon.getSkillLevel(), pos), chr.getPosition());
+                        chr.getMap().broadcastMessage(SummonPacket.SummonMagicCircleAttack(summon, 9, pos), chr.getPosition());
                     }
                 }
                 return 1;
             }
-            case 雪女招喚: {
-                chr.getSkillEffect(雪女招喚_1).applyTo(chr);
+            case 400021017: {
+                chr.getSkillEffect(400021018).applyTo(chr);
                 return 1;
             }
-            case 影朋_花狐: {
+            case 42101002: {
                 if (chr.getHaku() != null) {
-                    if (chr.getSkillEffect(幻醒_花狐) != null) {
+                    if (chr.getSkillEffect(42120011) != null) {
                         chr.getHaku().setSpecialState(2);
                     }
                     chr.getHaku().setState(2);
@@ -268,7 +301,7 @@ public class 陰陽師 extends AbstractSkillHandler {
 
     @Override
     public int onApplyTo(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
-        if (applier.effect.getSourceId() == 鬼夜叉_大鬼封魂陣) {
+        if (applier.effect.getSourceId() == 400021114) {
             applier.cooldown = 0;
             return 1;
         }
@@ -278,17 +311,17 @@ public class 陰陽師 extends AbstractSkillHandler {
     @Override
     public int onApplyBuffEffect(MapleCharacter applyfrom, MapleCharacter applyto, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 五星的歸還: {
+            case 40021227: {
                 applyto.changeMap(applier.effect.getX(), 0);
                 return 1;
             }
-            case 花狐的回復:
-            case 花狐的恢復_貳: {
+            case 42101020: 
+            case 42121020: {
                 applyto.addHPMP(applyto.getStat().getCurrentMaxHP() * applier.effect.getHp() / 100, 0, false);
                 return 1;
             }
-            case 花炎結界:
-            case 花炎結界2: {
+            case 42101021: 
+            case 42121021: {
                 if (applier.primary || applyto.getBuffedValue(SecondaryStat.FireBarrier) == null) {
                     return 1;
                 }
@@ -304,9 +337,9 @@ public class 陰陽師 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 幽玄氣息:
-            case 幽玄氣息2: {
-                final int n = applier.effect.getSourceId() == 幽玄氣息 ? 3 : 5;
+            case 42101023: 
+            case 42121023: {
+                int n = applier.effect.getSourceId() == 42101023 ? 3 : 5;
                 int count = 0;
                 if (applyfrom.getParty() != null) {
                     count = applyfrom.getParty().getCharsInSameField(applyfrom).size();
@@ -315,8 +348,7 @@ public class 陰陽師 extends AbstractSkillHandler {
                 }
                 Integer value = applyto.getBuffedValue(SecondaryStat.BlessEnsenble);
                 if (value != null) {
-                    count *= n;
-                    if (count == value) {
+                    if ((count *= n) == value) {
                         return 0;
                     }
                     applier.localstatups.put(SecondaryStat.BlessEnsenble, count);
@@ -332,43 +364,43 @@ public class 陰陽師 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 花狐的祝福:
-            case 花狐的祝福2: {
-                Item item = applyfrom.getInventory(MapleInventoryType.EQUIPPED).getItem((short) -5200);
+            case 42101022: 
+            case 42121022: {
+                Item item = applyfrom.getInventory(MapleInventoryType.EQUIPPED).getItem((short)-5200);
                 if (item != null) {
-                    Equip fan = (Equip) item;
-                    applier.localstatups.put(SecondaryStat.FoxBless, (int) Math.floor(fan.getTotalMad() * applier.effect.getStatups().get(SecondaryStat.FoxBless) / 100.0D));
+                    Equip fan = (Equip)item;
+                    applier.localstatups.put(SecondaryStat.FoxBless, (int)Math.floor((double)(fan.getTotalMad() * applier.effect.getStatups().get(SecondaryStat.FoxBless)) / 100.0));
                 } else {
                     applier.localstatups.put(SecondaryStat.FoxBless, 0);
                 }
                 return 1;
             }
-            case 雙天狗_隱藏: {
+            case 42111103: {
                 applier.localstatups.clear();
                 return 1;
             }
-            case 破魔陣: {
+            case 42121054: {
                 if (applier.att) {
                     return 0;
                 }
                 return 1;
             }
-            case 公主的加護: {
+            case 42121053: {
                 if (applyfrom.getJob() / 1000 != applyto.getJob() / 1000) {
                     return 0;
                 }
-                applyto.dispelEffect(Config.constants.skills.劍豪.公主的加護);
-                applyto.dispelEffect(Config.constants.skills.陰陽師.公主的加護);
+                applyto.dispelEffect(41121053);
+                applyto.dispelEffect(42121053);
                 return 1;
             }
-            case 怨靈解放陣: {
+            case 400021078: {
                 if (applier.primary && !applier.passive) {
                     applier.localstatups.put(SecondaryStat.GhostLiberationStack, Math.min(5, applyto.getBuffedIntValue(SecondaryStat.GhostLiberationStack) + 1));
                     return 1;
                 }
                 return 0;
             }
-            case 怨靈解放陣_2: {
+            case 400021080: {
                 if (applier.primary && !applier.passive) {
                     SecondaryStatValueHolder mbsvh = applyto.getBuffStatValueHolder(SecondaryStat.GhostLiberationStack);
                     mbsvh.value = 0;
@@ -377,7 +409,7 @@ public class 陰陽師 extends AbstractSkillHandler {
                 }
                 return 0;
             }
-            case 靈石召喚: {
+            case 400021054: {
                 if (applier.att) {
                     return 0;
                 }
@@ -386,7 +418,7 @@ public class 陰陽師 extends AbstractSkillHandler {
                 }
                 return 1;
             }
-            case 鬼夜叉_大鬼封魂陣: {
+            case 400021114: {
                 if (applier.att) {
                     return 0;
                 }
@@ -412,32 +444,26 @@ public class 陰陽師 extends AbstractSkillHandler {
     @Override
     public int onApplyAttackEffect(MapleCharacter applyfrom, MapleMonster applyto, SkillClassApplier applier) {
         if (applier.effect != null) {
-            if (applyfrom.getSkillEffect(靈脈的氣息) != null && (is紫扇仰波(applier.effect.getSourceId()) || applier.effect.getSourceId() == 陰陽除靈符 || applier.effect.getSourceId() == 刺刺櫻)) {
-                if (Randomizer.isSuccess(applyfrom.getSkillEffect(靈脈的氣息).getW()) && applyfrom.getMap().getAffectedAreaObject(applyfrom.getId(), 靈脈的氣息).size() < 3) {
-                    applyfrom.getSkillEffect(靈脈的氣息).applyAffectedArea(applyfrom, applyto.getPosition());
-                }
+            MapleStatEffect skillEffect;
+            if (applyfrom.getSkillEffect(42001101) != null && (this.is紫扇仰波(applier.effect.getSourceId()) || applier.effect.getSourceId() == 42101005 || applier.effect.getSourceId() == 42121002) && Randomizer.isSuccess(applyfrom.getSkillEffect(42001101).getW()) && applyfrom.getMap().getAffectedAreaObject(applyfrom.getId(), 42001101).size() < 3) {
+                applyfrom.getSkillEffect(42001101).applyAffectedArea(applyfrom, applyto.getPosition());
             }
-            if (applier.effect.getSourceId() == 陰陽除靈符) {
+            if (applier.effect.getSourceId() == 42101005) {
                 applier.effect.applyAffectedArea(applyfrom, applyto.getPosition());
             }
-            final MapleStatEffect skillEffect;
-            if (applyto.isAlive() && applier.effect.getSourceId() != 夜雀 && (skillEffect = applyfrom.getSkillEffect(夜雀)) != null && skillEffect.makeChanceResult(applyfrom)) {
+            if (applyto.isAlive() && applier.effect.getSourceId() != 42110002 && (skillEffect = applyfrom.getSkillEffect(42110002)) != null && skillEffect.makeChanceResult(applyfrom)) {
                 applyfrom.getMap().broadcastMessage(applyfrom, ForcePacket.forceAtomCreate(MapleForceFactory.getInstance().getMapleForce(applyfrom, skillEffect, 0, applyto.getObjectId(), null, applyto.getPosition())), true);
             }
         }
         if (!applyto.isAlive()) {
-            if (applyfrom.getSkillLevel(御身消滅) > 0 && (applier.effect == null || (applier.effect != null && applier.effect.getSourceId() != 御身消滅))) {
+            if (applyfrom.getSkillLevel(42100007) > 0 && (applier.effect == null || applier.effect != null && applier.effect.getSourceId() != 42100007)) {
                 applyfrom.getClient().announce(MobPacket.enableSoulBomb(500, applyto.getPosition()));
             }
-            if (applyfrom.getSkillLevel(吸生纏氣) > 0) {
-                MapleStatEffect eff = applyfrom.getSkillEffect(吸生纏氣);
+            if (applyfrom.getSkillLevel(42110008) > 0) {
+                MapleStatEffect eff = applyfrom.getSkillEffect(42110008);
                 int toHeal = 0;
-                if (applyto.isBoss()) {
-                    toHeal = eff.getX();
-                } else {
-                    toHeal = applyfrom.getSkillLevel(吸生纏氣);
-                }
-                applyfrom.addHPMP((int) ((toHeal / 100.0) * applyfrom.getStat().getCurrentMaxHP()), 0, false, true);
+                toHeal = applyto.isBoss() ? eff.getX() : applyfrom.getSkillLevel(42110008);
+                applyfrom.addHPMP((int)((double)toHeal / 100.0 * (double)applyfrom.getStat().getCurrentMaxHP()), 0, false, true);
             }
         }
         return 1;
@@ -447,23 +473,21 @@ public class 陰陽師 extends AbstractSkillHandler {
     public int onAfterAttack(MapleCharacter player, SkillClassApplier applier) {
         if (applier.effect != null) {
             switch (applier.effect.getSourceId()) {
-                case 鬼夜叉_老么:
-                case 鬼夜叉_二哥:
-                case 鬼夜叉_大哥:
-                case 鬼夜叉_老大: {
-                    if ((applier.ai.display & 0x10) != 0) {
-                        player.dispelEffect(applier.effect.getSourceId());
-                    }
-                    break;
+                case 42001100: 
+                case 42100000: 
+                case 42110000: 
+                case 42120001: {
+                    if ((applier.ai.display & 0x10) == 0) break;
+                    player.dispelEffect(applier.effect.getSourceId());
                 }
             }
-            if ((is紫扇仰波(applier.effect.getSourceId()) || applier.effect.getSourceId() == 破邪連擊符) && player.getSkillEffect(怨靈解放陣) != null && !player.isSkillCooling(怨靈解放陣) && !player.isSkillCooling(怨靈解放陣_2)) {
-                ExtraSkill eskill = new ExtraSkill(怨靈解放陣, player.getPosition());
+            if (!(!this.is紫扇仰波(applier.effect.getSourceId()) && applier.effect.getSourceId() != 42121000 || player.getSkillEffect(400021078) == null || player.isSkillCooling(400021078) || player.isSkillCooling(400021080))) {
+                ExtraSkill eskill = new ExtraSkill(400021078, player.getPosition());
                 eskill.Value = 1;
                 eskill.FaceLeft = player.isFacingLeft() ? 0 : 1;
                 player.send(MaplePacketCreator.RegisterExtraSkill(applier.effect.getSourceId(), Collections.singletonList(eskill)));
             }
-            if (applier.effect.getSourceId() == 雪女招喚) {
+            if (applier.effect.getSourceId() == 400021017) {
                 player.addHPMP(applier.effect.getY(), 0);
             }
         }
@@ -473,13 +497,15 @@ public class 陰陽師 extends AbstractSkillHandler {
     @Override
     public int onAfterCancelEffect(MapleCharacter player, SkillClassApplier applier) {
         switch (applier.effect.getSourceId()) {
-            case 雙天狗_左:
-            case 雙天狗_右:
+            case 42111101: 
+            case 42111102: {
                 if (!applier.overwrite) {
-                    player.removeSummon(雙天狗_隱藏);
+                    player.removeSummon(42111103);
                 }
                 return 1;
+            }
         }
         return -1;
     }
 }
+

@@ -1,7 +1,7 @@
 package Packet;
 
 import Net.server.maps.TownPortal;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
 import tools.data.MaplePacketLittleEndianWriter;
 
 public class TownPortalPacket {

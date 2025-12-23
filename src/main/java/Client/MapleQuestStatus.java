@@ -1,15 +1,14 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client;
 
-import Config.constants.GameConstants;
 import Net.server.life.MapleLifeFactory;
 import Net.server.quest.MapleQuest;
-
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 public final class MapleQuestStatus {
-
     private MapleQuest quest;
     private byte status;
     private Map<Integer, Integer> killedMobs = null;
@@ -21,10 +20,10 @@ public final class MapleQuestStatus {
 
     public MapleQuestStatus(MapleQuest quest, int status) {
         this.quest = quest;
-        this.setStatus((byte) status);
+        this.setStatus((byte)status);
         this.completionTime = System.currentTimeMillis();
         if (status == 1 && !quest.getRelevantMobs().isEmpty()) {
-            registerMobs();
+            this.registerMobs();
         }
     }
 
@@ -33,15 +32,13 @@ public final class MapleQuestStatus {
         this.setStatus(status);
         this.setNpc(npc);
         this.completionTime = System.currentTimeMillis();
-        if (status == 1) { // 開始任務
-            if (!quest.getRelevantMobs().isEmpty()) {
-                registerMobs();
-            }
+        if (status == 1 && !quest.getRelevantMobs().isEmpty()) {
+            this.registerMobs();
         }
     }
 
     public MapleQuest getQuest() {
-        return quest;
+        return this.quest;
     }
 
     public void setQuest(int qid) {
@@ -49,7 +46,7 @@ public final class MapleQuestStatus {
     }
 
     public byte getStatus() {
-        return status;
+        return this.status;
     }
 
     public void setStatus(byte status) {
@@ -57,7 +54,7 @@ public final class MapleQuestStatus {
     }
 
     public int getNpc() {
-        return npc;
+        return this.npc;
     }
 
     public void setNpc(int npc) {
@@ -65,97 +62,96 @@ public final class MapleQuestStatus {
     }
 
     public boolean isCustom() {
-        switch (quest.getId()) {
-            case GameConstants.ENTER_CASH_SHOP:
-            case GameConstants.CHECK_DAY:
-            case GameConstants.OMOK_SCORE:
-            case GameConstants.MATCH_SCORE:
-            case GameConstants.HP_ITEM:
-            case GameConstants.MP_ITEM:
-            case GameConstants.BUFF_SKILL:
-            case GameConstants.JAIL_TIME:
-            case GameConstants.JAIL_QUEST:
-            case GameConstants.REPORT_QUEST:
-            case GameConstants.ULT_EXPLORER:
-            case GameConstants.ENERGY_DRINK:
-            case GameConstants.HARVEST_TIME:
-            case GameConstants.PENDANT_SLOT:
-            case GameConstants.CURRENT_SET:
-            case GameConstants.BOSS_PQ:
-            case GameConstants.JAGUAR:
-            case GameConstants.PARTY_REQUEST:
-            case GameConstants.PARTY_INVITE:
-            case GameConstants.ALLOW_PET_LOOT:
-            case GameConstants.QUICK_SLOT:
-            case 99997:
+        switch (this.quest.getId()) {
+            case 99997: 
+            case 99998: 
+            case 99999: 
+            case 111111: 
+            case 111112: 
+            case 122200: 
+            case 122210: 
+            case 122221: 
+            case 122223: 
+            case 122224: 
+            case 122500: 
+            case 122501: 
+            case 122700: 
+            case 122800: 
+            case 122900: 
+            case 122901: 
+            case 122902: 
+            case 123000: 
+            case 123455: 
+            case 123456: 
+            case 123457: 
+            case 150001: {
                 return true;
+            }
         }
         return false;
     }
 
     private void registerMobs() {
-        killedMobs = new LinkedHashMap<>();
-        for (int i : quest.getRelevantMobs().keySet()) {
-            killedMobs.put(i, 0);
+        this.killedMobs = new LinkedHashMap<Integer, Integer>();
+        for (int i : this.quest.getRelevantMobs().keySet()) {
+            this.killedMobs.put(i, 0);
         }
     }
 
     private int maxMob(int mobid) {
-        for (Entry<Integer, Integer> qs : quest.getRelevantMobs().entrySet()) {
-            if (qs.getKey() == mobid) {
-                return qs.getValue();
-            }
+        for (Map.Entry<Integer, Integer> qs : this.quest.getRelevantMobs().entrySet()) {
+            if (qs.getKey() != mobid) continue;
+            return qs.getValue();
         }
         return 0;
     }
 
     public boolean mobKilled(int id, int skillID) {
-        if (quest != null && quest.getSelectedSkillID() > 0 && quest.getSelectedSkillID() != skillID) {
+        if (this.quest != null && this.quest.getSelectedSkillID() > 0 && this.quest.getSelectedSkillID() != skillID) {
             return false;
         }
-        Integer mob = killedMobs.get(id);
+        Integer mob = this.killedMobs.get(id);
         if (mob != null) {
-            int mo = maxMob(id);
+            int mo = this.maxMob(id);
             if (mob >= mo) {
-                return false; //nothing happened
+                return false;
             }
-            killedMobs.put(id, Math.min(mob + 1, mo));
+            this.killedMobs.put(id, Math.min(mob + 1, mo));
             return true;
         }
-        for (Entry<Integer, Integer> mo : killedMobs.entrySet()) {
-            if (MapleLifeFactory.exitsQuestCount(mo.getKey(), id)) {
-                int mobb = maxMob(mo.getKey());
-                if (mo.getValue() >= mobb) {
-                    return false; //nothing
-                }
-                killedMobs.put(mo.getKey(), Math.min(mo.getValue() + 1, mobb));
-                return true;
+        for (Map.Entry<Integer, Integer> mo : this.killedMobs.entrySet()) {
+            if (!MapleLifeFactory.exitsQuestCount(mo.getKey(), id)) continue;
+            int mobb = this.maxMob(mo.getKey());
+            if (mo.getValue() >= mobb) {
+                return false;
             }
+            this.killedMobs.put(mo.getKey(), Math.min(mo.getValue() + 1, mobb));
+            return true;
         }
         return false;
     }
 
     public void setMobKills(int id, int count) {
-        if (killedMobs == null) {
-            registerMobs();
+        if (this.killedMobs == null) {
+            this.registerMobs();
         }
-        killedMobs.put(id, count);
+        this.killedMobs.put(id, count);
     }
 
     public boolean hasMobKills() {
-        return killedMobs != null && killedMobs.size() > 0;
+        return this.killedMobs != null && this.killedMobs.size() > 0;
     }
 
     public int getMobKills(int id) {
-        return killedMobs.getOrDefault(id, 0);
+        return this.killedMobs.getOrDefault(id, 0);
     }
 
     public Map<Integer, Integer> getMobKills() {
-        return killedMobs;
+        return this.killedMobs;
     }
 
     public long getCompletionTime() {
-        return completionTime;
+        return this.completionTime;
     }
 
     public void setCompletionTime(long completionTime) {
@@ -163,19 +159,18 @@ public final class MapleQuestStatus {
     }
 
     public int getForfeited() {
-        return forfeited;
+        return this.forfeited;
     }
 
     public void setForfeited(int forfeited) {
-        if (forfeited >= this.forfeited) {
-            this.forfeited = forfeited;
-        } else {
+        if (forfeited < this.forfeited) {
             throw new IllegalArgumentException("Can't set forfeits to something lower than before.");
         }
+        this.forfeited = forfeited;
     }
 
     public String getCustomData() {
-        return customData;
+        return this.customData;
     }
 
     public void setCustomData(String customData) {
@@ -183,14 +178,15 @@ public final class MapleQuestStatus {
     }
 
     public boolean isWorldShare() {
-        return fromChrID > -1;
+        return this.fromChrID > -1;
     }
 
     public int getFromChrID() {
-        return fromChrID;
+        return this.fromChrID;
     }
 
     public void setFromChrID(int fromChrID) {
         this.fromChrID = fromChrID;
     }
 }
+

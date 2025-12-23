@@ -1,215 +1,214 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Packet;
 
-import Client.*;
-import Config.constants.GameConstants;
+import Client.MapleCharacter;
+import Client.MapleDisease;
+import Client.MapleJob;
+import Client.SecondaryStat;
+import Client.SecondaryStatValueHolder;
 import Config.constants.JobConstants;
 import Config.constants.SkillConstants;
-import Config.constants.skills.冒險家_技能群組.type_劍士.英雄;
-import Config.constants.skills.冒險家_技能群組.type_劍士.黑騎士;
-import Config.constants.skills.冒險家_技能群組.type_法師.主教;
-import Config.constants.skills.冒險家_技能群組.type_法師.冰雷;
-import Config.constants.skills.冒險家_技能群組.type_法師.火毒;
-import Config.constants.skills.劍豪;
-import Config.constants.skills.夜光;
-import Config.constants.skills.狂狼勇士;
-import Config.constants.skills.通用V核心;
 import Net.server.buffs.MapleStatEffect;
 import Net.server.life.MobSkill;
-import Opcode.Headler.OutHeader;
+import Opcode.header.OutHeader;
+import Packet.MaplePacketCreator;
+import Packet.PacketHelper;
 import Server.Buffstat;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.EnumMap;
+import java.util.List;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.DateUtil;
 import tools.Randomizer;
 import tools.data.MaplePacketLittleEndianWriter;
 
-import java.util.*;
-
-/**
- * @author PlayDK
- */
 public class BuffPacket {
-
-    /**
-     * Logger for this class.
-     */
     private static final Logger log = LoggerFactory.getLogger(BuffPacket.class);
 
-    /*
-     * 更新夜光當前界面的光暗點數
-     */
     public static byte[] updateLuminousGauge(int points, int type) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_ChangeLarknessStack.getValue());
         mplew.writeInt(points);
         mplew.write(type);
-        mplew.writeInt(DateUtil.getTime(System.currentTimeMillis()));
-
         return mplew.getPacket();
     }
 
     public static byte[] giveBuff(MapleCharacter chr, MapleStatEffect effect, Map<SecondaryStat, Integer> statups) {
+        SecondaryStatValueHolder mbsvh;
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_TemporaryStatSet.getValue());
-        final EnumMap<SecondaryStat, SecondaryStatValueHolder> holderMap = new EnumMap<>(SecondaryStat.class);
+        EnumMap<SecondaryStat, SecondaryStatValueHolder> holderMap = new EnumMap<SecondaryStat, SecondaryStatValueHolder>(SecondaryStat.class);
         boolean isWriteIntValue = false;
-        for (final Map.Entry<SecondaryStat, Integer> entry : statups.entrySet()) {
-            SecondaryStatValueHolder mbsvh = chr.getBuffStatValueHolder(entry.getKey(), entry.getValue());
-            if (mbsvh == null) {
+        for (Map.Entry<SecondaryStat, Integer> entry : statups.entrySet()) {
+            SecondaryStatValueHolder mbsvh2 = chr.getBuffStatValueHolder(entry.getKey(), entry.getValue());
+            if (mbsvh2 == null) {
                 switch (entry.getKey()) {
-                    case InnerStorm:
-                        mbsvh = new SecondaryStatValueHolder(entry.getValue(), 0);
+                    case InnerStorm: {
+                        mbsvh2 = new SecondaryStatValueHolder(entry.getValue(), 0);
                         break;
-                    case RWCylinder:
-                        mbsvh = new SecondaryStatValueHolder(entry.getValue(), 1);
+                    }
+                    case RWCylinder: {
+                        mbsvh2 = new SecondaryStatValueHolder(entry.getValue(), 1);
                         break;
-                    case AnimaThiefTaoistGauge:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSpecialStat().getHoYoungRune(), chr.getJob());
+                    }
+                    case AnimaThiefTaoistGauge: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSpecialStat().getHoYoungRune(), chr.getJob());
                         break;
-                    case AnimaThiefTaoistType:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSpecialStat().getHoYoungState1(), chr.getJob());
+                    }
+                    case AnimaThiefTaoistType: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSpecialStat().getHoYoungState1(), chr.getJob());
                         break;
-                    case LWSwordGauge:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSpecialStat().getAdeleCharge(), chr.getJob());
+                    }
+                    case LWSwordGauge: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSpecialStat().getAdeleCharge(), chr.getJob());
                         break;
-                    case NADragonGauge:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSpecialStat().getMaliceCharge(), MapleJob.凱殷.getId());
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case NADragonGauge: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSpecialStat().getMaliceCharge(), MapleJob.凱殷.getId());
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case KinesisPsychicPoint:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSpecialStat().getPP(), chr.getJob());
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case KinesisPsychicPoint: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSpecialStat().getPP(), chr.getJob());
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case SoulMP:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSoulMP(), entry.getValue());
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case SoulMP: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSoulMP(), entry.getValue());
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case FullSoulMP:
-                        mbsvh = new SecondaryStatValueHolder(chr.getSoulOption(), entry.getValue());
-                        mbsvh.localDuration = 640000;
+                    }
+                    case FullSoulMP: {
+                        mbsvh2 = new SecondaryStatValueHolder(chr.getSoulOption(), entry.getValue());
+                        mbsvh2.localDuration = 640000;
                         break;
-                    case SpecterGauge:
-                        mbsvh = new SecondaryStatValueHolder(1, chr.getJob());
-                        mbsvh.z = chr.getSpecialStat().getErosions();
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case SpecterGauge: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, chr.getJob());
+                        mbsvh2.z = chr.getSpecialStat().getErosions();
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case SpellBullet_Plain:
-                        mbsvh = new SecondaryStatValueHolder(1, chr.getJob());
-                        mbsvh.z = chr.getSpecialStat().getPureBeads() << 1;
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case SpellBullet_Plain: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, chr.getJob());
+                        mbsvh2.z = chr.getSpecialStat().getPureBeads() << 1;
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case SpellBullet_Scarlet:
-                        mbsvh = new SecondaryStatValueHolder(1, chr.getJob());
-                        mbsvh.z = chr.getSpecialStat().getFlameBeads();
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case SpellBullet_Scarlet: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, chr.getJob());
+                        mbsvh2.z = chr.getSpecialStat().getFlameBeads();
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case SpellBullet_Gust:
-                        mbsvh = new SecondaryStatValueHolder(1, chr.getJob());
-                        mbsvh.z = chr.getSpecialStat().getGaleBeads();
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case SpellBullet_Gust: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, chr.getJob());
+                        mbsvh2.z = chr.getSpecialStat().getGaleBeads();
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case SpellBullet_Abyss:
-                        mbsvh = new SecondaryStatValueHolder(1, chr.getJob());
-                        mbsvh.z = chr.getSpecialStat().getAbyssBeads();
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case SpellBullet_Abyss: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, chr.getJob());
+                        mbsvh2.z = chr.getSpecialStat().getAbyssBeads();
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case FlameWizardInfiniteFlame:
-                        mbsvh = new SecondaryStatValueHolder(1, chr.getJob());
-                        mbsvh.z = entry.getValue();
-                        mbsvh.localDuration = 2100000000;
+                    }
+                    case FlameWizardInfiniteFlame: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, chr.getJob());
+                        mbsvh2.z = entry.getValue();
+                        mbsvh2.localDuration = 2100000000;
                         break;
-                    case MobZoneState:
-                        mbsvh = new SecondaryStatValueHolder(1, 0);
-                        mbsvh.z = entry.getValue();
-                        mbsvh.localDuration = 2100000000;
-                        break;
+                    }
+                    case MobZoneState: {
+                        mbsvh2 = new SecondaryStatValueHolder(1, 0);
+                        mbsvh2.z = entry.getValue();
+                        mbsvh2.localDuration = 2100000000;
+                    }
                 }
             }
-            if (mbsvh != null) {
-                holderMap.put(entry.getKey(), mbsvh);
-                if (SkillConstants.isWriteBuffIntValue(entry.getKey())) {
-                    isWriteIntValue = true;
-                }
-            }
+            if (mbsvh2 == null) continue;
+            holderMap.put(entry.getKey(), mbsvh2);
+            if (!SkillConstants.isWriteBuffIntValue(entry.getKey())) continue;
+            isWriteIntValue = true;
         }
         if (holderMap.containsKey(SecondaryStat.DawnShield_WillCare)) {
-            holderMap.put(SecondaryStat.DawnShield_ExHP, new SecondaryStatValueHolder(0, holderMap.get(SecondaryStat.DawnShield_WillCare).sourceID));
+            holderMap.put(SecondaryStat.DawnShield_ExHP, new SecondaryStatValueHolder(0, ((SecondaryStatValueHolder)holderMap.get((Object)SecondaryStat.DawnShield_WillCare)).sourceID));
         }
-        writeBuffMask(mplew, holderMap.keySet());
-
-        for (Map.Entry<SecondaryStat, SecondaryStatValueHolder> entry : holderMap.entrySet()) {
+        BuffPacket.encodeBuffMask(mplew, holderMap.keySet());
+        block27:  for (Map.Entry<SecondaryStat, SecondaryStatValueHolder> entry : holderMap.entrySet()) {
             switch (entry.getKey()) {
-                case DawnShield_ExHP:
-                case DawnShield_WillCare:
-                case InnerStorm:
-                case EXP_CARD:
-                    break;
-                default: {
-                    if (!entry.getKey().canStack() && entry.getValue() != null) {
-                        int level = 0;
-                        if (entry.getValue().effect instanceof MobSkill) {
-                            level = entry.getValue().effect.getLevel();
-                        }
-                        int nValue = entry.getValue().value;
-                        switch (entry.getKey()) {
-                            case MobZoneState:
-                                nValue = 1;
-                                break;
-                            case DotHealHPPerSecond:
-                                nValue = chr.getStat().getCurrentMaxHP() * nValue / 100;
-                                break;
-                            case DotHealMPPerSecond:
-                                nValue = chr.getStat().getCurrentMaxMP() * nValue / 100;
-                                break;
-                        }
-                        if (isWriteIntValue) {
-                            mplew.writeInt(nValue);
-                        } else {
-                            mplew.writeShort(nValue);
-                        }
-                        if (level > 0) {
-                            mplew.writeShort(entry.getValue().sourceID);
-                            mplew.writeShort(level);
-                        } else {
-                            mplew.writeInt(entry.getValue().sourceID);
-                        }
-                        mplew.writeInt(冰雷.元素適應_雷冰 == entry.getValue().sourceID || entry.getValue().getLeftTime() == 2100000000 ? 0 : entry.getValue().getLeftTime());
-                        if (entry.getKey() == SecondaryStat.SummonProp) {
-                            if (isWriteIntValue) {
-                                mplew.writeInt(nValue);
-                            } else {
-                                mplew.writeShort(nValue);
-                            }
-                            if (effect.isSkill()) {
-                                mplew.write(0);
-                            }
-                            if (level > 0) {
-                                mplew.writeShort(entry.getValue().sourceID);
-                                mplew.writeShort(level);
-                            } else {
-                                mplew.writeInt(entry.getValue().sourceID);
-                            }
-                            mplew.writeShort(0);
-                            mplew.writeInt(entry.getValue().getLeftTime() == 2100000000 ? 0 : entry.getValue().getLeftTime());
-                        }
-                    }
-                    break;
+                case InnerStorm: 
+                case DawnShield_ExHP: 
+                case DawnShield_WillCare: 
+                case EXP_CARD: 
+                case DashSpeed: 
+                case DashJump: {
+                    continue block27;
                 }
             }
-        }
-        writeBuffData(mplew, holderMap, effect, chr);// 正常Buff有長度為9的封包
-        encodeForClient(chr, mplew, holderMap);
-
-        for (SecondaryStat stat : holderMap.keySet()) {
-            if (stat.canStack() && !SkillConstants.isSpecialStackBuff(stat)) {
-                encodeIndieBuffStat(mplew, chr, stat);
+            if (entry.getKey().canStack() || entry.getValue() == null) continue;
+            int level = 0;
+            if (((SecondaryStatValueHolder)((Object)entry.getValue())).effect instanceof MobSkill) {
+                level = ((SecondaryStatValueHolder)((Object)entry.getValue())).effect.getLevel();
             }
+            int nValue = ((SecondaryStatValueHolder)((Object)entry.getValue())).value;
+            switch (entry.getKey()) {
+                case MobZoneState: {
+                    nValue = 1;
+                    break;
+                }
+                case DotHealHPPerSecond: {
+                    nValue = chr.getStat().getCurrentMaxHP() * nValue / 100;
+                    break;
+                }
+                case DotHealMPPerSecond: {
+                    nValue = chr.getStat().getCurrentMaxMP() * nValue / 100;
+                }
+            }
+            if (isWriteIntValue) {
+                mplew.writeInt(nValue);
+            } else {
+                mplew.writeShort(nValue);
+            }
+            if (level > 0) {
+                mplew.writeShort(((SecondaryStatValueHolder)((Object)entry.getValue())).sourceID);
+                mplew.writeShort(level);
+            } else {
+                mplew.writeInt(((SecondaryStatValueHolder)((Object)entry.getValue())).sourceID);
+            }
+            mplew.writeInt(2211012 == ((SecondaryStatValueHolder)((Object)entry.getValue())).sourceID || ((SecondaryStatValueHolder)((Object)entry.getValue())).getLeftTime() == 2100000000 ? 0 : ((SecondaryStatValueHolder)((Object)entry.getValue())).getLeftTime());
+            if (entry.getKey() != SecondaryStat.SummonProp) continue;
+            if (isWriteIntValue) {
+                mplew.writeInt(nValue);
+            } else {
+                mplew.writeShort(nValue);
+            }
+            if (effect.isSkill()) {
+                mplew.write(0);
+            }
+            if (level > 0) {
+                mplew.writeShort(((SecondaryStatValueHolder)((Object)entry.getValue())).sourceID);
+                mplew.writeShort(level);
+            } else {
+                mplew.writeInt(((SecondaryStatValueHolder)((Object)entry.getValue())).sourceID);
+            }
+            mplew.writeShort(0);
+            mplew.writeInt(((SecondaryStatValueHolder)((Object)entry.getValue())).getLeftTime() == 2100000000 ? 0 : ((SecondaryStatValueHolder)((Object)entry.getValue())).getLeftTime());
+        }
+        BuffPacket.writeBuffData(mplew, holderMap, effect, chr);
+        BuffPacket.encodeForClient(chr, mplew, holderMap);
+        for (SecondaryStat secondaryStat : holderMap.keySet()) {
+            if (!secondaryStat.canStack() || SkillConstants.isSpecialStackBuff(secondaryStat)) continue;
+            BuffPacket.encodeIndieBuffStat(mplew, chr, secondaryStat);
+        }
+        if (holderMap.containsKey(SecondaryStat.UsingScouter)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.OutSide)) {
             mplew.writeInt(1000);
@@ -222,6 +221,9 @@ public class BuffPacket {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
+        if (holderMap.containsKey(SecondaryStat.Shadower_Assassination)) {
+            mplew.writeInt(0);
+        }
         if (holderMap.containsKey(SecondaryStat.WeaponVariety)) {
             mplew.writeInt(0);
         }
@@ -229,23 +231,26 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.SpecterGauge)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.SpecterGauge).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpecterGauge).z);
         }
         if (holderMap.containsKey(SecondaryStat.SpellBullet_Plain)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Plain).z);
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Plain).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Plain).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Plain).z);
         }
         if (holderMap.containsKey(SecondaryStat.SpellBullet_Scarlet)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Scarlet).z);
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Scarlet).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Scarlet).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Scarlet).z);
         }
         if (holderMap.containsKey(SecondaryStat.SpellBullet_Gust)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Gust).z);
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Gust).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Gust).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Gust).z);
         }
         if (holderMap.containsKey(SecondaryStat.SpellBullet_Abyss)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Abyss).z);
-            mplew.writeInt(holderMap.get(SecondaryStat.SpellBullet_Abyss).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Abyss).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpellBullet_Abyss).z);
+        }
+        if (holderMap.containsKey(SecondaryStat.BossWill_Infection)) {
+            mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.FlameWizardInfiniteFlame)) {
             mplew.writeInt(chr.getBuffedIntValue(SecondaryStat.FlameWizardInfiniteFlame));
@@ -259,6 +264,19 @@ public class BuffPacket {
         if (holderMap.containsKey(SecondaryStat.NightWalkerBat)) {
             mplew.writeInt(chr.getBuffedIntValue(SecondaryStat.NightWalkerBat));
         }
+        if (holderMap.containsKey(SecondaryStat.MemoryOfJourney)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.NewtroWarriors)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.LuckyPapylus)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
         if (holderMap.containsKey(SecondaryStat.DecBaseDamageDebuff)) {
             mplew.writeInt(0);
         }
@@ -266,23 +284,29 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.ComboCounter)) {
-            mplew.writeInt("1".equals(chr.getOneInfo(1544, String.valueOf(英雄.鬥氣集中))) ? 1 : 0); // 0 = 顯示特效, 1 = 沒有特效 // x
-            mplew.writeInt(0x50000A); // 0A 00 50 00 <== 0xA wz[v]最終傷害增加量提升, 0x50 wz[prop]機率 // m
+            mplew.writeInt("1".equals(chr.getOneInfo(1544, String.valueOf(1101013))) ? 1 : 0);
+            mplew.writeInt(0x50000A);
         }
         if (holderMap.containsKey(SecondaryStat.FifthGoddessBless)) {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.PathFinderAncientGuidance)) {
-            SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.PathFinderAncientGuidance);
+            mbsvh = holderMap.get(SecondaryStat.PathFinderAncientGuidance);
             mplew.writeInt(mbsvh.startTime);
             mplew.writeInt(mbsvh.z);
         }
+        if (holderMap.containsKey(SecondaryStat.BattlePvP_KeyDown)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.BattlePvP_Wongki_AwesomeFairy)) {
+            mplew.writeInt(0);
+        }
         if (holderMap.containsKey(SecondaryStat.HolySymbol)) {
-            SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.HolySymbol);
-            mplew.writeInt(mbsvh.sourceID == 主教.神聖祈禱 ? mbsvh.fromChrID : 0);
-            mplew.writeInt(mbsvh.sourceID == 主教.神聖祈禱 ? 20 : 0);
-            mplew.writeInt(mbsvh.sourceID == 主教.神聖祈禱 && mbsvh.DropRate > 0 ? 1 : 0);
-            mplew.writeInt(chr.getBuffStatValueHolder(SecondaryStat.IndieAsrR, 主教.神聖祈禱) != null ? 1 : 0);
+            mbsvh = holderMap.get(SecondaryStat.HolySymbol);
+            mplew.writeInt(mbsvh.sourceID == 2311003 ? mbsvh.fromChrID : 0);
+            mplew.writeInt(mbsvh.sourceID == 2311003 ? 20 : 0);
+            mplew.writeInt(mbsvh.sourceID == 2311003 && mbsvh.DropRate > 0 ? 1 : 0);
+            mplew.writeInt(chr.getBuffStatValueHolder(SecondaryStat.IndieAsrR, 2311003) != null ? 1 : 0);
             mplew.write(mbsvh.z);
             mplew.write(1);
             mplew.writeInt(mbsvh.DropRate);
@@ -303,7 +327,7 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.NoviceMagicianLink)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.NoviceMagicianLink).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.NoviceMagicianLink).z);
         }
         if (holderMap.containsKey(SecondaryStat.XenonHoloGramGraffiti)) {
             mplew.writeInt(0);
@@ -313,15 +337,15 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.RevenantGauge)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.RevenantGauge).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.RevenantGauge).z);
         }
         if (holderMap.containsKey(SecondaryStat.DeathDance)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.DeathDance).z);
-            mplew.writeInt(holderMap.get(SecondaryStat.DeathDance).x);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.DeathDance).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.DeathDance).x);
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.ShadowShield)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.ShadowShield).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.ShadowShield).z);
         }
         if (holderMap.containsKey(SecondaryStat.BMageAuraYellow)) {
             mplew.writeInt(738263040);
@@ -369,7 +393,7 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.XenonBursterLaser)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.XenonBursterLaser).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.XenonBursterLaser).z);
         }
         if (holderMap.containsKey(SecondaryStat.BMageAbyssalLightning)) {
             mplew.writeInt(0);
@@ -383,23 +407,18 @@ public class BuffPacket {
         if (holderMap.containsKey(SecondaryStat.HolyWater)) {
             mplew.writeInt(0);
         }
-        if (holderMap.containsKey(SecondaryStat.OrbitalExplosion)) {
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-        }
         if (holderMap.containsKey(SecondaryStat.WeaponVarietyFinale)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.WeaponVarietyFinale).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.WeaponVarietyFinale).z);
         }
         if (holderMap.containsKey(SecondaryStat.Equinox)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.DarknessAura)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.DarknessAura).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.DarknessAura).z);
         }
         if (holderMap.containsKey(SecondaryStat.SerpentScrew)) {
-            SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.SerpentScrew);
+            mbsvh = holderMap.get(SecondaryStat.SerpentScrew);
             mplew.writeInt(mbsvh.NormalMobKillCount);
             mplew.writeInt(mbsvh.AttackBossCount);
         }
@@ -419,93 +438,242 @@ public class BuffPacket {
         if (holderMap.containsKey(SecondaryStat.ATScrollPassive)) {
             mplew.writeInt(0);
         }
+        if (holderMap.containsKey(SecondaryStat.YetiFuryGauge)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.YetiFuryMode)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.YetiCook)) {
+            mplew.writeInt(0);
+            mplew.write(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.PinkbeanCheer)) {
+            mplew.writeInt(0);
+            mplew.write(0);
+        }
         if (holderMap.containsKey(SecondaryStat.NewFlying)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.NewFlying).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.NewFlying).z);
         }
         if (holderMap.containsKey(SecondaryStat.ReincarnationMission)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.ReincarnationMission).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.ReincarnationMission).z);
         }
         if (holderMap.containsKey(SecondaryStat.QuiverFullBurst)) {
             mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.ElementalFocus)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.AdrenalinBoost)) {
+            assert (effect != null);
+            mplew.write(effect.getSourceId() == 21110016 ? 1 : 0);
         }
         if (holderMap.containsKey(SecondaryStat.ElementSoul)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-        if (holderMap.containsKey(SecondaryStat.FlashMirage)) {
+        if (holderMap.containsKey(SecondaryStat.DarkCloud)) {
             mplew.writeInt(0);
         }
-        if (holderMap.containsKey(SecondaryStat.SpiritGuard)) { // 隱月 - 靈魂結界
-            mplew.writeInt(holderMap.get(SecondaryStat.SpiritGuard).value);
+        if (holderMap.containsKey(SecondaryStat.UserAroundAttackDebuff)) {
+            mplew.writeInt(0);
         }
-        mplew.writeInt(0); // effectDelay
+        if (holderMap.containsKey(SecondaryStat.Confinement)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.FixedSpeedAndJump)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.GrabAndThrow)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.Stun)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.RPEventStat)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.CommonItemSkillContinuous)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.BMageDeath)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.AdrenalinSurge)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.RapidFire)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.Nightmare)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.SixthJavelinStack)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.SixthGloryWingJavelinStack)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.LimitBreakFinalAttack)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.EventSoccerMomentBuff)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.DawnShield_ExHP)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.DawnShield_WillCare)) {
+            mplew.write(0);
+            mplew.writeZigZagVarints(0);
+        }
+        if (statups.containsKey(SecondaryStat.InnerStorm)) {
+            mplew.write(0);
+        }
+        if (statups.containsKey(SecondaryStat.Cyclone)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.ReduceMP)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.WorldExpBuff)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.WorldDropBuff)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.CurseRingBuff)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.SummonProp)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.Unk558)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.GhostLiberationStack)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.HowlingOfNature)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.KannaFifthAttract)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.WorldExpBuff)) {
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.NeoTokyoBossPowOfLife)) {
+            mplew.writeInt(0);
+        }
+        mplew.writeInt(0);
         mplew.write(0);
         mplew.write(1);
         mplew.write(1);
-        mplew.writeBool(chr.isShowSoulEffect()); // bTemporaryOnShow || 英雄.鬥氣集中
+        mplew.writeBool(chr.isShowSoulEffect());
         mplew.write(0);
-
-        for (SecondaryStat stat : holderMap.keySet()) {
-            if (SkillConstants.isMovementAffectingStat(stat)) {
-                mplew.write(0);
-                break;
-            }
+        for (SecondaryStat secondaryStat : holderMap.keySet()) {
+            if (!SkillConstants.isMovementAffectingStat(secondaryStat)) continue;
+            mplew.write(0);
+            break;
         }
         mplew.write(0);
         mplew.write(0);
         mplew.write(0);
-        mplew.write(statups.keySet().size());
+        mplew.write(statups.size());
         return mplew.getPacket();
     }
 
     public static void encodeForClient(MapleCharacter chr, MaplePacketLittleEndianWriter mplew, EnumMap<SecondaryStat, SecondaryStatValueHolder> holderMap) {
         for (Map.Entry<SecondaryStat, SecondaryStatValueHolder> entry : holderMap.entrySet()) {
-            if (entry.getKey().canStack() && SkillConstants.isSpecialStackBuff(entry.getKey())) {
-                mplew.writeInt(entry.getValue().value);
-                mplew.writeInt(entry.getValue().sourceID);
-                mplew.write(entry.getKey() == SecondaryStat.PartyBooster || entry.getKey() == SecondaryStat.SecondAtomLockOn ? 1 : 0);
-                mplew.writeInt(entry.getKey() == SecondaryStat.SecondAtomLockOn ? 1 : entry.getKey() == SecondaryStat.PartyBooster ? 2 : 0);
-                if (entry.getKey() == SecondaryStat.PartyBooster) {
-                    mplew.write(1);
-                    mplew.writeInt(2);
-                    mplew.writeShort((entry.getValue().getLeftTime() / 1000));
-                } else if (entry.getKey() == SecondaryStat.Curse) {
-                    mplew.writeInt(chr.getLinkMobObjectID());
-                    mplew.writeInt(0);
-                } else if (entry.getKey() == SecondaryStat.RideVehicleExpire) {
-                    mplew.writeShort(10);
-                } else if (entry.getKey() == SecondaryStat.GuidedBullet) {
-                    mplew.writeInt(chr.getLinkMobObjectID());
-                    mplew.writeInt(0);
-                } else if (entry.getKey() == SecondaryStat.DashSpeed) {
-                    mplew.writeShort(10);
-                } else if (entry.getKey() == SecondaryStat.DashJump) {
-                    mplew.writeShort(10);
-                }
+            if (!entry.getKey().canStack() || !SkillConstants.isSpecialStackBuff(entry.getKey())) continue;
+            mplew.writeInt(entry.getValue().value);
+            mplew.writeInt(entry.getValue().sourceID);
+            mplew.write(entry.getKey() == SecondaryStat.PartyBooster || entry.getKey() == SecondaryStat.RelicGauge ? 1 : 0);
+            mplew.writeInt(entry.getKey() == SecondaryStat.RelicGauge ? 1 : (entry.getKey() == SecondaryStat.PartyBooster ? 2 : 0));
+            if (entry.getKey() == SecondaryStat.PartyBooster) {
+                mplew.write(1);
+                mplew.writeInt(2);
+                mplew.writeShort(entry.getValue().getLeftTime() / 1000);
+                continue;
             }
+            if (entry.getKey() == SecondaryStat.Curse) {
+                mplew.writeInt(chr.getLinkMobObjectID());
+                mplew.writeInt(0);
+                continue;
+            }
+            if (entry.getKey() == SecondaryStat.RideVehicleExpire) {
+                mplew.writeShort(10);
+                continue;
+            }
+            if (entry.getKey() == SecondaryStat.GuidedBullet) {
+                mplew.writeInt(chr.getLinkMobObjectID());
+                mplew.writeInt(0);
+                continue;
+            }
+            if (entry.getKey() == SecondaryStat.DashSpeed) {
+                mplew.writeShort(10);
+                continue;
+            }
+            if (entry.getKey() != SecondaryStat.DashJump) continue;
+            mplew.writeShort(10);
         }
     }
 
     public static void encodeIndieBuffStat(MaplePacketLittleEndianWriter mplew, MapleCharacter chr, SecondaryStat stat) {
-        int sourceID;
-        final List<SecondaryStatValueHolder> holders = chr.getIndieBuffStatValueHolder(stat);
+        List<SecondaryStatValueHolder> holders = chr.getIndieBuffStatValueHolder(stat);
         mplew.writeInt(holders.size());
         for (SecondaryStatValueHolder holder : holders) {
+            int nn;
             mplew.writeInt(holder.sourceID);
             mplew.writeInt(holder.value);
             mplew.writeInt(holder.startTime);
-            mplew.writeInt(holder.getStartChargeTime() == 0 ? (System.currentTimeMillis() - holder.startTime) : holder.getStartChargeTime());
+            mplew.writeInt(holder.getStartChargeTime() == 0L ? System.currentTimeMillis() - holder.startTime : holder.getStartChargeTime());
             mplew.writeInt(holder.localDuration == 2100000000 ? 0 : holder.localDuration);
             mplew.writeInt(0);
             int nUnkCount = 0;
             mplew.writeInt(nUnkCount);
-            for (int nn = 0; nn < nUnkCount; nn++) {
+            for (nn = 0; nn < nUnkCount; ++nn) {
                 mplew.writeInt(1);
                 mplew.writeInt(1);
             }
             nUnkCount = 0;
             mplew.writeInt(nUnkCount);
-            for (int nn = 0; nn < nUnkCount; nn++) {
+            for (nn = 0; nn < nUnkCount; ++nn) {
                 mplew.writeInt(0);
                 mplew.writeInt(0);
             }
@@ -513,10 +681,12 @@ public class BuffPacket {
     }
 
     public static void writeBuffData(MaplePacketLittleEndianWriter mplew, Map<SecondaryStat, SecondaryStatValueHolder> holderMap, MapleStatEffect effect, MapleCharacter player) {
+        int value;
         int n2;
+        int i;
         if (holderMap.containsKey(SecondaryStat.SoulMP)) {
             SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.SoulMP);
-            mplew.writeInt(1000); // maxSoulMP
+            mplew.writeInt(1000);
             mplew.writeInt(mbsvh.sourceID);
         }
         if (holderMap.containsKey(SecondaryStat.FullSoulMP)) {
@@ -524,18 +694,17 @@ public class BuffPacket {
         }
         int nBuffForSpecSize = 0;
         mplew.writeShort(nBuffForSpecSize);
-        for (int i = 0; i < nBuffForSpecSize; ++i) {
-            mplew.writeInt(0); // dwItemID
-            mplew.write(0); // bEnable
+        for (i = 0; i < nBuffForSpecSize; ++i) {
+            mplew.writeInt(0);
+            mplew.write(0);
         }
-        //mplew.writeInt(0);
-        mplew.write(holderMap.getOrDefault(SecondaryStat.DefenseAtt, new SecondaryStatValueHolder(0, 0)).value); // DefenseAtt
-        mplew.write(holderMap.getOrDefault(SecondaryStat.DefenseState, new SecondaryStatValueHolder(0, 0)).value);
+        mplew.write(holderMap.getOrDefault((Object)SecondaryStat.DefenseAtt, (SecondaryStatValueHolder)new SecondaryStatValueHolder((int)0, (int)0)).value);
+        mplew.write(holderMap.getOrDefault((Object)SecondaryStat.DefenseState, (SecondaryStatValueHolder)new SecondaryStatValueHolder((int)0, (int)0)).value);
         mplew.write(0);
-        mplew.writeInt(effect != null && effect.getSourceId() == 通用V核心.法師通用.虛無型態 ? 0xffe300 : 0);//V.149 new
+        mplew.writeInt(effect != null && effect.getSourceId() == 400021060 ? 16769792 : 0);
         if (holderMap.containsKey(SecondaryStat.Dice)) {
-            for (int i = 0; i < 21; ++i) {
-                mplew.writeInt(SkillConstants.getDiceValue(i, holderMap.get(SecondaryStat.Dice).value, effect));
+            for (i = 0; i < 21; ++i) {
+                mplew.writeInt(SkillConstants.getDiceValue(i, holderMap.get((Object)SecondaryStat.Dice).value, effect));
             }
         }
         if (holderMap.containsKey(SecondaryStat.BlackMageCreate)) {
@@ -548,29 +717,29 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.Judgement)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.Judgement).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.Judgement).z);
         }
         if (holderMap.containsKey(SecondaryStat.Infinity)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.Infinity).localDuration);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.Infinity).localDuration);
         }
         if (holderMap.containsKey(SecondaryStat.StackBuff)) {
-            mplew.write(holderMap.get(SecondaryStat.StackBuff).z);
+            mplew.write(holderMap.get((Object)SecondaryStat.StackBuff).z);
         }
         if (holderMap.containsKey(SecondaryStat.Trinity)) {
-            mplew.write(holderMap.get(SecondaryStat.Trinity).value / 5);
+            mplew.write(holderMap.get((Object)SecondaryStat.Trinity).value / 5);
         }
         if (holderMap.containsKey(SecondaryStat.ElementalCharge)) {
-            assert effect != null;
-            final int n = holderMap.get(SecondaryStat.ElementalCharge).value / effect.getX();
+            assert (effect != null);
+            int n = holderMap.get((Object)SecondaryStat.ElementalCharge).value / effect.getX();
             mplew.write(n);
             mplew.writeShort(effect.getY() * n);
             mplew.write(effect.getU() * n);
             mplew.write(effect.getW() * n);
         }
         if (holderMap.containsKey(SecondaryStat.LifeTidal)) {
-            assert effect != null;
+            assert (effect != null);
             n2 = 0;
-            switch (holderMap.get(SecondaryStat.LifeTidal).value) {
+            switch (holderMap.get((Object)SecondaryStat.LifeTidal).value) {
                 case 1: {
                     n2 = effect.getX();
                     break;
@@ -587,31 +756,34 @@ public class BuffPacket {
         }
         if (holderMap.containsKey(SecondaryStat.AntiMagicShell)) {
             SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.AntiMagicShell);
-            int value = mbsvh.value;
+            value = mbsvh.value;
             switch (mbsvh.sourceID) {
-                case 火毒.元素適應_火毒:
+                case 2111011: {
                     value = value < mbsvh.effect.getY() ? 1 : 0;
                     break;
-                case 冰雷.元素適應_雷冰:
+                }
+                case 2211012: {
                     value = mbsvh.z > 0 ? 1 : 0;
                     break;
-                case 主教.聖靈守護:
+                }
+                case 2311012: {
                     value = 1;
                     break;
-                default:
+                }
+                default: {
                     value = value == 2 ? 1 : 0;
-                    break;
+                }
             }
             mplew.write(value);
             mplew.writeInt(mbsvh.z);
         }
         if (holderMap.containsKey(SecondaryStat.Larkness)) {
             SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.Larkness);
-            assert mbsvh.effect != null;
-            int value = mbsvh.value;
-            mplew.writeInt(value == 1 ? mbsvh.sourceID : 夜光.暗蝕);
+            assert (mbsvh.effect != null);
+            value = mbsvh.value;
+            mplew.writeInt(value == 1 ? mbsvh.sourceID : 20040217);
             mplew.writeInt(200000000);
-            mplew.writeInt(value == 1 ? 0 : 夜光.光蝕);
+            mplew.writeInt(value == 1 ? 0 : 20040216);
             mplew.writeInt(200000000);
             mplew.writeInt(player.getLarkness());
             mplew.writeInt(-1);
@@ -620,19 +792,19 @@ public class BuffPacket {
         if (holderMap.containsKey(SecondaryStat.IgnoreTargetDEF)) {
             mplew.writeInt(player.getBuffedIntZ(SecondaryStat.IgnoreTargetDEF));
         }
-        if (holderMap.containsKey(SecondaryStat.StopForceAtomInfo)) {
-            assert effect != null;
-            PacketHelper.write劍刃之壁(mplew, player, effect.getSourceId());
-        }
         if (holderMap.containsKey(SecondaryStat.StrikerElectricUsed)) {
             mplew.writeInt(player.getBuffedIntZ(SecondaryStat.StrikerElectricUsed));
         }
+        if (holderMap.containsKey(SecondaryStat.StopForceAtomInfo)) {
+            assert (effect != null);
+            PacketHelper.write劍刃之壁(mplew, player, effect.getSourceId());
+        }
         if (holderMap.containsKey(SecondaryStat.SmashStack)) {
-            int value = holderMap.get(SecondaryStat.SmashStack).value;
+            int value2 = holderMap.get((Object)SecondaryStat.SmashStack).value;
             n2 = 0;
-            if (value >= 100) {
+            if (value2 >= 100) {
                 n2 = 1;
-            } else if (value >= 300) {
+            } else if (value2 >= 300) {
                 n2 = 2;
             }
             mplew.writeInt(n2);
@@ -640,16 +812,14 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.MobZoneState)) {
-            // for {
-            mplew.writeInt(holderMap.get(SecondaryStat.MobZoneState).z);
-            // }
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.MobZoneState).z);
             mplew.writeInt(-1);
         }
-//        if (holderMap.containsKey(SecondaryStat.NextSpecificSkillDamageUp)) {
-//            mplew.writeInt(2);
-//            mplew.writeInt(152120001); //暗器II
-//            mplew.writeInt(400021000); //超載魔力
-//        }
+        if (holderMap.containsKey(SecondaryStat.NextSpecificSkillDamageUp)) {
+            mplew.writeInt(2);
+            mplew.writeInt(152120001);
+            mplew.writeInt(400021000);
+        }
         if (holderMap.containsKey(SecondaryStat.Slow)) {
             mplew.write(0);
         }
@@ -668,19 +838,19 @@ public class BuffPacket {
             mplew.write(0);
         }
         if (holderMap.containsKey(SecondaryStat.Beholder)) {
-            mplew.writeInt(player.getSkillLevel(黑騎士.追隨者支配) > 0 ? 黑騎士.追隨者支配 : 黑騎士.追隨者);
+            mplew.writeInt(player.getSkillLevel(1310013) > 0 ? 1310013 : 1301013);
         }
         if (holderMap.containsKey(SecondaryStat.CrossOverChain)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.CrossOverChain).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.CrossOverChain).z);
         }
         if (holderMap.containsKey(SecondaryStat.ImmuneBarrier)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.ImmuneBarrier).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.ImmuneBarrier).z);
         }
         if (holderMap.containsKey(SecondaryStat.Stance)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.Stance).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.Stance).z);
         }
         if (holderMap.containsKey(SecondaryStat.SharpEyes)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.SharpEyes).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SharpEyes).z);
         }
         if (holderMap.containsKey(SecondaryStat.AdvancedBless)) {
             SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.AdvancedBless);
@@ -690,35 +860,49 @@ public class BuffPacket {
         if (holderMap.containsKey(SecondaryStat.UsefulAdvancedBless)) {
             mplew.writeInt(0);
         }
+        if (holderMap.containsKey(SecondaryStat.SoulExalt)) {
+            mplew.writeInt(0);
+        }
         if (holderMap.containsKey(SecondaryStat.Bless)) {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.DotHealHPPerSecond)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.DotHealHPPerSecond).localDuration);
+            mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.DotHealMPPerSecond)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.DotHealMPPerSecond).localDuration);
+            mplew.writeInt(0);
         }
-        if (holderMap.containsKey(SecondaryStat.FlameDischarge)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.FlameDischarge).value); // b
-            mplew.writeInt(holderMap.get(SecondaryStat.FlameDischarge).value); // c
-            mplew.writeInt(holderMap.get(SecondaryStat.FlameDischarge).value); // y
+        if (holderMap.containsKey(SecondaryStat.EunwolUnleashFoxOrb)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.SpiritGuard)) {
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.SpiritGuard).value);
+        }
+        if (holderMap.containsKey(SecondaryStat.MastemaGuard)) {
+            mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.KnockBack)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.KnockBack).value);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.KnockBack).value);
+            mplew.writeInt(0);
         }
-        if (holderMap.containsKey(SecondaryStat.ShieldAttack)) {//靈魂吸取專家？
+        if (holderMap.containsKey(SecondaryStat.ShieldAttack)) {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.SSFShootingAttack)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.BattlePvP_Helena_Mark)) {
+            mplew.writeInt(0);
+        }
+        if (holderMap.containsKey(SecondaryStat.BattlePvP_Darklord_Explosion)) {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.PinkbeanAttackBuff)) {
             mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.RoyalGuardState)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.IndiePAD).value);
-            mplew.writeInt(holderMap.get(SecondaryStat.RoyalGuardState).value);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.IndiePAD).value);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.RoyalGuardState).value);
         }
         if (holderMap.containsKey(SecondaryStat.MichaelSoulLink)) {
             SecondaryStatValueHolder mbsvh = holderMap.get(SecondaryStat.MichaelSoulLink);
@@ -727,18 +911,13 @@ public class BuffPacket {
             mplew.writeInt(mbsvh.fromChrID);
             mplew.writeInt(mbsvh.fromChrID != player.getId() ? mbsvh.effect.getLevel() : 0);
         }
-        // SPAWN
-        if (holderMap.containsKey(SecondaryStat.AdrenalinBoost)) {
-            assert effect != null;
-            mplew.write(effect.getSourceId() == 狂狼勇士.鬥氣爆發 ? 1 : 0);
-        }
         if (holderMap.containsKey(SecondaryStat.RWCylinder)) {
             mplew.write(player.getBullet());
             mplew.writeShort(player.getCylinder());
-            mplew.write(0);//V.160 new
+            mplew.write(0);
         }
         if (holderMap.containsKey(SecondaryStat.HitStackDamR)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.HitStackDamR).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.HitStackDamR).z);
         }
         if (holderMap.containsKey(SecondaryStat.RWMagnumBlow)) {
             mplew.writeShort(0);
@@ -754,17 +933,23 @@ public class BuffPacket {
         if (holderMap.containsKey(SecondaryStat.Stigma)) {
             mplew.writeInt(0);
         }
+        if (holderMap.containsKey(SecondaryStat.TempSecondaryStat)) {
+            mplew.writeInt(0);
+        }
         if (holderMap.containsKey(SecondaryStat.CriticalGrowing)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.CriticalGrowing).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.CriticalGrowing).z);
+        }
+        if (holderMap.containsKey(SecondaryStat.FlameDischarge)) {
+            mplew.writeInt(0);
         }
         if (holderMap.containsKey(SecondaryStat.PickPocket)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.PickPocket).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.PickPocket).z);
         }
         if (holderMap.containsKey(SecondaryStat.PairingUser)) {
-            mplew.writeShort(holderMap.get(SecondaryStat.PairingUser).z);
+            mplew.writeShort(holderMap.get((Object)SecondaryStat.PairingUser).z);
         }
         if (holderMap.containsKey(SecondaryStat.Frenzy)) {
-            mplew.writeShort(holderMap.get(SecondaryStat.Frenzy).z);
+            mplew.writeShort(holderMap.get((Object)SecondaryStat.Frenzy).z);
         }
         if (holderMap.containsKey(SecondaryStat.ShadowSpear)) {
             mplew.writeShort(35);
@@ -779,22 +964,18 @@ public class BuffPacket {
             mplew.writeInt(3);
         }
         if (holderMap.containsKey(SecondaryStat.HolyMagicShell)) {
-            mplew.writeInt(holderMap.get(SecondaryStat.HolyMagicShell).z);
+            mplew.writeInt(holderMap.get((Object)SecondaryStat.HolyMagicShell).z);
         }
     }
 
-    /*
-     * 其他玩家看到別人取消BUFF狀態
-     */
     public static byte[] cancelForeignBuff(MapleCharacter chr, List<SecondaryStat> statups) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_UserTemporaryStatReset.getValue());
         mplew.writeInt(chr.getId());
-        writeBuffMask(mplew, statups);
+        BuffPacket.encodeBuffMask(mplew, statups);
         for (SecondaryStat stat : statups) {
-            if (stat.canStack() && !SkillConstants.isSpecialStackBuff(stat)) {
-                encodeIndieBuffStat(mplew, chr, stat);
-            }
+            if (!stat.canStack() || SkillConstants.isSpecialStackBuff(stat)) continue;
+            BuffPacket.encodeIndieBuffStat(mplew, chr, stat);
         }
         if (statups.contains(SecondaryStat.PoseType)) {
             mplew.write(1);
@@ -802,39 +983,34 @@ public class BuffPacket {
         if (statups.contains(SecondaryStat.BattleSurvivalDefence)) {
             mplew.write(1);
         }
-
         for (SecondaryStat statup : statups) {
-            if (SkillConstants.isMovementAffectingStat(statup)) {
-                mplew.write(0);
-                break;
-            }
+            if (!SkillConstants.isMovementAffectingStat(statup)) continue;
+            mplew.write(0);
+            break;
         }
         mplew.write(1);
-
         return mplew.getPacket();
     }
 
     public static byte[] giveForeignBuff(MapleCharacter player, Map<SecondaryStat, Integer> statups) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
-
         mplew.writeShort(OutHeader.LP_UserTemporaryStatSet.getValue());
         mplew.writeInt(player.getId());
-        writeForeignBuff(mplew, player, statups, false);
-
+        BuffPacket.encodeForRemote(mplew, player, statups, false);
         mplew.write(0);
-
         return mplew.getPacket();
     }
 
-    public static void writeForeignBuff(MaplePacketLittleEndianWriter mplew, MapleCharacter player, Map<SecondaryStat, Integer> statups, boolean isChrinfo) {
-        int sourceid;
+    public static void encodeForRemote(MaplePacketLittleEndianWriter mplew, MapleCharacter player, Map<SecondaryStat, Integer> statups, boolean isChrinfo) {
         int n3;
-        writeBuffMask(mplew, statups.keySet());
+        SecondaryStatValueHolder mbsvh;
+        BuffPacket.encodeBuffMask(mplew, statups.keySet());
+        BuffPacket.encodeBuffMask(mplew, statups.keySet());
         if (statups.containsKey(SecondaryStat.Speed)) {
             mplew.write(player.getBuffedIntValue(SecondaryStat.Speed));
         }
         if (statups.containsKey(SecondaryStat.ComboCounter)) {
-            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.ComboCounter));
+            mplew.write(player.getBuffedIntValue(SecondaryStat.ComboCounter));
         }
         if (statups.containsKey(SecondaryStat.BlessedHammer)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BlessedHammer));
@@ -849,61 +1025,65 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.Stun)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Stun);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Stun);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
+        }
+        if (statups.containsKey(SecondaryStat.PinkbeanMinibeenMove)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.PinkbeanMinibeenMove));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.PinkbeanMinibeenMove));
         }
         if (statups.containsKey(SecondaryStat.Shock)) {
             mplew.write(1);
         }
         if (statups.containsKey(SecondaryStat.Darkness)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Darkness);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Darkness);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.Seal)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Seal);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Seal);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.Weakness)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Weakness);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Weakness);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.WeaknessMdamage)) {
-            mplew.writeShort(0);
-            mplew.writeInt(0);
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.WeaknessMdamage));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.WeaknessMdamage));
         }
         if (statups.containsKey(SecondaryStat.Curse)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Curse);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Curse);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.Slow)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Slow);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Slow);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.PvPRaceEffect)) {
-            mplew.writeShort(0);
-            mplew.writeInt(0);
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.PvPRaceEffect));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.PvPRaceEffect));
         }
         if (statups.containsKey(SecondaryStat.TimeBomb)) {
-            mplew.writeShort(0);
-            mplew.writeInt(0);
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.TimeBomb));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.TimeBomb));
         }
         if (statups.containsKey(SecondaryStat.Team)) {
             mplew.write(0);
         }
         if (statups.containsKey(SecondaryStat.DisOrder)) {
-            mplew.writeShort(0);
-            mplew.writeInt(0);
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.DisOrder));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.DisOrder));
         }
         if (statups.containsKey(SecondaryStat.Thread)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.Thread));
@@ -914,7 +1094,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.Poison)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Poison);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Poison);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -927,6 +1107,7 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.SoulArrow)) {
+            // empty if block
         }
         if (statups.containsKey(SecondaryStat.Morph)) {
             mplew.writeShort(player.getEffectForBuffStat(SecondaryStat.Morph).getMorph(player));
@@ -937,7 +1118,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.Attract)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Attract);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Attract);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -954,7 +1135,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.BanMap)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.BanMap);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.BanMap);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -968,7 +1149,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.ReverseInput)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.ReverseInput);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.ReverseInput);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -1001,19 +1182,19 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.StopPortion)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.StopPortion);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.StopPortion);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.StopMotion)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.StopMotion);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.StopMotion);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.Fear)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Fear);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Fear);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -1025,7 +1206,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.Frozen)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Frozen);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Frozen);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -1035,7 +1216,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.Web)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Web);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Web);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -1109,7 +1290,7 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.Lapidification)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.Lapidification);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.Lapidification);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -1125,11 +1306,9 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.VenomSnake));
             mplew.writeInt(player.getBuffSource(SecondaryStat.VenomSnake));
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.PyramidEffect)) {
             mplew.writeInt(-1);
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.PinkbeanRollingGrade)) {
             mplew.write(0);
         }
@@ -1217,11 +1396,7 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffSource(SecondaryStat.Contagion));
         }
         if (statups.containsKey(SecondaryStat.Contagion)) {
-            mplew.writeInt(0); // time
-        }
-        if (statups.containsKey(SecondaryStat.ComboUnlimited)) {
-            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.ComboUnlimited));
-            mplew.writeInt(player.getBuffSource(SecondaryStat.ComboUnlimited));
+            mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.IgnoreAllCounter)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.IgnoreAllCounter));
@@ -1291,7 +1466,7 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffSource(SecondaryStat.MegaSmasher));
         }
         if (statups.containsKey(SecondaryStat.MegaSmasher)) {
-            mplew.writeInt(0); // time
+            mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.UnityOfPower)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.UnityOfPower));
@@ -1303,13 +1478,13 @@ public class BuffPacket {
         }
         if (statups.containsKey(SecondaryStat.ReturnTeleport)) {
             mplew.write(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.ReturnTeleport);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.ReturnTeleport);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
         if (statups.containsKey(SecondaryStat.CapDebuff)) {
             mplew.writeShort(1);
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.CapDebuff);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.CapDebuff);
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getSourceId());
             mplew.writeShort(mbsvh == null ? 0 : mbsvh.effect.getLevel());
         }
@@ -1368,10 +1543,10 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.ElementSoul));
             mplew.writeInt(player.getBuffSource(SecondaryStat.ElementSoul));
         }
-        //if (statups.containsKey(SecondaryStat.GlimmeringTime)) {
-        //    mplew.writeShort(player.getBuffedIntValue(SecondaryStat.GlimmeringTime));
-        //    mplew.writeInt(player.getBuffSource(SecondaryStat.GlimmeringTime));
-        //}
+        if (statups.containsKey(SecondaryStat.GlimmeringTime)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.GlimmeringTime));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.GlimmeringTime));
+        }
         if (statups.containsKey(SecondaryStat.Reincarnation)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.Reincarnation));
             mplew.writeInt(player.getBuffSource(SecondaryStat.Reincarnation));
@@ -1397,14 +1572,6 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.GiantBossDeathCnt));
             mplew.writeInt(player.getBuffSource(SecondaryStat.GiantBossDeathCnt));
         }
-//        if (statups.containsKey(SecondaryStat.ShamanMode)) {
-//            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.ShamanMode));
-//            mplew.writeInt(player.getBuffSource(SecondaryStat.ShamanMode));
-//        }
-//        if (statups.containsKey(SecondaryStat.Chachacha)) {
-//            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.Chachacha));
-//            mplew.writeInt(player.getBuffSource(SecondaryStat.Chachacha));
-//        }
         if (statups.containsKey(SecondaryStat.Fever)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.Fever));
             mplew.writeInt(player.getBuffSource(SecondaryStat.Fever));
@@ -1414,12 +1581,12 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffSource(SecondaryStat.PvPFlag));
         }
         if (statups.containsKey(SecondaryStat.FullSoulMP)) {
-            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.FullSoulMP)); // 不確定
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.FullSoulMP));
             mplew.writeInt(player.getSoulSkillID());
-            mplew.writeInt(0); // time
+            mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.AntiMagicShell)) {
-            mplew.writeBool(player.getBuffSource(SecondaryStat.AntiMagicShell) == 主教.聖靈守護);
+            mplew.writeBool(player.getBuffSource(SecondaryStat.AntiMagicShell) == 2311012);
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.AntiMagicShell));
         }
         if (statups.containsKey(SecondaryStat.Dance)) {
@@ -1429,6 +1596,10 @@ public class BuffPacket {
         if (statups.containsKey(SecondaryStat.SpiritGuard)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.SpiritGuard));
             mplew.writeInt(player.getBuffSource(SecondaryStat.SpiritGuard));
+        }
+        if (statups.containsKey(SecondaryStat.EunwolUnleashFoxOrb)) {
+            mplew.writeInt(player.getBuffedIntValue(SecondaryStat.EunwolUnleashFoxOrb));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.EunwolUnleashFoxOrb));
         }
         if (statups.containsKey(SecondaryStat.MastemaGuard)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.MastemaGuard));
@@ -1513,11 +1684,9 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.Fever));
             mplew.writeInt(player.getBuffSource(SecondaryStat.Fever));
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.AdrenalinBoost)) {
             mplew.writeInt(player.getBuffSource(SecondaryStat.AdrenalinBoost));
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.RWBarrier)) {
             mplew.writeInt(0);
         }
@@ -1569,12 +1738,8 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.Michael_RhoAias));
             mplew.writeInt(player.getBuffSource(SecondaryStat.Michael_RhoAias));
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.Kinesis_DustTornado)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.Kinesis_DustTornado));
-        }
-        if (statups.containsKey(SecondaryStat.MahaInstall)) {
-            mplew.writeInt(player.getBuffedIntValue(SecondaryStat.MahaInstall));
         }
         if (statups.containsKey(SecondaryStat.Wizard_OverloadMana)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.Wizard_OverloadMana));
@@ -1648,7 +1813,7 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffSource(SecondaryStat.BuffControlDebuff));
         }
         if (statups.containsKey(SecondaryStat.BuffControlDebuff)) {
-            mplew.writeInt(0); // time
+            mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.DispersionDamage)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.DispersionDamage));
@@ -1683,9 +1848,10 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffSource(SecondaryStat.BossWill_Infection));
         }
         if (statups.containsKey(SecondaryStat.DispersionDamage)) {
-            mplew.writeInt(0); // time
+            mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.MichaelSwordOfLight)) {
+            // empty if block
         }
         if (statups.containsKey(SecondaryStat.GrandCross)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.GrandCross));
@@ -1703,11 +1869,16 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BattlePvP_Wongki_AwesomeFairy));
             mplew.writeInt(player.getBuffSource(SecondaryStat.BattlePvP_Wongki_AwesomeFairy));
         }
+        if (statups.containsKey(SecondaryStat.BattlePvP_Mugong_PandaZone)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BattlePvP_Mugong_PandaZone));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.BattlePvP_Mugong_PandaZone));
+        }
         if (statups.containsKey(SecondaryStat.BattleSurvivalDefence)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BattleSurvivalDefence));
             mplew.writeInt(player.getBuffSource(SecondaryStat.BattleSurvivalDefence));
         }
         if (statups.containsKey(SecondaryStat.BattleSurvivalInvincible)) {
+            // empty if block
         }
         if (statups.containsKey(SecondaryStat.EventPvPDefence)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.EventPvPDefence));
@@ -1720,6 +1891,10 @@ public class BuffPacket {
         if (statups.containsKey(SecondaryStat.EventSoccerBall)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.EventSoccerBall));
             mplew.writeInt(player.getBuffSource(SecondaryStat.EventSoccerBall));
+        }
+        if (statups.containsKey(SecondaryStat.EventSoccerMomentBuff)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.EventSoccerMomentBuff));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.EventSoccerMomentBuff));
         }
         if (statups.containsKey(SecondaryStat.PinkbeanMatryoshka)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.PinkbeanMatryoshka));
@@ -1885,7 +2060,6 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.ChillingStep));
             mplew.writeInt(player.getBuffSource(SecondaryStat.ChillingStep));
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.BlessingArmor)) {
             mplew.writeInt(0);
         }
@@ -1917,6 +2091,10 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.Confinement));
             mplew.writeInt(player.getBuffSource(SecondaryStat.Confinement));
         }
+        if (statups.containsKey(SecondaryStat.FixedSpeedAndJump)) {
+            mplew.writeInt(player.getBuffedIntValue(SecondaryStat.FixedSpeedAndJump));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.FixedSpeedAndJump));
+        }
         if (statups.containsKey(SecondaryStat.GrabAndThrow)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.GrabAndThrow));
             mplew.writeInt(player.getBuffSource(SecondaryStat.GrabAndThrow));
@@ -1925,9 +2103,17 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.DarkCloud));
             mplew.writeInt(player.getBuffSource(SecondaryStat.DarkCloud));
         }
+        if (statups.containsKey(SecondaryStat.GrandFinale)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.GrandFinale));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.GrandFinale));
+        }
         if (statups.containsKey(SecondaryStat.UserAroundAttackDebuff)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.UserAroundAttackDebuff));
             mplew.writeInt(player.getBuffSource(SecondaryStat.UserAroundAttackDebuff));
+        }
+        if (statups.containsKey(SecondaryStat.UserTrackingAreaWarning)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.UserTrackingAreaWarning));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.UserTrackingAreaWarning));
         }
         if (statups.containsKey(SecondaryStat.KaringDoolAdvantage)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.KaringDoolAdvantage));
@@ -1949,20 +2135,19 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.AnimaThiefFlameStrike));
             mplew.writeInt(player.getBuffSource(SecondaryStat.AnimaThiefFlameStrike));
         }
+        if (statups.containsKey(SecondaryStat.HiddenPossession)) {
+            mplew.writeInt(player.getBuffedIntValue(SecondaryStat.HiddenPossession));
+        }
         if (statups.containsKey(SecondaryStat.BladeStanceMode)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BladeStanceMode));
             mplew.writeInt(player.getBuffSource(SecondaryStat.BladeStanceMode));
-        }
-        if (statups.containsKey(SecondaryStat.BladeStanceMode)) {
-            mplew.writeInt(-劍豪.拔刀姿勢);
         }
         if (statups.containsKey(SecondaryStat.BladeStanceBooster)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BladeStanceBooster));
             mplew.writeInt(player.getBuffSource(SecondaryStat.BladeStanceBooster));
         }
         if (statups.containsKey(SecondaryStat.BladeStancePower)) {
-            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.BladeStancePower));
-            mplew.writeInt(player.getBuffSource(SecondaryStat.BladeStancePower));
+            mplew.writeInt(-40011288);
         }
         if (statups.containsKey(SecondaryStat.SelfHyperBodyIncPAD)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.SelfHyperBodyIncPAD));
@@ -2012,16 +2197,6 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.Wet));
             mplew.writeInt(player.getBuffSource(SecondaryStat.Wet));
         }
-//        if (statups.containsKey(SecondaryStat.WaterSmashTeam)) {
-//            mplew.writeInt(player.getBuffSource(SecondaryStat.WaterSmashTeam));
-//        }
-//        if (statups.containsKey(SecondaryStat.WaterSmashClass)) {
-//            mplew.writeInt(player.getBuffSource(SecondaryStat.WaterSmashClass));
-//        }
-//        if (statups.containsKey(SecondaryStat.WaterSmashBuffCount)) {
-//            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.WaterSmashBuffCount));
-//            mplew.writeInt(player.getBuffSource(SecondaryStat.WaterSmashBuffCount));
-//        }
         if (statups.containsKey(SecondaryStat.SpecialTombPL)) {
             mplew.writeInt(player.getBuffSource(SecondaryStat.SpecialTombPL));
         }
@@ -2032,18 +2207,6 @@ public class BuffPacket {
         if (statups.containsKey(SecondaryStat.ReduceMP)) {
             mplew.writeInt(player.getBuffSource(SecondaryStat.ReduceMP));
         }
-        if (statups.containsKey(SecondaryStat.CoronaBuffOverlap)) {
-            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.CoronaBuffOverlap));
-            mplew.writeInt(player.getBuffSource(SecondaryStat.CoronaBuffOverlap));
-        }
-        if (statups.containsKey(SecondaryStat.MukHyun_HO_SIN_GANG_GI)) {
-            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.MukHyun_HO_SIN_GANG_GI));
-            mplew.writeInt(player.getBuffSource(SecondaryStat.MukHyun_HO_SIN_GANG_GI));
-        }
-//        if (statups.containsKey(SecondaryStat.ShamanIgnoreTargetDEF)) {
-//            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.ShamanIgnoreTargetDEF));
-//            mplew.writeInt(player.getBuffSource(SecondaryStat.ShamanIgnoreTargetDEF));
-//        }
         if (statups.containsKey(SecondaryStat.WindBreakerStormGuard)) {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.WindBreakerStormGuard));
             mplew.writeInt(player.getBuffSource(SecondaryStat.WindBreakerStormGuard));
@@ -2072,11 +2235,14 @@ public class BuffPacket {
             mplew.writeShort(player.getBuffedIntValue(SecondaryStat.SixthShinBatto));
             mplew.writeInt(player.getBuffSource(SecondaryStat.SixthShinBatto));
         }
+        if (statups.containsKey(SecondaryStat.MukHyun_HO_SIN_GANG_GI)) {
+            mplew.writeShort(player.getBuffedIntValue(SecondaryStat.MukHyun_HO_SIN_GANG_GI));
+            mplew.writeInt(player.getBuffSource(SecondaryStat.MukHyun_HO_SIN_GANG_GI));
+        }
         mplew.write(0);
         mplew.write(0);
         mplew.write(JobConstants.is聖魂劍士(player.getJob()) ? 5 : 0);
         mplew.writeInt(0);
-
         if (statups.containsKey(SecondaryStat.BlackMageCreate)) {
             mplew.writeInt(10);
         }
@@ -2087,27 +2253,26 @@ public class BuffPacket {
             mplew.write(player.getBuffedValue(SecondaryStat.PoseType) != null ? 1 : 0);
             mplew.write(0);
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.BattlePvP_Helena_Mark)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-        // SPAWN
+        if (statups.containsKey(SecondaryStat.BattlePvP_Darklord_Explosion)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
         if (statups.containsKey(SecondaryStat.BattlePvP_LangE_Protection)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.MichaelSoulLink)) {
-            SecondaryStatValueHolder mbsvh = player.getBuffStatValueHolder(SecondaryStat.MichaelSoulLink);
+            mbsvh = player.getBuffStatValueHolder(SecondaryStat.MichaelSoulLink);
             mplew.writeInt(mbsvh.fromChrID == player.getId() ? statups.get(SecondaryStat.MichaelSoulLink) : 0);
             mplew.writeBool(mbsvh.fromChrID == player.getId() && statups.get(SecondaryStat.MichaelSoulLink) <= 1);
             mplew.writeInt(mbsvh.fromChrID);
             mplew.writeInt(statups.get(SecondaryStat.MichaelSoulLink) > 1 ? mbsvh.effect.getLevel() : 0);
-        }
-        // SPAWN
-        if (statups.containsKey(SecondaryStat.AdrenalinBoost)) {
-            mplew.write(player.getBuffSource(SecondaryStat.AdrenalinBoost) == 狂狼勇士.鬥氣爆發 ? 1 : 0);
         }
         if (statups.containsKey(SecondaryStat.Stigma)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.Stigma));
@@ -2144,19 +2309,16 @@ public class BuffPacket {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.BattlePvP_Ryude_Frozen)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.BattlePvP_LangE_LiverStack)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-        // SPAWN
         if (statups.containsKey(SecondaryStat.BattlePvP_KeyDown)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
@@ -2166,8 +2328,7 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         PacketHelper.write劍刃之壁(mplew, player, player.getBuffSource(SecondaryStat.StopForceAtomInfo));
-        n3 = isChrinfo ? Randomizer.nextInt() : 1;
-        // SPAWN 1
+        int n = n3 = isChrinfo ? Randomizer.nextInt() : 1;
         if (statups.containsKey(SecondaryStat.DashSpeed)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
@@ -2175,7 +2336,6 @@ public class BuffPacket {
             mplew.writeInt(n3);
             mplew.writeShort(0);
         }
-        // SPAWN 2
         if (statups.containsKey(SecondaryStat.DashJump)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
@@ -2183,9 +2343,8 @@ public class BuffPacket {
             mplew.writeInt(n3);
             mplew.writeShort(0);
         }
-        // SPAWN 3
         if (statups.containsKey(SecondaryStat.RideVehicle)) {
-            sourceid = player.getBuffSource(SecondaryStat.RideVehicle);
+            int sourceid = player.getBuffSource(SecondaryStat.RideVehicle);
             if (sourceid > 0) {
                 MaplePacketCreator.addMountId(mplew, player, sourceid);
                 mplew.writeInt(sourceid);
@@ -2196,14 +2355,12 @@ public class BuffPacket {
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 4
         if (statups.containsKey(SecondaryStat.PartyBooster)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.PartyBooster));
             mplew.writeInt(player.getBuffSource(SecondaryStat.PartyBooster));
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 5
         if (statups.containsKey(SecondaryStat.GuidedBullet)) {
             mplew.write(1);
             mplew.writeInt(Randomizer.nextInt());
@@ -2211,20 +2368,17 @@ public class BuffPacket {
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 6
         if (statups.containsKey(SecondaryStat.Undead)) {
             mplew.writeZeroBytes(16);
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 7
         if (statups.containsKey(SecondaryStat.RelicGauge)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 8
         if (statups.containsKey(SecondaryStat.RideVehicleExpire)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.RideVehicleExpire));
             mplew.writeInt(player.getBuffSource(SecondaryStat.RideVehicleExpire));
@@ -2232,7 +2386,6 @@ public class BuffPacket {
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 9
         if (statups.containsKey(SecondaryStat.SecondAtomLockOn)) {
             mplew.writeInt(player.getBuffedIntValue(SecondaryStat.SecondAtomLockOn));
             mplew.writeInt(player.getBuffSource(SecondaryStat.SecondAtomLockOn));
@@ -2240,7 +2393,6 @@ public class BuffPacket {
             mplew.write(1);
             mplew.writeInt(n3);
         }
-        // SPAWN 10
         if (statups.containsKey(SecondaryStat.Curse)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
@@ -2248,11 +2400,10 @@ public class BuffPacket {
             mplew.writeInt(n3);
             mplew.writeZeroBytes(8);
         }
-        for (int i = 0; i < 13; i++) {
-            // 像giveBuff的stack Buff
+        for (int i = 0; i < 13; ++i) {
             int nCount = 0;
             mplew.writeInt(nCount);
-            for (int j = nCount; j > 0; j--) {
+            for (int j = nCount; j > 0; --j) {
                 mplew.writeInt(0);
                 mplew.writeInt(0);
                 mplew.writeInt(0);
@@ -2261,13 +2412,13 @@ public class BuffPacket {
                 mplew.writeInt(0);
                 int nCount1 = 0;
                 mplew.writeInt(nCount1);
-                for (int k = nCount; k > 0; k--) {
+                for (int k = nCount; k > 0; --k) {
                     mplew.writeInt(0);
                     mplew.writeInt(0);
                 }
                 int nCount2 = 0;
                 mplew.writeInt(nCount2);
-                for (int k = nCount; k > 0; k--) {
+                for (int k = nCount; k > 0; --k) {
                     mplew.writeInt(0);
                     mplew.writeInt(0);
                 }
@@ -2283,11 +2434,9 @@ public class BuffPacket {
             mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.ComboCounter)) {
-            mplew.writeHexString("68 04 00 00");
+            mplew.writeInt(1128);
             mplew.writeInt(0);
-
         }
-
         if (statups.containsKey(SecondaryStat.MinigameStat)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
@@ -2296,8 +2445,7 @@ public class BuffPacket {
         if (statups.containsKey(SecondaryStat.XenonHoloGramGraffiti)) {
             mplew.writeInt(0);
         }
-        mplew.write(0x00);
-        mplew.write(0x6D);
+        mplew.write(0);
         if (statups.containsKey(SecondaryStat.LefWarriorNobility)) {
             mplew.writeInt(0);
             mplew.writeInt(0);
@@ -2343,10 +2491,6 @@ public class BuffPacket {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-        if (statups.containsKey(SecondaryStat.AranComboTempestAura)) {
-            mplew.writeInt(0);
-            mplew.writeInt(0);
-        }
         if (statups.containsKey(SecondaryStat.XenonBursterLaser)) {
             mplew.writeInt(0);
         }
@@ -2354,13 +2498,21 @@ public class BuffPacket {
             mplew.writeInt(player.getBuffedIntZ(SecondaryStat.ShadowShield));
         }
         if (statups.containsKey(SecondaryStat.Infinity)) {
-            mplew.writeInt(0); // time
+            mplew.writeInt(0);
             mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.YetiFuryMode)) {
             mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.GrabAndThrow)) {
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+            mplew.writeInt(0);
+        }
+        if (statups.containsKey(SecondaryStat.Stun)) {
+            mplew.writeInt(0);
             mplew.writeInt(0);
         }
         if (statups.containsKey(SecondaryStat.RPEventStat)) {
@@ -2380,9 +2532,9 @@ public class BuffPacket {
             mplew.writeInt(0);
             mplew.writeInt(0);
         }
-//        if (statups.containsKey(SecondaryStat.UNK_240_ADD_543)) {
-//            mplew.writeInt(0);
-//        }
+        if (statups.containsKey(SecondaryStat.EventSoccerMomentBuff)) {
+            mplew.writeInt(0);
+        }
         if (statups.containsKey(SecondaryStat.NeoTokyoBossBomb)) {
             mplew.writeInt(0);
         }
@@ -2391,9 +2543,6 @@ public class BuffPacket {
         }
     }
 
-    /**
-     * 取消BUFF狀態
-     */
     public static byte[] temporaryStatReset(List<SecondaryStat> statups, MapleCharacter chr) {
         MaplePacketLittleEndianWriter mplew = new MaplePacketLittleEndianWriter();
         mplew.writeShort(OutHeader.LP_TemporaryStatReset.getValue());
@@ -2403,25 +2552,23 @@ public class BuffPacket {
         if (statups.contains(SecondaryStat.Warrior_AuraWeapon)) {
             statups.remove(SecondaryStat.IndieBuffIcon);
         }
-        mplew.writeBool(true); // TMS229
-        mplew.writeBool(true); // TMS229
+        mplew.writeBool(true);
+        mplew.writeBool(true);
         mplew.write(statups.size());
-        writeBuffMask(mplew, statups);
+        BuffPacket.encodeBuffMask(mplew, statups);
         statups.sort(Comparator.naturalOrder());
         boolean disease = false;
-        for (final SecondaryStat stat : statups) {
+        for (SecondaryStat stat : statups) {
             if (!disease) {
                 disease = MapleDisease.containsStat(stat);
             }
-            if (stat.canStack() && !SkillConstants.isSpecialStackBuff(stat)) {
-                encodeIndieBuffStat(mplew, chr, stat);
-            }
+            if (!stat.canStack() || SkillConstants.isSpecialStackBuff(stat)) continue;
+            BuffPacket.encodeIndieBuffStat(mplew, chr, stat);
         }
         for (SecondaryStat statup : statups) {
-            if (SkillConstants.isMovementAffectingStat(statup)) {
-                mplew.write(0);
-                break;
-            }
+            if (!SkillConstants.isMovementAffectingStat(statup)) continue;
+            mplew.write(0);
+            break;
         }
         if (statups.contains(SecondaryStat.PoseType)) {
             mplew.write(1);
@@ -2439,77 +2586,74 @@ public class BuffPacket {
             mplew.write(0);
             mplew.write(1);
         }
-        mplew.write(0);
-
         return mplew.getPacket();
     }
 
-    public static <E extends Buffstat> void writeSingleMask(MaplePacketLittleEndianWriter mplew, E statup) {
-        writeBuffMask(mplew, Collections.singletonList(statup));
+    public static <E extends Buffstat> void encodeSingleMask(MaplePacketLittleEndianWriter mplew, E statup) {
+        BuffPacket.encodeBuffMask(mplew, Collections.singletonList(statup));
     }
 
-    public static <E extends Buffstat> void writeBuffMask(MaplePacketLittleEndianWriter mplew, Map<E, Integer> statups) {
-        writeBuffMask(mplew, statups.keySet());
+    public static <E extends Buffstat> void encodeBuffMask(MaplePacketLittleEndianWriter mplew, Map<E, Integer> statups) {
+        BuffPacket.encodeBuffMask(mplew, statups.keySet());
     }
 
-    public static <E extends Buffstat> void writeBuffMask(MaplePacketLittleEndianWriter mplew, Collection<E> statups) {
-        int[] mask = new int[GameConstants.MAX_BUFFSTAT];
-        for (E statup : statups) {
-            mask[statup.getPosition()] |= statup.getValue();
+    public static <E extends Buffstat> void encodeBuffMask(MaplePacketLittleEndianWriter mplew, Collection<E> statups) {
+        int[] mask = new int[33];
+        for (Buffstat statup : statups) {
+            int n = statup.getPosition();
+            mask[n] = mask[n] | statup.getValue();
         }
         for (int aMask : mask) {
-            mplew.writeInt(aMask);
+            mplew.writeInt((int)aMask);
         }
     }
 
     public static byte[] giveMobZoneState(MapleCharacter chr, int objectId) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.MobZoneState, objectId));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.MobZoneState, objectId));
     }
 
     public static byte[] setHoYoungRune(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.AnimaThiefTaoistGauge, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.AnimaThiefTaoistGauge, 0));
     }
 
     public static byte[] setHoYoungState(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.AnimaThiefTaoistType, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.AnimaThiefTaoistType, 0));
     }
 
     public static byte[] setAdeleCharge(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.LWSwordGauge, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.LWSwordGauge, 0));
     }
 
     public static byte[] setMaliceCharge(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.NADragonGauge, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.NADragonGauge, 0));
     }
 
     public static byte[] showPP(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.KinesisPsychicPoint, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.KinesisPsychicPoint, 0));
     }
 
     public static byte[] setErosions(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpecterGauge, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpecterGauge, 0));
     }
 
     public static byte[] setPureBeads(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Plain, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Plain, 0));
     }
 
     public static byte[] setFlameBeads(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Scarlet, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Scarlet, 0));
     }
 
-    //
     public static byte[] setGaleBeads(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Gust, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Gust, 0));
     }
 
     public static byte[] setAbyssBeads(MapleCharacter chr) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Abyss, 0));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.SpellBullet_Abyss, 0));
     }
 
     public static byte[] setInfinitiFlameCharge(MapleCharacter chr, int value) {
-        return giveBuff(chr, null, Collections.singletonMap(SecondaryStat.FlameWizardInfiniteFlame, value));
+        return BuffPacket.giveBuff(chr, null, Collections.singletonMap(SecondaryStat.FlameWizardInfiniteFlame, value));
     }
-
-
 }
+

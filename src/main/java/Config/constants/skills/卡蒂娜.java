@@ -1,21 +1,16 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Config.constants.skills;
 
 public class 卡蒂娜 {
-
     public static final int 集中狂攻 = 60020218;
     public static final int 集中狂攻_傳授 = 80000261;
-    /*
-     * 新手技能
-     */
     public static final int 獨門咒語 = 60021005;
     public static final int 議價 = 60020216;
     public static final int 商團回歸 = 60021217;
     public static final int 鏈之藝術_鞭擊_劇情 = 60021278;
     public static final int 鏈之藝術_鞭擊_劇情_1 = 60021279;
-
-    /*
-     * 1轉技能
-     */
     public static final int 鏈之藝術_追擊 = 64001000;
     public static final int 鏈之藝術_鞭擊 = 64001001;
     public static final int 召喚_切割彎刀 = 64001002;
@@ -31,10 +26,6 @@ public class 卡蒂娜 {
     public static final int 鏈之藝術_追擊_1 = 64001012;
     public static final int 召喚_切割彎刀_1 = 64001013;
     public static final int 間諜移動_1 = 64001014;
-
-    /*
-     * 2轉技能
-     */
     public static final int 強化鏈之藝術_鞭擊I強化 = 64100000;
     public static final int 召喚_黑焰鉤爪 = 64101001;
     public static final int 召喚_炸裂迴旋 = 64101002;
@@ -45,9 +36,6 @@ public class 卡蒂娜 {
     public static final int 鍛鍊身體 = 64100006;
     public static final int 快捷服務心態Ⅰ = 64100007;
     public static final int 武器變換Ⅰ_攻擊 = 64101009;
-    /*
-     * 3轉技能
-     */
     public static final int 強化鏈之藝術_鞭擊II強化 = 64110000;
     public static final int 召喚_散彈射擊 = 64111002;
     public static final int 召喚_紫焱幻刀 = 64111003;
@@ -58,9 +46,6 @@ public class 卡蒂娜 {
     public static final int 攻擊弱點 = 64110007;
     public static final int 武器變換Ⅱ_攻擊 = 64111013;
     public static final int 基礎探測 = 64110014;
-    /*
-     * 4轉技能
-     */
     public static final int 鏈之藝術_鞭擊III強化 = 64120000;
     public static final int 召喚_重擊磚頭 = 64121021;
     public static final int 召喚_重擊磚頭_1 = 64121022;
@@ -85,9 +70,6 @@ public class 卡蒂娜 {
     public static final int 進階武器精通 = 64120008;
     public static final int 快捷服務心態Ⅱ = 64120009;
     public static final int 武器變換Ⅲ_攻擊 = 64121020;
-    /*
-     * 超級技能 進階技能
-     */
     public static final int 非鏈之藝術_強化 = 64120043;
     public static final int 非鏈之藝術_爆擊 = 64120044;
     public static final int 非鏈之藝術_BOSS殺手 = 64120045;
@@ -97,23 +79,15 @@ public class 卡蒂娜 {
     public static final int 鏈之藝術_束縛鎖鏈_強化 = 64120049;
     public static final int 鏈之藝術_束縛鎖鏈_波動強化 = 64120050;
     public static final int 鏈之藝術_束縛鎖鏈_重置冷卻時間 = 64120051;
-    /*
-     * 超級技能 主動技能
-     */
     public static final int 鏈之藝術_強化撞擊 = 64121052;
     public static final int 商團特製秘藥 = 64121054;
     public static final int 職業代理人 = 64121053;
     public static final int 職業代理人_1 = 64121055;
-    /*
-     * 5轉技能
-     */
     public static final int 召喚_AD大砲 = 400041033;
     public static final int 召喚_AD大砲_1 = 400041034;
-
     public static final int 鏈之藝術_護佑 = 400041035;
     public static final int 鏈之藝術_護佑_1 = 400041036;
-
     public static final int 鏈之藝術_漩渦 = 400041041;
-
     public static final int 武器變換終章 = 400041074;
 }
+

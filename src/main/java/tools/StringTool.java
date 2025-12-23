@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package tools;
 
 import java.util.regex.Pattern;
@@ -10,3 +13,4 @@ public class StringTool {
         return 0;
     }
 }
+

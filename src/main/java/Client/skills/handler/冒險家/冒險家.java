@@ -1,3 +1,6 @@
+/*
+ * Decompiled with CFR 0.152.
+ */
 package Client.skills.handler.冒險家;
 
 import Client.MapleCharacter;
@@ -5,18 +8,18 @@ import Client.skills.handler.AbstractSkillHandler;
 import Client.skills.handler.SkillClassApplier;
 import Client.skills.handler.SkillClassFetcher;
 import Config.constants.JobConstants;
-import Config.constants.skills.通用V核心.冒險家通用;
+import Config.constants.skills.通用V核心;
 import Net.server.life.MapleMonster;
-
 import java.lang.reflect.Field;
 
-public class 冒險家 extends AbstractSkillHandler {
-
+public class 冒險家
+extends AbstractSkillHandler {
     public 冒險家() {
-        for (Field field : 冒險家通用.class.getDeclaredFields()) {
+        for (Field field : 通用V核心.冒險家通用.class.getDeclaredFields()) {
             try {
-                skills.add(field.getInt(field.getName()));
-            } catch (IllegalAccessException e) {
+                this.skills.add(field.getInt(field.getName()));
+            }
+            catch (IllegalAccessException e) {
                 e.printStackTrace();
             }
         }
@@ -28,7 +31,7 @@ public class 冒險家 extends AbstractSkillHandler {
     }
 
     @Override
-    public int onAttack(final MapleCharacter player, final MapleMonster monster, SkillClassApplier applier) {
+    public int onAttack(MapleCharacter player, MapleMonster monster, SkillClassApplier applier) {
         AbstractSkillHandler holder = SkillClassFetcher.getHandlerByJob(player.getJobWithSub());
         if (holder == this) {
             return -1;
@@ -63,3 +66,4 @@ public class 冒險家 extends AbstractSkillHandler {
         return holder.onAfterAttack(player, applier);
     }
 }
+

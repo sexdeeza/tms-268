@@ -1,8 +1,24 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Net.server.maps.AramiaFireWorks
+ *  Net.server.shops.HiredFisher
+ *  Net.server.shops.HiredMerchant
+ *  Server.world.CheaterData
+ */
 package Server.channel;
 
 import Client.MapleCharacter;
 import Config.configs.ServerConfig;
-import Net.server.events.*;
+import Net.server.events.MapleCoconut;
+import Net.server.events.MapleEvent;
+import Net.server.events.MapleEventType;
+import Net.server.events.MapleFitness;
+import Net.server.events.MapleOla;
+import Net.server.events.MapleOxQuiz;
+import Net.server.events.MapleSnowball;
+import Net.server.events.MapleSurvival;
 import Net.server.life.PlayerNPC;
 import Net.server.maps.AramiaFireWorks;
 import Net.server.maps.MapleMap;
@@ -13,76 +29,54 @@ import Net.server.shops.HiredMerchant;
 import Packet.MaplePacketCreator;
 import Plugin.script.binding.ScriptEvent;
 import Server.ServerType;
+import Server.channel.MerchantStorage;
+import Server.channel.PlayerStorage;
 import Server.channel.handler.HiredFisherStorage;
 import Server.login.LoginServer;
 import Server.netty.ServerConnection;
 import Server.world.CheaterData;
-import nativeimage.Reflection;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.nio.ByteBuffer;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-@Reflection(publicConstructors = true, publicMethods = true, publicFields = true, scanPackage = "Server.channel")
 public class ChannelServer {
     private static final Logger log = LoggerFactory.getLogger(ChannelServer.class);
-    private static final Map<Integer, ChannelServer> instances = new HashMap<>();
+    private static final Map<Integer, ChannelServer> instances = new HashMap<Integer, ChannelServer>();
     public static long serverStartTime;
     private final MapleMapFactory mapFactory;
-    private final Map<MapleEventType, MapleEvent> events = new EnumMap<>(MapleEventType.class);
+    private final Map<MapleEventType, MapleEvent> events = new EnumMap<MapleEventType, MapleEvent>(MapleEventType.class);
     private int channel;
     private final int flags = 0;
     private final MarketEngine me = new MarketEngine();
-    private final List<PlayerNPC> playerNPCs = new LinkedList<>();
+    private final List<PlayerNPC> playerNPCs = new LinkedList<PlayerNPC>();
     private ServerConnection init;
     private int doubleExp = 1;
     private short port;
-    private volatile boolean shutdown = false, finishedShutdown = false, MegaphoneMuteState = false;
+    private volatile boolean shutdown = false;
+    private volatile boolean finishedShutdown = false;
+    private volatile boolean MegaphoneMuteState = false;
     private PlayerStorage players;
     private MerchantStorage merchants;
     private HiredFisherStorage fishers;
     private ScriptEvent eventSM;
     private int eventmap = -1;
     private final AtomicInteger runningIdx = new AtomicInteger(0);
-    private static final ExecutorService saveExecutor = Executors.newSingleThreadExecutor();
-    public enum ChannelType {
-        NORMAL(0x01),
-        CHAOS(0x02),
-        ABNORMAL(0x04),
-        MVP_BRONZE(0x08),
-        MVP_SILVER(0x10),
-        MVP_GOLD(0x20),
-        MVP_DIAMOND(0x40),
-        MVP_RED(0x80);
-
-        private final int type;
-
-        ChannelType(int type) {
-            this.type = type;
-        }
-
-        public int getType() {
-            return type;
-        }
-
-        public static ChannelType getByType(int type) {
-            for (ChannelType ct : values()) {
-                if (ct.getType() == type) {
-                    return ct;
-                }
-            }
-            return NORMAL;
-        }
-
-        public boolean check(int type) {
-            return (type & getType()) != 0;
-        }
-    }
+    private static final ExecutorService saveExecutor;
 
     private ChannelServer(int channel) {
         this.channel = channel;
@@ -90,7 +84,7 @@ public class ChannelServer {
     }
 
     public static Set<Integer> getAllInstance() {
-        return new HashSet<>(instances.keySet());
+        return new HashSet<Integer>(instances.keySet());
     }
 
     public static ChannelServer newInstance(int channel) {
@@ -102,94 +96,83 @@ public class ChannelServer {
     }
 
     public static List<ChannelServer> getAllInstances() {
-        return new ArrayList<>(instances.values());
+        return new ArrayList<ChannelServer>(instances.values());
     }
 
     public static void startChannel_Main() {
         serverStartTime = System.currentTimeMillis();
         int ch = Math.min(ServerConfig.CHANNELS_PER_WORLD, 40);
-        for (int i = 1; i <= ch; i++) {
-            newInstance(i).run_startup_configurations();
+        for (int i = 1; i <= ch; ++i) {
+            ChannelServer.newInstance(i).run_startup_configurations();
         }
         log.info("所有頻道已啟動完成.");
     }
 
     public static Map<Integer, Integer> getChannelLoad() {
-        return instances.values().stream()
-                .collect(Collectors.toMap(ChannelServer::getChannel, ChannelServer::getConnectedClients));
+        return instances.values().stream().collect(Collectors.toMap(ChannelServer::getChannel, ChannelServer::getConnectedClients));
     }
 
     public static MapleCharacter getCharacterById(int id) {
-        return instances.values().stream()
-                .map(cserv -> cserv.getPlayerStorage().getCharacterById(id))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        return instances.values().stream().map(cserv -> cserv.getPlayerStorage().getCharacterById(id)).filter(Objects::nonNull).findFirst().orElse(null);
     }
 
     public static MapleCharacter getCharacterByName(String name) {
-        return instances.values().stream()
-                .map(cserv -> cserv.getPlayerStorage().getCharacterByName(name))
-                .filter(Objects::nonNull)
-                .findFirst()
-                .orElse(null);
+        return instances.values().stream().map(cserv -> cserv.getPlayerStorage().getCharacterByName(name)).filter(Objects::nonNull).findFirst().orElse(null);
     }
-
 
     public static int getChannelStartPort() {
         return ServerConfig.CHANNEL_START_PORT;
     }
 
     public void loadEvents() {
-        if (!events.isEmpty()) return;
-
-        events.put(MapleEventType.CokePlay, new MapleCoconut(channel, MapleEventType.CokePlay));
-        events.put(MapleEventType.Coconut, new MapleCoconut(channel, MapleEventType.Coconut));
-        events.put(MapleEventType.Fitness, new MapleFitness(channel, MapleEventType.Fitness));
-        events.put(MapleEventType.OlaOla, new MapleOla(channel, MapleEventType.OlaOla));
-        events.put(MapleEventType.OxQuiz, new MapleOxQuiz(channel, MapleEventType.OxQuiz));
-        events.put(MapleEventType.Snowball, new MapleSnowball(channel, MapleEventType.Snowball));
-        events.put(MapleEventType.Survival, new MapleSurvival(channel, MapleEventType.Survival));
+        if (!this.events.isEmpty()) {
+            return;
+        }
+        this.events.put(MapleEventType.CokePlay, new MapleCoconut(this.channel, MapleEventType.CokePlay));
+        this.events.put(MapleEventType.Coconut, new MapleCoconut(this.channel, MapleEventType.Coconut));
+        this.events.put(MapleEventType.Fitness, new MapleFitness(this.channel, MapleEventType.Fitness));
+        this.events.put(MapleEventType.OlaOla, new MapleOla(this.channel, MapleEventType.OlaOla));
+        this.events.put(MapleEventType.OxQuiz, new MapleOxQuiz(this.channel, MapleEventType.OxQuiz));
+        this.events.put(MapleEventType.Snowball, new MapleSnowball(this.channel, MapleEventType.Snowball));
+        this.events.put(MapleEventType.Survival, new MapleSurvival(this.channel, MapleEventType.Survival));
     }
 
     public MapleEvent getEvent(MapleEventType t) {
-        return events.get(t);
+        return this.events.get((Object)t);
     }
 
     public void run_startup_configurations() {
-        setChannel(channel);
+        this.setChannel(this.channel);
         try {
-            players = new PlayerStorage(channel);
-            merchants = new MerchantStorage(channel);
-            fishers = new HiredFisherStorage(channel);
-            port = (short) (getChannelStartPort() + channel - 1);
-            init = new ServerConnection(port, 0, channel, ServerType.ChannelServer);
-            init.run();
-            log.info("CHANNEL {} listening on port: {}", channel, port);
-            // 加載 Scripts/Server/下的全局插件
-            //getServerManager().Init(channel);
-            loadEvents();
-        } catch (Exception e) {
-            throw new RuntimeException("綁定連接埠: " + port + " 失敗 (ch: " + getChannel() + ")", e);
+            this.players = new PlayerStorage(this.channel);
+            this.merchants = new MerchantStorage(this.channel);
+            this.fishers = new HiredFisherStorage(this.channel);
+            this.port = (short)(ChannelServer.getChannelStartPort() + this.channel - 1);
+            this.init = new ServerConnection(this.port, 0, this.channel, ServerType.ChannelServer);
+            this.init.run();
+            log.info("CHANNEL {} listening on port: {}", (Object)this.channel, (Object)this.port);
+            this.loadEvents();
+        }
+        catch (Exception e) {
+            throw new RuntimeException("綁定連接埠: " + this.port + " 失敗 (ch: " + this.getChannel() + ")", e);
         }
     }
 
     public void shutdown() {
-        if (finishedShutdown) return;
-
-        shutdown = true;
-        log.info("Channel {} saving map information", channel);
-        mapFactory.getAllMaps().forEach(MapleMap::saveBreakTimeFieldStep);
-        log.info("Channel {} cleaning event scripts", channel);
-//        eventSM.cancel();
-        log.info("Channel {} unbinding port", channel);
-        init.close();
-        instances.remove(channel);
+        if (this.finishedShutdown) {
+            return;
+        }
+        this.shutdown = true;
+        log.info("Channel {} saving map information", (Object)this.channel);
+        this.mapFactory.getAllMaps().forEach(MapleMap::saveBreakTimeFieldStep);
+        log.info("Channel {} cleaning event scripts", (Object)this.channel);
+        log.info("Channel {} unbinding port", (Object)this.channel);
+        this.init.close();
+        instances.remove(this.channel);
     }
 
-
     public int getChannel() {
-        return channel;
+        return this.channel;
     }
 
     public void setChannel(int channel) {
@@ -198,27 +181,26 @@ public class ChannelServer {
     }
 
     public MapleMapFactory getMapFactory() {
-        return mapFactory;
+        return this.mapFactory;
     }
 
     public void addPlayer(MapleCharacter chr) {
-        getPlayerStorage().registerPlayer(chr);
+        this.getPlayerStorage().registerPlayer(chr);
     }
 
     public PlayerStorage getPlayerStorage() {
-        if (players == null) {
-            players = new PlayerStorage(channel);
+        if (this.players == null) {
+            this.players = new PlayerStorage(this.channel);
         }
-        return players;
+        return this.players;
     }
 
-
     public void removePlayer(MapleCharacter chr) {
-        removePlayer(chr.getId());
+        this.removePlayer(chr.getId());
     }
 
     public void removePlayer(int idz) {
-        getPlayerStorage().deregisterPlayer(idz);
+        this.getPlayerStorage().deregisterPlayer(idz);
     }
 
     public String getServerMessage() {
@@ -226,60 +208,37 @@ public class ChannelServer {
     }
 
     public void setServerMessage(String newMessage) {
-        broadcastPacket(MaplePacketCreator.serverMessage(newMessage));
+        this.broadcastPacket(MaplePacketCreator.serverMessage(newMessage));
     }
 
     public void broadcastPacket(byte[] data) {
-        getPlayerStorage().broadcastPacket(data);
+        this.getPlayerStorage().broadcastPacket(data);
     }
 
     public void broadcastSmegaPacket(byte[] data) {
-        getPlayerStorage().broadcastSmegaPacket(data);
+        this.getPlayerStorage().broadcastSmegaPacket(data);
     }
 
     public void broadcastGMPacket(byte[] data) {
-        getPlayerStorage().broadcastGMPacket(data);
+        this.getPlayerStorage().broadcastGMPacket(data);
     }
 
     public boolean isShutdown() {
-        return shutdown;
+        return this.shutdown;
     }
 
     public int getLoadedMaps() {
-        return mapFactory.getLoadedMaps();
+        return this.mapFactory.getLoadedMaps();
     }
 
     public ScriptEvent getEventSM() {
-        return eventSM;
+        return this.eventSM;
     }
 
-//    public void reloadEvents() {
-//        eventSM.cancel();
-//        eventSM = new EventScriptManager(this, ServerConfig.CHANNEL_EVENTS.split(","));
-//        eventSM.init();
-//    }
-
-    /**
-     * 根據事件名稱重載事件
-     * 其他事件不會受到影響
-     *
-     * @param eventName 事件名稱
-     * @see EventScriptManager#reload(String)
-     */
-//    public void reloadEvent(String eventName) {
-//        eventSM.reload(eventName);
-//    }
-
-    /**
-     * 基礎經驗倍率
-     */
     public int getBaseExpRate() {
         return ServerConfig.CHANNEL_RATE_BASEEXP;
     }
 
-    /**
-     * 遊戲經驗倍率
-     */
     public int getExpRate() {
         return ServerConfig.CHANNEL_RATE_EXP;
     }
@@ -288,9 +247,6 @@ public class ChannelServer {
         ServerConfig.CHANNEL_RATE_EXP = rate;
     }
 
-    /**
-     * 遊戲楓幣爆率
-     */
     public int getMesoRate() {
         return ServerConfig.CHANNEL_RATE_MESO;
     }
@@ -299,9 +255,6 @@ public class ChannelServer {
         ServerConfig.CHANNEL_RATE_MESO = rate;
     }
 
-    /**
-     * 遊戲裝備爆率
-     */
     public int getDropRate() {
         return ServerConfig.CHANNEL_RATE_DROP;
     }
@@ -310,9 +263,6 @@ public class ChannelServer {
         ServerConfig.CHANNEL_RATE_DROP = rate;
     }
 
-    /**
-     * 特殊數據庫道具的爆率
-     */
     public int getDropgRate() {
         return ServerConfig.CHANNEL_RATE_GLOBALDROP;
     }
@@ -321,89 +271,63 @@ public class ChannelServer {
         ServerConfig.CHANNEL_RATE_GLOBALDROP = rate;
     }
 
-    /**
-     * 雙倍經驗活動
-     */
     public int getDoubleExp() {
-        if (doubleExp < 0 || doubleExp > 2) {
+        if (this.doubleExp < 0 || this.doubleExp > 2) {
             return 1;
-        } else {
-            return doubleExp;
         }
+        return this.doubleExp;
     }
 
     public void setDoubleExp(int doubleExp) {
-        if (doubleExp < 0 || doubleExp > 2) {
-            this.doubleExp = 1;
-        } else {
-            this.doubleExp = doubleExp;
-        }
+        this.doubleExp = doubleExp < 0 || doubleExp > 2 ? 1 : doubleExp;
     }
 
-    /**
-     * 關閉所有僱傭商店
-     */
     public void closeAllMerchants() {
-        merchants.closeAllMerchants();
+        this.merchants.closeAllMerchants();
     }
 
-    /**
-     * 添加僱傭商店
-     */
     public int addMerchant(HiredMerchant hMerchant) {
-        return merchants.addMerchant(hMerchant);
+        return this.merchants.addMerchant(hMerchant);
     }
 
-    /**
-     * 刪除僱傭商店
-     */
     public void removeMerchant(HiredMerchant hMerchant) {
-        merchants.removeMerchant(hMerchant);
+        this.merchants.removeMerchant(hMerchant);
     }
 
-    /**
-     * 檢測賬號是否開過僱傭商店
-     */
     public boolean containsMerchant(int accId) {
-        return merchants.containsMerchant(accId);
+        return this.merchants.containsMerchant(accId);
     }
 
-    /**
-     * 檢測賬號下的玩家是否開過僱傭商店
-     */
     public boolean containsMerchant(int accId, int chrId) {
-        return merchants.containsMerchant(accId, chrId);
+        return this.merchants.containsMerchant(accId, chrId);
     }
 
     public List<HiredMerchant> searchMerchant(int itemSearch) {
-        return merchants.searchMerchant(itemSearch);
+        return this.merchants.searchMerchant(itemSearch);
     }
 
-    /**
-     * 獲取賬號下的玩家的僱傭商店信息 返回 僱傭商店
-     */
     public HiredMerchant getHiredMerchants(int accId, int chrId) {
-        return merchants.getHiredMerchants(accId, chrId);
+        return this.merchants.getHiredMerchants(accId, chrId);
     }
 
     public void closeAllFisher() {
-        fishers.closeAllFisher();
+        this.fishers.closeAllFisher();
     }
 
     public int addFisher(HiredFisher hiredFisher) {
-        return fishers.addFisher(hiredFisher);
+        return this.fishers.addFisher(hiredFisher);
     }
 
     public void removeFisher(HiredFisher hiredFisher) {
-        fishers.removeFisher(hiredFisher);
+        this.fishers.removeFisher(hiredFisher);
     }
 
     public boolean containsFisher(int accId, int chrId) {
-        return fishers.containsFisher(accId, chrId);
+        return this.fishers.containsFisher(accId, chrId);
     }
 
     public HiredFisher getHiredFisher(int accId, int chrId) {
-        return fishers.getHiredFisher(accId, chrId);
+        return this.fishers.getHiredFisher(accId, chrId);
     }
 
     public void toggleMegaphoneMuteState() {
@@ -411,11 +335,11 @@ public class ChannelServer {
     }
 
     public boolean getMegaphoneMuteState() {
-        return MegaphoneMuteState;
+        return this.MegaphoneMuteState;
     }
 
     public int getEvent() {
-        return eventmap;
+        return this.eventmap;
     }
 
     public void setEvent(int ze) {
@@ -423,21 +347,21 @@ public class ChannelServer {
     }
 
     public Collection<PlayerNPC> getAllPlayerNPC() {
-        return playerNPCs;
+        return this.playerNPCs;
     }
 
     public void addPlayerNPC(PlayerNPC npc) {
-        if (playerNPCs.contains(npc)) {
+        if (this.playerNPCs.contains(npc)) {
             return;
         }
-        playerNPCs.add(npc);
-        getMapFactory().getMap(npc.getMapId()).addMapObject(npc);
+        this.playerNPCs.add(npc);
+        this.getMapFactory().getMap(npc.getMapId()).addMapObject(npc);
     }
 
     public void removePlayerNPC(PlayerNPC npc) {
-        if (playerNPCs.contains(npc)) {
-            playerNPCs.remove(npc);
-            getMapFactory().getMap(npc.getMapId()).removeMapObject(npc);
+        if (this.playerNPCs.contains(npc)) {
+            this.playerNPCs.remove(npc);
+            this.getMapFactory().getMap(npc.getMapId()).removeMapObject(npc);
         }
     }
 
@@ -454,87 +378,83 @@ public class ChannelServer {
     }
 
     public int getPort() {
-        return port;
+        return this.port;
     }
 
     public void setShutdown() {
         this.shutdown = true;
         this.finishedShutdown = true;
-        log.info("頻道 " + channel + " 已關閉完成.");
+        log.info("頻道 " + this.channel + " 已關閉完成.");
     }
 
-
     public boolean hasFinishedShutdown() {
-        return finishedShutdown;
+        return this.finishedShutdown;
     }
 
     public int getTempFlag() {
-        return flags;
+        return 0;
     }
 
     public int getConnectedClients() {
-        return getPlayerStorage().getConnectedClients();
+        return this.getPlayerStorage().getConnectedClients();
     }
 
     public List<CheaterData> getCheaters() {
-        List<CheaterData> cheaters = getPlayerStorage().getCheaters();
+        List<CheaterData> cheaters = this.getPlayerStorage().getCheaters();
         Collections.sort(cheaters);
         return cheaters;
     }
 
     public List<CheaterData> getReports() {
-        List<CheaterData> cheaters = getPlayerStorage().getReports();
+        List<CheaterData> cheaters = this.getPlayerStorage().getReports();
         Collections.sort(cheaters);
         return cheaters;
     }
 
     public void broadcastPacket(ByteBuffer data) {
-        getPlayerStorage().broadcastPacket(data.array());
+        this.getPlayerStorage().broadcastPacket(data.array());
     }
 
     public void broadcastSmegaPacket(ByteBuffer data) {
-        getPlayerStorage().broadcastSmegaPacket(data.array());
+        this.getPlayerStorage().broadcastSmegaPacket(data.array());
     }
 
     public void broadcastGMPacket(ByteBuffer data) {
-        getPlayerStorage().broadcastGMPacket(data.array());
+        this.getPlayerStorage().broadcastGMPacket(data.array());
     }
 
     public void broadcastMapAreaMessage(int area, ByteBuffer message) {
-        for (MapleMap load : getMapFactory().getAllMaps()) {
-            if (load.getId() / 10000000 == area && load.getCharactersSize() > 0) {
-                load.broadcastMessage(message.array());
-            }
+        for (MapleMap load : this.getMapFactory().getAllMaps()) {
+            if (load.getId() / 10000000 != area || load.getCharactersSize() <= 0) continue;
+            load.broadcastMessage(message.array());
         }
     }
 
     public void startMapEffect(String msg, int itemId) {
-        startMapEffect(msg, itemId, 10);
+        this.startMapEffect(msg, itemId, 10);
     }
 
     public void startMapEffect(String msg, int itemId, int time) {
-        for (MapleMap load : getMapFactory().getAllMaps()) {
-            if (load.getCharactersSize() > 0) {
-                load.startMapEffect(msg, itemId, time);
-            }
+        for (MapleMap load : this.getMapFactory().getAllMaps()) {
+            if (load.getCharactersSize() <= 0) continue;
+            load.startMapEffect(msg, itemId, time);
         }
     }
 
     public AramiaFireWorks getFireWorks() {
-        return getFireWorks();
+        return this.getFireWorks();
     }
 
-
     public boolean isConnected(String name) {
-        return getPlayerStorage().getCharacterByName(name) != null;
+        return this.getPlayerStorage().getCharacterByName(name) != null;
     }
 
     public MarketEngine getMarket() {
-        return me;
+        return this.me;
     }
 
     public int getSessionIdx() {
-        return runningIdx.getAndIncrement();
+        return this.runningIdx.getAndIncrement();
     }
 
     public static ExecutorService getSaveExecutor() {
@@ -542,19 +462,55 @@ public class ChannelServer {
     }
 
     public ChannelType getChannelType() {
-        String[] chList = new String[]{
-        };
-
+        String[] chList = new String[]{};
         int i = 0;
         for (String chArrs : chList) {
-            for (String s : chArrs.split(",")) {
-                }
-            i++;
+            for (String string : chArrs.split(",")) {
+            }
+            ++i;
         }
         return ChannelType.NORMAL;
     }
 
     public static void main(String[] args) {
-        startChannel_Main();
+        ChannelServer.startChannel_Main();
+    }
+
+    static {
+        saveExecutor = Executors.newSingleThreadExecutor();
+    }
+
+    public static enum ChannelType {
+        NORMAL(1),
+        CHAOS(2),
+        ABNORMAL(4),
+        MVP_BRONZE(8),
+        MVP_SILVER(16),
+        MVP_GOLD(32),
+        MVP_DIAMOND(64),
+        MVP_RED(128);
+
+        private final int type;
+
+        private ChannelType(int type) {
+            this.type = type;
+        }
+
+        public int getType() {
+            return this.type;
+        }
+
+        public static ChannelType getByType(int type) {
+            for (ChannelType ct : ChannelType.values()) {
+                if (ct.getType() != type) continue;
+                return ct;
+            }
+            return NORMAL;
+        }
+
+        public boolean check(int type) {
+            return (type & this.getType()) != 0;
+        }
     }
 }
+

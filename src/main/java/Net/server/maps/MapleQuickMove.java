@@ -1,12 +1,8 @@
 /*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
+ * Decompiled with CFR 0.152.
  */
 package Net.server.maps;
 
-/**
- * @author Pungin
- */
 public class MapleQuickMove {
     public int VALUE;
     public int NPC;
@@ -17,3 +13,4 @@ public class MapleQuickMove {
     public boolean TESTPIA = false;
     public int GM_LEVEL = 0;
 }
+

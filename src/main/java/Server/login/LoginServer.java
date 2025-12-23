@@ -1,39 +1,48 @@
+/*
+ * Decompiled with CFR 0.152.
+ * 
+ * Could not load the following classes:
+ *  Server.login.handler.MapleBalloon
+ */
 package Server.login;
 
 import Config.configs.ServerConfig;
 import Plugin.provider.MapleData;
+import Plugin.provider.MapleDataEntity;
 import Plugin.provider.MapleDataProviderFactory;
 import Server.ServerType;
 import Server.login.handler.MapleBalloon;
 import Server.netty.ServerConnection;
 import io.netty.channel.EventLoopGroup;
 import io.netty.channel.nio.NioEventLoopGroup;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import tools.Pair;
 import tools.Quadruple;
 import tools.Randomizer;
 
-import java.util.*;
-import java.util.stream.Collectors;
-
 public class LoginServer {
     private static final Logger log = LoggerFactory.getLogger(LoginServer.class);
-    private static final List<MapleBalloon> lBalloon = new ArrayList<>();
-    private static final HashMap<Integer, Quadruple<String, String, Integer, String>> loginAuth = new HashMap<>();
-    private static final HashMap<String, Pair<String, Integer>> loginAuthKey = new HashMap<>();
+    private static final List<MapleBalloon> lBalloon = new ArrayList<MapleBalloon>();
+    private static final HashMap<Integer, Quadruple<String, String, Integer, String>> loginAuth = new HashMap();
+    private static final HashMap<String, Pair<String, Integer>> loginAuthKey = new HashMap();
     private static short port;
     private static ServerConnection init;
-    private static Map<Integer, Integer> load = new HashMap<>();
-    private static int usersOn = 0;
-    private static boolean finishedShutdown = true;
-    private static final Map<String, List<Integer>> worldSelectBGs = new HashMap<>();
-
-    private static EventLoopGroup bossGroup = new NioEventLoopGroup(1);
-    private static EventLoopGroup workerGroup = new NioEventLoopGroup();
+    private static Map<Integer, Integer> load;
+    private static int usersOn;
+    private static boolean finishedShutdown;
+    private static final Map<String, List<Integer>> worldSelectBGs;
+    private static EventLoopGroup bossGroup;
+    private static EventLoopGroup workerGroup;
 
     public static void putLoginAuth(int chrid, String ip, String tempIp, int channel, String mac) {
-        loginAuth.put(chrid, new Quadruple<>(ip, tempIp, channel, mac));
+        loginAuth.put(chrid, new Quadruple<String, String, Integer, String>(ip, tempIp, channel, mac));
     }
 
     public static Quadruple<String, String, Integer, String> getLoginAuth(int chrid) {
@@ -41,15 +50,14 @@ public class LoginServer {
     }
 
     public static void putLoginAuthKey(String key, String account, int channel) {
-        loginAuthKey.put(key, new Pair<>(account, channel));
+        loginAuthKey.put(key, new Pair<String, Integer>(account, channel));
     }
 
     public static Pair<String, Integer> getLoginAuthKey(String account, boolean remove) {
         if (remove) {
             return loginAuthKey.remove(account);
-        } else {
-            return loginAuthKey.get(account);
         }
+        return loginAuthKey.get(account);
     }
 
     public static void addChannel(int channel) {
@@ -61,25 +69,17 @@ public class LoginServer {
     }
 
     public static void runStartupConfigurations() {
-        loadWorldSelectBGs();
-        initServerConnection(ServerConfig.LOGIN_PORT);
-        initServerConnection(ServerConfig.LOGIN_PORT_備用);
+        LoginServer.loadWorldSelectBGs();
+        LoginServer.initServerConnection(ServerConfig.LOGIN_PORT);
+        LoginServer.initServerConnection(ServerConfig.LOGIN_PORT_備用);
     }
 
     private static void loadWorldSelectBGs() {
         MapleData data = MapleDataProviderFactory.getMap().getData("Obj/login.img").getChildByPath("WorldSelect");
         for (MapleData dat : data.getChildren()) {
-            if (dat == null || dat.getChildren().size() <= 0) {
-                continue;
-            }
-            List<Integer> ls = dat.getChildren().stream()
-                    .map(MapleData::getName)
-                    .mapToInt(Integer::parseInt)
-                    .boxed()
-                    .collect(Collectors.toList());
-            if (!ls.isEmpty()) {
-                worldSelectBGs.put(dat.getName(), ls);
-            }
+            List ls;
+            if (dat == null || dat.getChildren().size() <= 0 || (ls = dat.getChildren().stream().map(MapleDataEntity::getName).mapToInt(Integer::parseInt).boxed().collect(Collectors.toList())).isEmpty()) continue;
+            worldSelectBGs.put(dat.getName(), ls);
         }
     }
 
@@ -87,8 +87,9 @@ public class LoginServer {
         try {
             init = new ServerConnection(port, -1, -1, ServerType.LoginServer);
             init.run();
-            log.info("Login server listening on port: {}", port);
-        } catch (Exception e) {
+            log.info("Login server listening on port: {}", (Object)port);
+        }
+        catch (Exception e) {
             log.error("Failed to bind login server to port: " + port, e);
         }
     }
@@ -159,16 +160,21 @@ public class LoginServer {
     }
 
     public static String getRandomWorldSelectBG() {
-        int day = Calendar.getInstance().get(Calendar.DAY_OF_WEEK);
-        List<String> filteredKeys = worldSelectBGs.keySet().stream()
-                .filter(s -> !(s.equalsIgnoreCase("default") || s.equalsIgnoreCase("signboard")))
-                .filter(s -> (day == Calendar.SUNDAY) ? s.toLowerCase().contains("sundaymaple") : !s.toLowerCase().contains("sundaymaple"))
-                .collect(Collectors.toList());
-
+        int day = Calendar.getInstance().get(7);
+        List filteredKeys = worldSelectBGs.keySet().stream().filter(s -> !s.equalsIgnoreCase("default") && !s.equalsIgnoreCase("signboard")).filter(s -> day == 1 ? s.toLowerCase().contains("sundaymaple") : !s.toLowerCase().contains("sundaymaple")).collect(Collectors.toList());
         if (filteredKeys.isEmpty()) {
             return "default";
         }
+        return (String)filteredKeys.get(Randomizer.nextInt(filteredKeys.size()));
+    }
 
-        return filteredKeys.get(Randomizer.nextInt(filteredKeys.size()));
+    static {
+        load = new HashMap<Integer, Integer>();
+        usersOn = 0;
+        finishedShutdown = true;
+        worldSelectBGs = new HashMap<String, List<Integer>>();
+        bossGroup = new NioEventLoopGroup(1);
+        workerGroup = new NioEventLoopGroup();
     }
 }
+
